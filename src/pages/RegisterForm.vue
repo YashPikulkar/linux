@@ -6,8 +6,8 @@
           <!-- Form Section -->
           <div class="form-container">
             <div class="form-header q-mb-lg">
-              <q-icon name="person_add" size="36px" color="primary" />
-              <div class="text-h5 text-primary text-bold text-center q-mt-sm">
+              <q-icon name="person_add" size="36px" color="black" />
+              <div class="text-h5 text-black text-bold text-center q-mt-sm">
                 Create Your Account
               </div>
             </div>
@@ -27,12 +27,12 @@
           <div class="tracker-container">
             <div class="tracker-content">
               <div class="tracker-header text-center q-mb-md">
-                <q-icon name="track_changes" size="32px" color="primary" />
-                <div class="text-h6 text-primary text-bold q-mt-sm">
+                <q-icon name="track_changes" size="32px" color="black" />
+                <div class="text-h6 text-black text-bold q-mt-sm">
                   Registration Progress
                 </div>
               </div>
-              <q-timeline layout="dense" color="primary">
+              <q-timeline layout="dense" color="black">
                 <q-timeline-entry
                   v-for="(step, index) in steps"
                   :key="index"
@@ -43,7 +43,7 @@
                     index < currentStep
                       ? 'green'
                       : index === currentStep
-                      ? 'primary'
+                      ? 'black'
                       : 'grey-5'
                   "
                 />
