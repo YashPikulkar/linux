@@ -6,9 +6,9 @@
         <TopSection v-model:tab="tab" />
 
         <!-- ✅ Conditionally rendered bottom components -->
-        <BottomOne v-if="tab === 'Details'" />
-        <BottomTwo v-else-if="tab === 'Application Status'" />
-        <BottomThree v-else-if="tab === 'Resumes & Links'" />
+        <Content v-if="tab === 'Details'" />
+        <ApplicationStatus v-else-if="tab === 'Application Status'" />
+        <Resume v-else-if="tab === 'Resumes & Links'" />
         <!-- Optional: Add others later -->
       </q-card>
     </q-page>
@@ -17,17 +17,17 @@
 
 <script>
 import TopSection from "src/components/UserDashboard/TopSection/TopSection.vue";
-import BottomOne from "src/components/UserDashboard/BottomOne/BottomOne.vue";
-import BottomTwo from "src/components/UserDashboard/BottomTwo/BottomTwo.vue";
-import BottomThree from "src/components/UserDashboard/BottomThree/BottomThree.vue";
+import Content from "src/components/UserDashboard/Details/Content.vue";
+import Resume from "src/components/UserDashboard/Resume/Resume.vue";
+import ApplicationStatus from "src/components/UserDashboard/ApplicationStatus/ApplicationStatus.vue";
 
 export default {
   name: "UserDashboard",
   components: {
     TopSection,
-    BottomOne,
-    BottomTwo,
-    BottomThree,
+    Content,
+    ApplicationStatus,
+    Resume,
   },
   data() {
     return {

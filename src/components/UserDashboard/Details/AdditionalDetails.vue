@@ -178,42 +178,34 @@
 </template>
 
 <script>
+import { useUserStore } from "src/stores/UserStore";
+
 export default {
   data() {
     return {
       isEditable: false,
-      additional: {
-        gender: "Male",
-        dob: "2001-01-01",
-        experience: "1",
-        employmentStatus: "Fresher",
-        jobType: "Internship",
-        preferredLocation: "Goa",
-        availability: ["Remote"],
-        languages: "English, Hindi, Konkani",
-        resumeHeadline: "Frontend Developer | React.js | Vue.js",
-        linkedin: "https://linkedin.com/in/yourprofile",
-        portfolio: "https://yourportfolio.com",
-      },
       tempData: {},
     };
   },
   mounted() {
-    this.tempData = { ...this.additional };
+    this.tempData = { ...this.userStore.additional };
   },
   methods: {
     toggleEdit() {
-      this.tempData = { ...this.additional };
+      this.tempData = { ...this.userStore.additional };
       this.isEditable = true;
     },
     saveEdit() {
-      this.additional = { ...this.tempData };
+      this.userStore.updateAdditional(this.tempData);
       this.isEditable = false;
     },
     cancelEdit() {
-      this.tempData = { ...this.additional };
+      this.tempData = { ...this.userStore.additional };
       this.isEditable = false;
     },
+  },
+  created() {
+    this.userStore = useUserStore(); // ✅ Initialize store here
   },
 };
 </script>

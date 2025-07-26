@@ -13,12 +13,16 @@ export default [
       },
 
       {
-        path: "login",
+        path: "register",
         component: () => import("src/pages/RegisterForm.vue"), // 👈 new route
       },
       {
         path: "/userdashboard",
         component: () => import("src/pages/UserDashboard.vue"),
+      },
+      {
+        path: "/recruiterdashboard",
+        component: () => import("src/pages/RecruiterDashboard.vue"),
       },
     ],
   },

@@ -1,62 +1,115 @@
 <template>
-    <div class="q-gutter-md" style="width: 100%;">
-      <div class="text-subtitle1 text-primary">Review and Confirm</div>
-  
-      <q-markup-table flat bordered class="rounded-borders q-mt-md">
-        <thead>
-          <tr>
-            <th class="text-left">Field</th>
-            <th class="text-left">Value</th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr>
-            <td><strong>Full Name</strong></td>
-            <td>{{ modelValue.firstName }}</td>
-          </tr>
-          <tr>
-            <td><strong>Email</strong></td>
-            <td>{{ modelValue.email }}</td>
-          </tr>
-          <tr>
-            <td><strong>Phone</strong></td>
-            <td>{{ modelValue.phone }}</td>
-          </tr>
-          <tr>
-            <td><strong>Role</strong></td>
-            <td>{{ modelValue.role }}</td>
-          </tr>
-          <tr>
-            <td><strong>Password</strong></td>
-            <td class="row items-center">
-              <span class="col">
-                {{ showPassword ? modelValue.password : '*'.repeat(modelValue.password?.length || 8) }}
-              </span>
-              <q-btn
-                flat
-                dense
-                size="sm"
-                :icon="showPassword ? 'visibility_off' : 'visibility'"
-                @click="showPassword = !showPassword"
-                class="q-ml-sm"
-              />
-            </td>
-          </tr>
-        </tbody>
-      </q-markup-table>
-  
-      <div class="row justify-between q-mt-md">
-        <q-btn flat label="Back" @click="emit('prev')" />
-        <q-btn color="primary" label="Confirm & Proceed" @click="emit('submit')" />
-      </div>
+  <div class="q-pa-md" style="max-width: 500px; margin: auto">
+    <div class="text-h6 text-primary q-mb-md">Step 4: Review and Confirm</div>
+
+    <q-card flat bordered class="rounded-borders">
+      <q-card-section>
+        <div class="text-subtitle2 text-grey-8 q-mb-sm">Full Name</div>
+        <div class="text-body1">{{ modelValue.firstName }}</div>
+      </q-card-section>
+
+      <q-separator inset />
+
+      <q-card-section>
+        <div class="text-subtitle2 text-grey-8 q-mb-sm">Email</div>
+        <div class="text-body1">{{ modelValue.email }}</div>
+      </q-card-section>
+
+      <q-separator inset />
+
+      <q-card-section>
+        <div class="text-subtitle2 text-grey-8 q-mb-sm">Phone</div>
+        <div class="text-body1">{{ modelValue.phone }}</div>
+      </q-card-section>
+
+      <q-separator inset />
+
+      <q-card-section>
+        <div class="text-subtitle2 text-grey-8 q-mb-sm">Role</div>
+        <div class="text-body1">{{ modelValue.role }}</div>
+      </q-card-section>
+
+      <q-separator inset />
+
+      <q-card-section class="row items-center">
+        <div class="col">
+          <div class="text-subtitle2 text-grey-8 q-mb-sm">Password</div>
+          <div class="text-body1">
+            {{
+              showPassword
+                ? modelValue.password
+                : "*".repeat(modelValue.password?.length || 8)
+            }}
+          </div>
+        </div>
+        <q-btn
+          flat
+          dense
+          size="sm"
+          :icon="showPassword ? 'visibility_off' : 'visibility'"
+          @click="togglePassword"
+          class="q-ml-sm"
+        />
+      </q-card-section>
+    </q-card>
+
+    <div class="row justify-between q-mt-lg">
+      <q-btn flat label="Back" @click="goPrev" />
+      <q-btn
+        color="primary"
+        label="Confirm & Proceed"
+        @click="submitForm"
+        rounded
+        unelevated
+        class="full-width"
+      />
     </div>
-  </template>
-  
-  <script setup>
-  import { ref } from 'vue'
-  
-  const modelValue = defineModel()
-  const emit = defineEmits(['prev', 'submit'])
-  
-  const showPassword = ref(false)
-  </script>
+  </div>
+</template>
+
+<script>
+import { ref } from "vue";
+
+export default {
+  name: "ReviewConfirmStep",
+  props: {
+    modelValue: {
+      type: Object,
+      required: true,
+    },
+  },
+  emits: ["prev", "submit"],
+  setup(props, { emit }) {
+    const showPassword = ref(false);
+
+    const togglePassword = () => {
+      showPassword.value = !showPassword.value;
+    };
+
+    const goPrev = () => {
+      emit("prev");
+    };
+
+    const submitForm = () => {
+      emit("submit");
+    };
+
+    return {
+      showPassword,
+      togglePassword,
+      goPrev,
+      submitForm,
+    };
+  },
+};
+</script>
+
+<style scoped>
+.rounded-borders {
+  border-radius: 12px;
+}
+
+.q-card-section {
+  font-family: "Inter", "Roboto", sans-serif;
+}
+</style>

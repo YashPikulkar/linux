@@ -2,7 +2,7 @@
   <div class="bottom-section row q-mt-sm">
     <!-- LEFT SIDE -->
     <div class="left-side">
-      <ApplicationStatus class="widget" />
+      <Links class="widget" />
     </div>
 
     <!-- RIGHT SIDE -->
@@ -10,12 +10,12 @@
 </template>
 
 <script>
-import ApplicationStatus from "./ApplicationStatus.vue";
+import Links from "./Links.vue";
 
 export default {
-  name: "BottomOne",
+  name: "Resume",
   components: {
-    ApplicationStatus,
+    Links,
   },
 };
 </script>

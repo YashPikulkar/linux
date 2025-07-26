@@ -78,29 +78,31 @@
 </template>
 
 <script>
+import { useUserStore } from "src/stores/UserStore";
+
 export default {
   name: "SkillsSection",
   data() {
     return {
       isEditable: false,
       newSkill: "",
-      skills: ["React", "JavaScript", "Figma", "Teamwork", "Communication"],
       localSkills: [],
     };
   },
   created() {
-    this.localSkills = [...this.skills]; // Clone initial data
+    this.userStore = useUserStore();
+    this.localSkills = [...this.userStore.skills];
   },
   methods: {
     toggleEdit() {
       this.isEditable = true;
     },
     saveSkills() {
-      this.skills = [...this.localSkills];
+      this.userStore.updateSkills(this.localSkills);
       this.isEditable = false;
     },
     cancelEdit() {
-      this.localSkills = [...this.skills];
+      this.localSkills = [...this.userStore.skills];
       this.isEditable = false;
     },
     addSkill() {

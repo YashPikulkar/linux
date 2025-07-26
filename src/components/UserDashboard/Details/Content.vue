@@ -2,20 +2,28 @@
   <div class="bottom-section row q-mt-sm">
     <!-- LEFT SIDE -->
     <div class="left-side">
-      <ApplicationStatus class="widget" />
+      <AdditionalDetails class="widget" />
     </div>
 
     <!-- RIGHT SIDE -->
+    <div class="right-side column q-ml-sm">
+      <Education class="widget" />
+      <Skills class="widget" />
+    </div>
   </div>
 </template>
 
 <script>
-import ApplicationStatus from "./ApplicationStatus.vue";
+import Education from "./Education.vue";
+import Skills from "./Skills.vue";
+import AdditionalDetails from "./AdditionalDetails.vue";
 
 export default {
-  name: "BottomOne",
+  name: "Content",
   components: {
-    ApplicationStatus,
+    Education,
+    Skills,
+    AdditionalDetails,
   },
 };
 </script>

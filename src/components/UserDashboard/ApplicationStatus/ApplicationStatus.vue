@@ -2,28 +2,20 @@
   <div class="bottom-section row q-mt-sm">
     <!-- LEFT SIDE -->
     <div class="left-side">
-      <UserSection class="widget" />
+      <AppliedJobs class="widget" />
     </div>
 
     <!-- RIGHT SIDE -->
-    <div class="right-side column q-ml-sm">
-      <TopRightWidget class="widget" />
-      <BottomRightWidget class="widget" />
-    </div>
   </div>
 </template>
 
 <script>
-import TopRightWidget from "./TopRightWidget.vue";
-import BottomRightWidget from "./BottomRightWidget.vue";
-import UserSection from "./ UserSection.vue";
+import AppliedJobs from "./AppliedJobs.vue";
 
 export default {
   name: "BottomOne",
   components: {
-    UserSection,
-    TopRightWidget,
-    BottomRightWidget,
+    AppliedJobs,
   },
 };
 </script>

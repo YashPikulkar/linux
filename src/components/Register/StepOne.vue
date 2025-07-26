@@ -79,44 +79,64 @@
   </q-form>
 </template>
 
-<script setup>
-import { ref } from "vue";
-
-const emit = defineEmits(["next"]);
-const modelValue = defineModel();
-
-const showPassword = ref(false);
-const showRetypePassword = ref(false);
-
-const formRef = ref(null);
-
-function handleNext() {
-  emit("next");
-}
-
-function onInvalid() {
-  // Optional: Show a message or shake animation
-  console.warn("Form has validation errors");
-}
-
-// Validation rules
-const isRequired = (val) => !!val || "This field is required";
-const isAlphaOnly = (val) =>
-  /^[a-zA-Z\s]+$/.test(val) || "Only letters allowed";
-const maxLength = (max) => (val) =>
-  !val || val.length <= max || `Max ${max} characters`;
-const isPhoneValid = (val) =>
-  /^\+?\d{10,15}$/.test(val) || "Invalid phone number";
-const isStrongPassword = (val) =>
-  /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()]).{8,}$/.test(val) ||
-  "Password must include uppercase, lowercase, number, and special character";
-const isPasswordMatch = (val) =>
-  val === modelValue.value.password || "Passwords do not match";
-const isValidEmailFormat = (val) =>
-  /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || "Enter a valid email";
-const isAllowedEmailDomain = (val) =>
-  val.endsWith("@example.com") || "Only @example.com domain is allowed";
+<script>
+export default {
+  name: "StepOneForm",
+  props: {
+    modelValue: {
+      type: Object,
+      required: true,
+    },
+  },
+  emits: ["update:modelValue", "next"],
+  data() {
+    return {
+      showPassword: false,
+      showRetypePassword: false,
+      formRef: null,
+    };
+  },
+  methods: {
+    handleNext() {
+      this.$emit("next");
+    },
+    onInvalid() {
+      console.warn("Form has validation errors");
+    },
+    // Rules
+    isRequired(val) {
+      return !!val || "This field is required";
+    },
+    isAlphaOnly(val) {
+      return /^[a-zA-Z\s]+$/.test(val) || "Only letters allowed";
+    },
+    maxLength(max) {
+      return (val) => !val || val.length <= max || `Max ${max} characters`;
+    },
+    isPhoneValid(val) {
+      return /^\+?\d{10,15}$/.test(val) || "Invalid phone number";
+    },
+    isStrongPassword(val) {
+      return (
+        /^(?=.*[A-Z])(?=.*[a-z])(?=.*\d)(?=.*[!@#$%^&*()]).{8,}$/.test(val) ||
+        "Password must include uppercase, lowercase, number, and special character"
+      );
+    },
+    isPasswordMatch(val) {
+      return val === this.modelValue.password || "Passwords do not match";
+    },
+    isValidEmailFormat(val) {
+      return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || "Enter a valid email";
+    },
+    isAllowedEmailDomain(val) {
+      return (
+        val.endsWith("@example.com") || "Only @example.com domain is allowed"
+      );
+    },
+  },
+};
 </script>
+
 <style scoped>
 .rounded-borders .q-field__control {
   border-radius: 12px !important;

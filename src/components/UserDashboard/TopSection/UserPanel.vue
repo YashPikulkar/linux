@@ -2,21 +2,12 @@
   <div class="user-panel row no-wrap items-center">
     <!-- Avatar -->
     <q-avatar size="74px" class="avatar-box q-mr-md">
-      <img
-        src="https://www.svgrepo.com/show/384674/account-avatar-profile-user-11.svg"
-        alt="User Avatar"
-        width="100"
-      />
+      <img :src="avatar" alt="User Avatar" width="100" />
     </q-avatar>
 
     <!-- Main Info -->
     <div class="main-info column justify-center">
-      <div class="user-name">Yash Pikulkar</div>
-      <div class="user-title">
-        <span class="position text-primary">Frontend Developer</span>
-        <span class="sep">|</span>
-        <span class="department">Intern</span>
-      </div>
+      <div class="user-name">{{ fullName }}</div>
     </div>
 
     <!-- Spacer -->
@@ -27,11 +18,11 @@
       <!-- Info Column -->
       <div class="info-col column q-pr-xl">
         <div class="label">Phone Number:</div>
-        <div class="value strong">+91 98765 43210</div>
+        <div class="value strong">{{ phone }}</div>
         <div class="label q-mt-sm">Email:</div>
-        <div class="value email">yash@example.com</div>
+        <div class="value email">{{ email }}</div>
         <div class="label q-mt-sm">Role:</div>
-        <div class="value">Candidate</div>
+        <div class="value">{{ role }}</div>
       </div>
 
       <!-- Vertical Separator -->
@@ -44,8 +35,15 @@
 </template>
 
 <script setup>
-// Static layout — no props or reusability for now
+import { useUserStore } from "src/stores/UserStore";
+
+// Access the user store
+const userStore = useUserStore();
+
+// Destructure register data from the store
+const { fullName, phone, email, role, avatar } = userStore.register;
 </script>
+
 <style scoped>
 .user-panel {
   width: 100%;
@@ -73,28 +71,6 @@
   font-size: 20px;
   font-weight: 600;
   color: #232c47;
-}
-
-.user-title {
-  font-size: 15px;
-  color: #878ca2;
-  margin-top: 2px;
-  display: flex;
-  align-items: center;
-}
-
-.position.text-primary {
-  color: #2382fa;
-  font-weight: 500;
-}
-
-.sep {
-  margin: 0 8px;
-  color: #ccd0db;
-}
-
-.department {
-  color: #a7a9be;
 }
 
 .detail-info {

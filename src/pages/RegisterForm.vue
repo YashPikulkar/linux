@@ -1,12 +1,15 @@
 <template>
   <q-page class="registration-page">
-    <div class="outer-card-container">
-      <q-card class="registration-card shadow-2" flat>
+    <div class="registration-container">
+      <q-card class="registration-card shadow-10" flat>
         <div class="form-tracker-wrapper">
-          <!-- Form -->
+          <!-- Form Section -->
           <div class="form-container">
-            <div class="text-h6 text-primary text-center q-mb-lg">
-              Create Your Account
+            <div class="form-header q-mb-lg">
+              <q-icon name="person_add" size="36px" color="primary" />
+              <div class="text-h5 text-primary text-bold text-center q-mt-sm">
+                Create Your Account
+              </div>
             </div>
             <component
               :is="steps[currentStep].component"
@@ -17,30 +20,35 @@
             />
           </div>
 
-          <!-- Vertical Separator -->
-          <div class="separator"></div>
+          <!-- Divider -->
+          <div class="separator" />
 
-          <!-- Step Tracker -->
+          <!-- Tracker Section -->
           <div class="tracker-container">
-            <div class="text-h6 text-primary text-center q-mb-md">
-              Registration Progress
+            <div class="tracker-content">
+              <div class="tracker-header text-center q-mb-md">
+                <q-icon name="track_changes" size="32px" color="primary" />
+                <div class="text-h6 text-primary text-bold q-mt-sm">
+                  Registration Progress
+                </div>
+              </div>
+              <q-timeline layout="dense" color="primary">
+                <q-timeline-entry
+                  v-for="(step, index) in steps"
+                  :key="index"
+                  :title="step.title"
+                  :subtitle="step.subtitle"
+                  :icon="index < currentStep ? 'check' : step.icon"
+                  :color="
+                    index < currentStep
+                      ? 'green'
+                      : index === currentStep
+                      ? 'primary'
+                      : 'grey-5'
+                  "
+                />
+              </q-timeline>
             </div>
-            <q-timeline layout="dense" color="primary">
-              <q-timeline-entry
-                v-for="(step, index) in steps"
-                :key="index"
-                :title="step.title"
-                :subtitle="step.subtitle"
-                :icon="index < currentStep ? 'check' : step.icon"
-                :color="
-                  index < currentStep
-                    ? 'green'
-                    : index === currentStep
-                    ? 'primary'
-                    : 'grey'
-                "
-              />
-            </q-timeline>
           </div>
         </div>
       </q-card>
@@ -99,94 +107,116 @@ const formData = ref({
 });
 
 function nextStep() {
-  if (currentStep.value < steps.length - 1) {
-    currentStep.value++;
-  }
+  if (currentStep.value < steps.length - 1) currentStep.value++;
 }
-
 function prevStep() {
-  if (currentStep.value > 0) {
-    currentStep.value--;
-  }
+  if (currentStep.value > 0) currentStep.value--;
 }
-
 function handleSubmit() {
   console.log("✅ Final Submitted Data:", formData.value);
-  router.push({ name: "dashboard" });
+
+  if (formData.value.role === "candidate") {
+    router.push("/userdashboard");
+  } else if (formData.value.role === "recruiter") {
+    router.push("/recruiterdashboard");
+  } else {
+    // Optional: fallback or error handling
+    console.warn("Unknown role, cannot route.");
+  }
 }
 </script>
 
 <style scoped>
 .registration-page {
-  background-color: #f0f4ff;
+  background: linear-gradient(to bottom right, #f0f4ff, #e3ecff);
   min-height: 100vh;
   display: flex;
+  justify-content: center;
   align-items: center;
-  justify-content: flex-start;
-  padding-left: 5vw;
-  padding-right: 5vw;
+  padding: 16px;
   box-sizing: border-box;
 }
 
-.outer-card-container {
-  max-width: 1100px;
+.registration-container {
   width: 100%;
+  max-width: 1200px;
 }
 
 .registration-card {
-  border-radius: 16px;
-  background-color: white;
-  padding: 40px;
-  display: flex;
-  flex-direction: column;
+  border-radius: 24px;
+  background-color: #ffffff;
+  padding: 48px;
   box-sizing: border-box;
+  transition: box-shadow 0.3s;
 }
 
 .form-tracker-wrapper {
   display: flex;
   flex-direction: row;
-  align-items: flex-start;
-  justify-content: space-between;
   gap: 24px;
-  flex-wrap: wrap;
+  align-items: stretch;
 }
 
+/* Form Section */
 .form-container {
   flex: 1;
-  min-width: 300px;
+  min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  padding-right: 24px;
+  border-right: 1px solid #e0e0e0;
 }
+
+.form-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+
+/* Tracker Section */
 
 .tracker-container {
   flex: 1;
-  min-width: 300px;
-  max-height: 100%;
-  overflow-y: auto;
+  min-width: 320px;
+  display: flex;
+  align-items: center; /* Align content to top */
+  justify-content: center; /* Optional: left-align inside */
+  padding-left: 48px;
+  margin-left: 16px;
 }
 
+.tracker-header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin-bottom: 12px; /* space between title and timeline */
+}
+/* Divider Line */
 .separator {
-  width: 1px;
-  background-color: #ccc;
-  height: auto;
-  align-self: stretch;
+  display: none;
 }
 
+.tracker-content q-timeline {
+  margin-top: 16px; /* or 24px for more gap */
+}
+/* Responsive adjustments */
 @media (max-width: 900px) {
   .form-tracker-wrapper {
     flex-direction: column;
-    align-items: stretch;
   }
 
-  .separator {
-    display: none;
-  }
-
-  .form-container,
-  .tracker-container {
-    width: 100%;
+  .form-container {
+    padding-right: 0;
+    border-right: none;
   }
 
   .tracker-container {
+    padding-left: 0;
     margin-top: 32px;
+  }
+
+  .registration-card {
+    padding: 24px;
   }
 }
 </style>

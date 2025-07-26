@@ -152,23 +152,24 @@
 </template>
 
 <script>
+import { useUserStore } from "src/stores/UserStore";
+
 export default {
   name: "EducationForm",
   data() {
     return {
+      userStore: null,
       isEditable: false,
-      education: {
-        college: "Goa College of Engineering",
-        degree: "B.E. in Information Technology",
-        degreeCgpa: "7.8",
-        higherSecondary: "ABC Higher Secondary School",
-        higherCgpa: "8.5",
-        highSchool: "XYZ High School",
-        highCgpa: "9.0",
-        certifications: ["Full Stack Web Dev", "Python Basics", "UX Design"],
-      },
       tempData: {},
     };
+  },
+  created() {
+    this.userStore = useUserStore();
+  },
+  computed: {
+    education() {
+      return this.userStore.education;
+    },
   },
   methods: {
     toggleEdit() {
@@ -176,7 +177,7 @@ export default {
       this.isEditable = true;
     },
     saveEdit() {
-      this.education = JSON.parse(JSON.stringify(this.tempData));
+      this.userStore.updateEducation(this.tempData);
       this.isEditable = false;
     },
     cancelEdit() {
