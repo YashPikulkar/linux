@@ -24,6 +24,10 @@ export default [
         path: "/recruiterdashboard",
         component: () => import("src/pages/RecruiterDashboard.vue"),
       },
+      {
+        path: "/login",
+        component: () => import("src/pages/login.vue"),
+      },
     ],
   },
 ];
