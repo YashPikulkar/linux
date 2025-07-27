@@ -9,143 +9,12 @@
 
       <!-- RIGHT: Navigation -->
       <div class="flex items-center q-gutter-md">
-        <!-- User Dashboard -->
-        <template v-if="isUserDashboard">
-          <div class="nav-icon-btn" @click="goTo('/userdashboard')">
-            <q-icon name="dashboard" size="24px" />
-            <div class="label">Home</div>
-          </div>
-
-          <div class="nav-icon-btn" @click="goTo('/userdashboard/jobs')">
-            <q-icon name="work" size="24px" />
-            <div class="label">Jobs</div>
-          </div>
-
-          <div class="nav-icon-btn" @click="goTo('/userdashboard/notifications')">
-            <q-icon name="notifications" size="24px" />
-            <div class="label">Notifications</div>
-          </div>
-
-          <div class="nav-icon-btn" @click="goTo('/userdashboard/applications')">
-            <q-icon name="assignment" size="24px" />
-            <div class="label">Tracker</div>
-          </div>
-
-          <div class="nav-icon-btn" @click="goTo('/userdashboard/matching-companies')">
-            <q-icon name="business" size="24px" />
-            <div class="label">Companies</div>
-          </div>
-
-          <!-- Avatar Dropdown -->
-          <q-btn round flat dense class="avatar-btn">
-            <q-avatar size="36px" class="user-avatar">
-              <img src="https://cdn.quasar.dev/img/avatar.png" alt="User Avatar" />
-            </q-avatar>
-            <q-menu class="user-menu">
-              <q-list class="menu-list">
-                <q-item-label header class="menu-header">Account</q-item-label>
-
-                <q-item clickable v-ripple @click="goTo('/userdashboard/profile')" class="menu-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="person" class="menu-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Profile</q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple @click="goTo('/userdashboard/settings')" class="menu-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="settings" class="menu-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Settings</q-item-section>
-                </q-item>
-
-                <q-separator class="menu-separator" />
-
-                <q-item clickable v-ripple @click="logout" class="menu-item logout-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="logout" class="menu-icon logout-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Logout</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
-        </template>
+        <!-- User Dashboard Navigation - Delegated to UserNavigationLayout -->
+        <UserDashboardNav v-if="isUserDashboard" />
 
         <!-- Recruiter Dashboard -->
-        <template v-else-if="isRecruiterDashboard">
-          <div class="nav-icon-btn" @click="goTo('/recruiterdashboard')">
-            <q-icon name="dashboard" size="24px" />
-            <div class="label">Home</div>
-          </div>
+        <RecruiterDashboardNav v-else-if="isRecruiterDashboard"/>
 
-          <div class="nav-icon-btn" @click="goTo('/recruiterdashboard/post-job')">
-            <q-icon name="add_box" size="24px" />
-            <div class="label">Post</div>
-          </div>
-
-          <div class="nav-icon-btn" @click="goTo('/recruiterdashboard/notifications')">
-            <q-icon name="notifications" size="24px" />
-            <div class="label">Notifications</div>
-          </div>
-
-          <!-- Avatar Dropdown -->
-          <q-btn round flat dense class="avatar-btn">
-            <q-avatar size="36px" class="user-avatar">
-              <img src="https://cdn.quasar.dev/img/avatar.png" alt="Recruiter Avatar" />
-            </q-avatar>
-
-            <q-menu class="user-menu">
-              <q-list class="menu-list">
-                <q-item-label header class="menu-header">Management</q-item-label>
-
-                <q-item clickable v-ripple @click="goTo('/recruiterdashboard/jobs')" class="menu-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="work_outline" class="menu-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Posted Jobs</q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple @click="goTo('/recruiterdashboard/applications')" class="menu-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="assignment_ind" class="menu-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Applications Recieved</q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple @click="goTo('/recruiterdashboard/hired')" class="menu-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="check_circle_outline" class="menu-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Hired</q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple @click="goTo('/recruiterdashboard/profile')" class="menu-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="person" class="menu-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Profile</q-item-section>
-                </q-item>
-
-                <q-item clickable v-ripple @click="goTo('/recruiterdashboard/settings')" class="menu-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="settings" class="menu-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Settings</q-item-section>
-                </q-item>
-
-                <q-separator class="menu-separator" />
-
-                <q-item clickable v-ripple @click="logout" class="menu-item logout-item">
-                  <q-item-section avatar class="menu-icon-section">
-                    <q-icon name="logout" class="menu-icon logout-icon" />
-                  </q-item-section>
-                  <q-item-section class="menu-text">Logout</q-item-section>
-                </q-item>
-              </q-list>
-            </q-menu>
-          </q-btn>
-        </template>
 
         <!-- Landing Page: Log In & Sign Up -->
         <template v-else-if="isLandingPage">
@@ -175,6 +44,9 @@
 <script setup>
 import { useRoute, useRouter } from 'vue-router'
 import { computed } from 'vue'
+import UserDashboard from 'src/pages/UserDashboard.vue'
+import UserDashboardNav from 'src/components/UserDashboard/UserDashboardNav.vue'
+import RecruiterDashboardNav from 'src\components\RecruiterDashboard\RecruiterDashboardNav.vue'
 
 const route = useRoute()
 const router = useRouter()
@@ -193,8 +65,6 @@ function goTo (path) {
   router.push(path)
 }
 </script>
-
-
 
 <style lang="scss" scoped>
 /* Header */
