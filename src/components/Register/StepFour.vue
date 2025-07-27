@@ -56,7 +56,7 @@
     <div class="row justify-between q-mt-lg">
       <q-btn flat label="Back" @click="goPrev" />
       <q-btn
-        color="primary"
+        color="black"
         label="Confirm & Proceed"
         @click="submitForm"
         rounded

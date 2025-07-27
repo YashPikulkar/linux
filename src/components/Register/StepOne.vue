@@ -6,7 +6,7 @@
     class="q-gutter-md q-pa-md"
     style="width: 100%; max-width: 500px; margin: auto"
   >
-    <div class="text-h6 text-primary q-mb-md">Step 1: Personal Information</div>
+    <div class="text-h6 text-black q-mb-md">Step 1: Personal Information</div>
 
     <q-input
       outlined
@@ -68,7 +68,7 @@
 
     <div class="row justify-end q-mt-md">
       <q-btn
-        color="primary"
+        color="black"
         label="Next"
         type="submit"
         class="full-width"

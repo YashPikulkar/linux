@@ -4,9 +4,9 @@
     class="q-gutter-md q-pa-md"
     style="width: 100%; max-width: 500px; margin: auto"
   >
-    <div class="text-h6 text-primary q-mb-md">Step 3: Role Selection</div>
+    <div class="text-h6 text-black q-mb-md">Step 3: Role Selection</div>
 
-    <div class="text-subtitle1 text-primary">Select your role</div>
+    <div class="text-subtitle1 text-black">Select your role</div>
 
     <q-select
       filled
@@ -24,7 +24,7 @@
     <div class="row justify-between q-mt-md">
       <q-btn flat label="Back" @click="goPrev" />
       <q-btn
-        color="primary"
+        color="black"
         label="Next"
         type="submit"
         rounded

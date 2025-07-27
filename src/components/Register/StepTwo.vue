@@ -4,8 +4,8 @@
     class="q-gutter-md q-pa-md"
     style="width: 100%; max-width: 500px; margin: auto"
   >
-    <div class="text-h6 text-primary q-mb-md">Step 2: OTP Verification</div>
-    <div class="text-subtitle1 text-center text-primary">
+    <div class="text-h6 text-black q-mb-md">Step 2: OTP Verification</div>
+    <div class="text-subtitle1 text-center text-black">
       Enter OTP sent to {{ modelValue.email }}
     </div>
 
@@ -28,7 +28,7 @@
     <div class="row justify-between q-mt-md">
       <q-btn flat label="Back" @click="goPrev" />
       <q-btn
-        color="primary"
+        color="black"
         label="Next"
         type="submit"
         rounded
