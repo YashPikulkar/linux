@@ -46,7 +46,7 @@ import { useRoute, useRouter } from 'vue-router'
 import { computed } from 'vue'
 import UserDashboard from 'src/pages/UserDashboard.vue'
 import UserDashboardNav from 'src/components/UserDashboard/UserDashboardNav.vue'
-import RecruiterDashboardNav from 'src\components\RecruiterDashboard\RecruiterDashboardNav.vue'
+import RecruiterDashboardNav from 'src/components/RecruiterDashboard/RecruiterDashboardNav.vue'
 
 const route = useRoute()
 const router = useRouter()

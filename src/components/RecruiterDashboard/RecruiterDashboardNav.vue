@@ -1,4 +1,3 @@
-@ -0,0 +1,725 @@
 <template>
   <div class="dashboard-wrapper">
     <!-- Navigation Bar -->
