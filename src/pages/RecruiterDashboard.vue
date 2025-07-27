@@ -15,102 +15,92 @@
       <q-separator class="dashboard-separator" />
 
       <!-- Action Buttons -->
-      <div class="action-buttons">
-        <q-btn
-          class="action-btn primary-btn"
-          label="Create Job Post"
-          icon="add"
-        />
-        <q-btn
-          class="action-btn secondary-btn"
-          label="View Applications"
-          icon="inbox"
-        />
-        <q-btn
-          class="action-btn secondary-btn"
-          label="Manage Candidates"
-          icon="people"
-        />
-      </div>
 
-      <!-- Stats Grid -->
-      <div class="stats-grid">
-        <q-card class="stat-card">
-          <q-card-section class="stat-content">
-            <div class="stat-icon">
-              <q-icon name="work" size="2rem" />
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">Total Job Posts</div>
-              <div class="stat-value">24</div>
-              <div class="stat-change positive">+3 this month</div>
-            </div>
-          </q-card-section>
-        </q-card>
 
-        <q-card class="stat-card">
-          <q-card-section class="stat-content">
-            <div class="stat-icon">
-              <q-icon name="mail" size="2rem" />
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">Applications Received</div>
-              <div class="stat-value">156</div>
-              <div class="stat-change positive">+12 today</div>
-            </div>
-          </q-card-section>
-        </q-card>
+      <!-- Dynamic View Rendering -->
+      <component :is="currentDashboardComponent" class="q-mb-xl" v-if="dashboardView !== 'Overview'" />
 
-        <q-card class="stat-card">
-          <q-card-section class="stat-content">
-            <div class="stat-icon">
-              <q-icon name="star" size="2rem" />
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">Shortlisted Candidates</div>
-              <div class="stat-value">32</div>
-              <div class="stat-change neutral">No change</div>
-            </div>
-          </q-card-section>
-        </q-card>
+      <!-- Stats + Activity only in Overview -->
+      <div v-if="dashboardView === 'Overview'">
+        <!-- Stats Grid -->
+        <div class="stats-grid">
+          <q-card class="stat-card">
+            <q-card-section class="stat-content">
+              <div class="stat-icon">
+                <q-icon name="work" size="2rem" />
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">Total Job Posts</div>
+                <div class="stat-value">24</div>
+                <div class="stat-change positive">+3 this month</div>
+              </div>
+            </q-card-section>
+          </q-card>
 
-        <q-card class="stat-card">
-          <q-card-section class="stat-content">
-            <div class="stat-icon">
-              <q-icon name="schedule" size="2rem" />
-            </div>
-            <div class="stat-info">
-              <div class="stat-label">Interviews Scheduled</div>
-              <div class="stat-value">8</div>
-              <div class="stat-change positive">+2 this week</div>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
+          <q-card class="stat-card">
+            <q-card-section class="stat-content">
+              <div class="stat-icon">
+                <q-icon name="mail" size="2rem" />
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">Applications Received</div>
+                <div class="stat-value">156</div>
+                <div class="stat-change positive">+12 today</div>
+              </div>
+            </q-card-section>
+          </q-card>
 
-      <!-- Recent Activity -->
-      <div class="recent-activity">
-        <div class="section-title">Recent Activity</div>
-        <div class="activity-list">
-          <div class="activity-item">
-            <q-icon name="person_add" class="activity-icon" />
-            <div class="activity-content">
-              <div class="activity-text">New application for Senior Developer position</div>
-              <div class="activity-time">2 hours ago</div>
+          <q-card class="stat-card">
+            <q-card-section class="stat-content">
+              <div class="stat-icon">
+                <q-icon name="star" size="2rem" />
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">Shortlisted Candidates</div>
+                <div class="stat-value">32</div>
+                <div class="stat-change neutral">No change</div>
+              </div>
+            </q-card-section>
+          </q-card>
+
+          <q-card class="stat-card">
+            <q-card-section class="stat-content">
+              <div class="stat-icon">
+                <q-icon name="schedule" size="2rem" />
+              </div>
+              <div class="stat-info">
+                <div class="stat-label">Interviews Scheduled</div>
+                <div class="stat-value">8</div>
+                <div class="stat-change positive">+2 this week</div>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
+
+        <!-- Recent Activity -->
+        <div class="recent-activity">
+          <div class="section-title">Recent Activity</div>
+          <div class="activity-list">
+            <div class="activity-item">
+              <q-icon name="person_add" class="activity-icon" />
+              <div class="activity-content">
+                <div class="activity-text">New application for Senior Developer position</div>
+                <div class="activity-time">2 hours ago</div>
+              </div>
             </div>
-          </div>
-          <div class="activity-item">
-            <q-icon name="edit" class="activity-icon" />
-            <div class="activity-content">
-              <div class="activity-text">Updated job requirements for Marketing Manager</div>
-              <div class="activity-time">5 hours ago</div>
+            <div class="activity-item">
+              <q-icon name="edit" class="activity-icon" />
+              <div class="activity-content">
+                <div class="activity-text">Updated job requirements for Marketing Manager</div>
+                <div class="activity-time">5 hours ago</div>
+              </div>
             </div>
-          </div>
-          <div class="activity-item">
-            <q-icon name="check_circle" class="activity-icon" />
-            <div class="activity-content">
-              <div class="activity-text">Interview completed for UX Designer candidate</div>
-              <div class="activity-time">1 day ago</div>
+            <div class="activity-item">
+              <q-icon name="check_circle" class="activity-icon" />
+              <div class="activity-content">
+                <div class="activity-text">Interview completed for UX Designer candidate</div>
+                <div class="activity-time">1 day ago</div>
+              </div>
             </div>
           </div>
         </div>
@@ -120,7 +110,32 @@
 </template>
 
 <script setup>
-// You can import API or store logic later
+import { ref, computed } from 'vue'
+import { useRouter } from 'vue-router'
+import { useQuasar } from 'quasar'
+
+// Child views
+import DashboardJobs from 'src/components/RecruiterDashboard/postjob.vue'
+import ApplicantList from 'src/components/RecruiterDashboard/ApplicantList.vue'
+import CompanyProfile from 'src/components/RecruiterDashboard/companyprofile.vue'
+
+const dashboardView = ref('Overview')
+const $q = useQuasar()
+const router = useRouter()
+
+// Map view name to component
+const currentDashboardComponent = computed(() => {
+  switch (dashboardView.value) {
+    case 'PostJob':
+      return DashboardJobs
+    case 'Applications':
+      return ApplicantList
+    case 'Candidates':
+      return CompanyProfile
+    default:
+      return null
+  }
+})
 </script>
 
 <style lang="scss" scoped>
@@ -169,7 +184,7 @@
 }
 
 .action-btn {
-  border-radius: 0.375rem; /* rounded-md equivalent */
+  border-radius: 0.375rem;
   padding: 0.75rem 1.5rem;
   font-weight: 600;
   font-size: 0.875rem;
@@ -328,7 +343,6 @@
   font-size: 0.875rem;
 }
 
-// Responsive adjustments
 @media (max-width: 768px) {
   .dashboard-page {
     padding: 1rem;
