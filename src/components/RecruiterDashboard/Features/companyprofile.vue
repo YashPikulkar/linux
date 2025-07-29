@@ -2,185 +2,126 @@
   <div class="company-profile">
     <q-card class="q-pa-md">
       <q-form ref="formRef" @submit.prevent="saveProfile">
-        <!-- Title and Edit Button -->
         <q-card-section class="flex justify-between items-center">
           <div class="text-h6">Company Profile</div>
-          <div class="q-gutter-sm">
-            <q-btn
-              v-if="!isEditMode"
-              label="Edit Profile"
-              color="primary"
-              outline
-              @click="enableEditMode"
-            />
-            <q-btn
-              v-if="isEditMode"
-              label="Cancel"
-              color="grey"
-              flat
-              @click="cancelEdit"
-            />
+          <div>
+            <q-btn v-if="!isEditMode" label="Edit" color="primary" outline @click="enableEditMode" />
+            <q-btn v-if="isEditMode" label="Cancel" color="secondary" flat @click="cancelEdit" />
           </div>
         </q-card-section>
 
-        <!-- Company Logo Upload -->
-        <q-card-section class="q-gutter-md">
+        <!-- Logo -->
+        <q-card-section>
           <div class="text-subtitle1">Company Logo</div>
-          <q-img
-            :src="logoUrl || placeholder"
-            alt="Company Logo"
-            style="max-width: 150px; height: 150px;"
-            class="q-mb-sm"
-            spinner-color="primary"
-          />
+          <q-img :src="logoUrl || placeholder" style="width: 150px; height: 150px" spinner-color="primary" />
           <q-uploader
             v-if="isEditMode"
-            label="Upload Logo"
             :factory="uploadLogo"
             accept="image/*"
             auto-upload
-            style="max-width: 300px"
+            class="q-mt-sm"
             @uploaded="onUploadSuccess"
-            @failed="onUploadFailed"
           />
         </q-card-section>
 
-        <!-- Company Info -->
+        <!-- Form Fields -->
         <q-card-section>
-          <q-input
-            v-model="company.name"
-            label="Company Name"
-            filled
-            :readonly="!isEditMode"
-            :rules="[isRequired]"
-          />
-
-          <q-input
-            v-model="company.email"
-            label="Email"
-            filled
-            class="q-mt-md"
-            :readonly="!isEditMode"
-            :rules="[isRequired, isEmail]"
-          />
-
-          <q-input
-            v-model="company.phone"
-            label="Phone Number"
-            filled
-            class="q-mt-md"
-            :readonly="!isEditMode"
-            :rules="[isPhone]"
-          />
-
+          <q-input v-model="company.name" label="Company Name" filled :readonly="!isEditMode" :rules="[isRequired]" />
+          <q-input v-model="company.email" label="Email" filled :readonly="!isEditMode" :rules="[isRequired, isEmail]" class="q-mt-md" />
+          <q-input v-model="company.phone" label="Phone Number" filled :readonly="!isEditMode" :rules="[isPhone]" class="q-mt-md" />
           <q-input
             v-model="company.password"
             label="Password"
-            :type="showPassword ? 'text' : 'password'"
             filled
-            class="q-mt-md"
+            :type="showPassword ? 'text' : 'password'"
             :readonly="!isEditMode"
+            class="q-mt-md"
             :rules="[isStrongPassword]"
           >
-            <template #append>
-              <q-icon
-                v-if="isEditMode"
-                :name="showPassword ? 'visibility_off' : 'visibility'"
-                class="cursor-pointer"
-                @click="showPassword = !showPassword"
-              />
+            <template v-if="isEditMode" #append>
+              <q-icon :name="showPassword ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="showPassword = !showPassword" />
             </template>
           </q-input>
-
-          <q-input
-            v-model="company.companyType"
-            label="Company Type"
-            filled
-            class="q-mt-md"
-            :readonly="!isEditMode"
-            :rules="[isRequired]"
-          />
-
+          <q-input v-model="company.companyType" label="Company Type" filled :readonly="!isEditMode" class="q-mt-md" />
           <q-select
             v-model="company.industry"
-            label="Industry"
             :options="industryOptions"
+            label="Industry"
+            type="textarea"
             filled
-            class="q-mt-md"
             :readonly="!isEditMode"
-            :rules="[isRequired]"
+            class="q-mt-md"
           />
-
           <q-select
             v-model="company.companySize"
+            :options="sizeOptions"
             label="Company Size"
-            :options="companySizeOptions"
             filled
-            class="q-mt-md"
             :readonly="!isEditMode"
-            :rules="[isRequired]"
+            class="q-mt-md"
           />
 
-          <q-input
-            v-model="company.location"
-            label="Location"
-            filled
-            class="q-mt-md"
-            :readonly="!isEditMode"
-            :rules="[isRequired]"
-          />
+          <!-- Multiple Branch Locations -->
+          <div class="q-mt-md">
+            <label class="text-subtitle1">Branch Locations</label>
+            <div v-if="!isEditMode">
+              <ul class="q-pl-md">
+                <li v-for="(loc, index) in company.locations" :key="index">{{ loc }}</li>
+              </ul>
+            </div>
+            <div v-else>
+              <div v-for="(loc, index) in company.locations" :key="index" class="row q-mb-sm items-center">
+                <q-input
+                  v-model="company.locations[index]"
+                  filled
+                  placeholder="Enter branch location"
+                  class="col"
+                  :rules="[isRequired]"
+                />
+                <q-btn icon="delete" flat color="negative" dense class="q-ml-sm" @click="removeLocation(index)" />
+              </div>
+              <q-btn icon="add" label="Add Location" flat color="primary" @click="addLocation" />
+            </div>
+          </div>
 
           <q-input
             v-model="company.description"
+            label="Description"
             type="textarea"
-            label="Company Description"
             filled
-            class="q-mt-md"
             :readonly="!isEditMode"
+            class="q-mt-md"
             :rules="[minLength(10)]"
           />
-
           <q-input
             v-model="company.taxIdOrGst"
-            label="GST/Tax ID (Optional)"
+            label="GST / Tax ID (Optional)"
             filled
-            class="q-mt-md"
             :readonly="!isEditMode"
+            class="q-mt-md"
             :rules="[isOptionalGst]"
           />
 
-          <!-- Registration Certificate Upload -->
+          <!-- Certificate Upload -->
           <div class="q-mt-md">
-            <div class="text-subtitle1 q-mb-xs">Registration Certificate (Optional)</div>
-            <div v-if="!isEditMode && company.registrationCertificateUrl" class="q-mb-sm">
-              <q-btn
-                label="View Certificate"
-                color="primary"
-                outline
-                size="sm"
-                @click="viewCertificate"
-              />
+            <div class="text-subtitle1">Registration Certificate</div>
+            <div v-if="!isEditMode && company.registrationCertificateUrl">
+              <q-btn label="View Certificate" color="primary" flat @click="viewCertificate" />
             </div>
             <q-uploader
               v-if="isEditMode"
-              label="Upload Registration Certificate"
               :factory="uploadCertificate"
-              accept=".pdf,.jpg,.jpeg,.png"
+              accept=".pdf,.jpg,.png"
               auto-upload
               @uploaded="onCertificateUploadSuccess"
-              @failed="onCertificateUploadFailed"
+              class="q-mt-sm"
             />
           </div>
         </q-card-section>
 
-        <!-- Actions -->
+        <!-- Save -->
         <q-card-actions v-if="isEditMode" align="right">
-          <q-btn
-            type="submit"
-            label="Save Changes"
-            color="primary"
-            :loading="isSaving"
-          />
+          <q-btn type="submit" label="Save Changes" color="primary" :loading="isSaving" :disable="!hasChanges" />
         </q-card-actions>
       </q-form>
     </q-card>
@@ -188,72 +129,53 @@
 </template>
 
 <script setup>
-import { ref, reactive } from 'vue'
+import { ref, reactive, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import { useRecruiterStore } from 'src/stores/recruiterStore.js'
+import { useRecruiterStore } from 'src/stores/recruiterStore'
 
 const $q = useQuasar()
 const recruiterStore = useRecruiterStore()
 
-// Form Ref
 const formRef = ref(null)
-
-// Edit Mode State
 const isEditMode = ref(false)
 const isSaving = ref(false)
-
-// Bind reactive form to store data
-const company = reactive({ ...recruiterStore.companyProfile })
-const originalCompany = ref({}) // Store original data for cancel functionality
-
-const logoUrl = ref(company.logoUrl || '')
-const placeholder = 'https://cdn.quasar.dev/img/avatar.png'
 const showPassword = ref(false)
 
-const industryOptions = [
-  'Information Technology',
-  'Healthcare',
-  'Finance',
-  'Education',
-  'Manufacturing',
-  'Retail',
-  'Construction',
-  'Transportation',
-  'Hospitality',
-  'Real Estate',
-  'Telecommunications',
-  'Other'
-]
+const company = reactive({ ...recruiterStore.companyProfile })
+if (!Array.isArray(company.locations)) company.locations = [company.location || '']
 
-const companySizeOptions = [
-  '1-10 employees',
-  '11-50 employees',
-  '51-200 employees',
-  '201-500 employees',
-  '501-1000 employees',
-  '1001-5000 employees',
-  '5001-10,000 employees',
-  '10,000+ employees'
-]
+const originalCompany = ref(JSON.parse(JSON.stringify(company)))
+const logoUrl = ref(company.logoUrl || '')
+const placeholder = 'https://cdn.quasar.dev/img/avatar.png'
 
-// Mode Functions
+const industryOptions = ['IT', 'Finance', 'Healthcare', 'Retail', 'Other']
+const sizeOptions = ['1-10', '11-50', '51-200', '201-500', '500+']
+
+// Logic
 function enableEditMode() {
-  isEditMode.value = true
-  // Store original data for cancel functionality
   originalCompany.value = JSON.parse(JSON.stringify(company))
+  isEditMode.value = true
 }
-
 function cancelEdit() {
-  // Restore original data
   Object.assign(company, originalCompany.value)
   logoUrl.value = company.logoUrl || ''
   isEditMode.value = false
-  showPassword.value = false
+}
+function addLocation() {
+  company.locations.push('')
+}
+function removeLocation(index) {
+  company.locations.splice(index, 1)
+}
+function viewCertificate() {
+  if (company.registrationCertificateUrl) window.open(company.registrationCertificateUrl, '_blank')
 }
 
-// File Upload (Logo)
+const hasChanges = computed(() => JSON.stringify(company) !== JSON.stringify(originalCompany.value))
+
+// Uploads
 function uploadLogo(files) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const reader = new FileReader()
     reader.onload = () => {
       logoUrl.value = reader.result
@@ -263,10 +185,8 @@ function uploadLogo(files) {
     reader.readAsDataURL(files[0])
   })
 }
-
-// File Upload (Certificate)
 function uploadCertificate(files) {
-  return new Promise((resolve) => {
+  return new Promise(resolve => {
     const reader = new FileReader()
     reader.onload = () => {
       company.registrationCertificateUrl = reader.result
@@ -275,39 +195,14 @@ function uploadCertificate(files) {
     reader.readAsDataURL(files[0])
   })
 }
-
-// Certificate Viewer
-function viewCertificate() {
-  if (company.registrationCertificateUrl) {
-    window.open(company.registrationCertificateUrl, '_blank')
-  }
-}
-
-// Upload Callbacks
 function onUploadSuccess() {
-  $q.notify({ type: 'positive', message: 'Logo uploaded successfully!' })
-}
-function onUploadFailed() {
-  $q.notify({ type: 'negative', message: 'Failed to upload logo.' })
+  $q.notify({ type: 'positive', message: 'Logo uploaded.' })
 }
 function onCertificateUploadSuccess() {
-  $q.notify({ type: 'positive', message: 'Certificate uploaded successfully!' })
-}
-function onCertificateUploadFailed() {
-  $q.notify({ type: 'negative', message: 'Failed to upload certificate.' })
+  $q.notify({ type: 'positive', message: 'Certificate uploaded.' })
 }
 
-// Validation Rules
-const isRequired = val => !!val || 'This field is required'
-const isEmail = val => !val || /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || 'Invalid email'
-const isPhone = val => !val || /^\d{10}$/.test(val) || 'Enter 10-digit number'
-const isStrongPassword = val =>
-  !val || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&]).{8,}$/.test(val) ||
-  'Must include uppercase, lowercase, number, and special character'
-const minLength = n => val => !val || val.length >= n || `Minimum ${n} characters`
-const isOptionalGst = val => !val || /^[A-Z0-9\-]{5,20}$/i.test(val) || 'Invalid GST or Tax ID'
-
-// Submit Function
+// Save
 async function saveProfile() {
   const isValid = await formRef.value.validate()
   if (!isValid) {
@@ -315,32 +210,49 @@ async function saveProfile() {
     return
   }
 
-  isSaving.value = true
+  // Show confirmation dialog
+  $q.dialog({
+    title: 'Confirm Submission',
+    message: 'Do you want to submit the updated profile?',
+    ok: { label: 'Yes', color: 'primary' },
+    cancel: { label: 'No', color: 'grey' }
+  }).onOk(async () => {
+    isSaving.value = true
+    try {
+      recruiterStore.setCompanyProfile({ ...company })
 
-  try {
-    // Update store
-    recruiterStore.setCompanyProfile({ ...company })
+      await $q.dialog({
+        title: 'Profile Updated',
+        message: 'Your company profile has been updated successfully.',
+        ok: { label: 'OK', color: 'primary' }
+      })
 
-    $q.notify({
-      type: 'positive',
-      message: 'Company profile updated successfully!'
-    })
-
-    // Exit edit mode
-    isEditMode.value = false
-    showPassword.value = false
-
-    // Add real API call here if needed
-  } catch (error) {
-    $q.notify({
-      type: 'negative',
-      message: 'Failed to update profile. Please try again.'
-    })
-  } finally {
-    isSaving.value = false
-  }
+      originalCompany.value = JSON.parse(JSON.stringify(company))
+      isEditMode.value = false
+      showPassword.value = false
+    } catch (error) {
+      $q.notify({
+        type: 'negative',
+        message: 'Failed to update profile. Please try again.'
+      })
+    } finally {
+      isSaving.value = false
+    }
+  })
 }
+
+// Validation Rules
+const isRequired = val => !!val || 'Required'
+const isEmail = val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || 'Invalid email'
+const isPhone = val => /^\d{10}$/.test(val) || 'Enter 10-digit number'
+const isStrongPassword = val =>
+  !val || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&]).{8,}$/.test(val) ||
+  'Must include upper, lower, number, special char'
+const minLength = n => val => !val || val.length >= n || `Min ${n} characters`
+const isOptionalGst = val => !val || /^[A-Z0-9\-]{5,20}$/i.test(val) || 'Invalid GST/Tax ID'
 </script>
+
+
 
 <style scoped>
 .company-profile {

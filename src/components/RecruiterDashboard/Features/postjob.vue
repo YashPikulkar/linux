@@ -20,7 +20,6 @@
           <q-select v-model="form.experienceRequired" :options="experienceOptions" label="Experience Required" filled :rules="[isRequired]" />
           <q-input v-model="form.salary" label="Salary (e.g. ₹5L or ₹800000)" filled :rules="[isRequired, isSalaryValid]" />
 
-          <!-- Location dropdown -->
           <q-select
             v-model="form.location"
             :options="locationOptions"
@@ -132,6 +131,7 @@ onMounted(() => {
 
 async function previewJob() {
   const isValid = await formRef.value.validate()
+  console.log('Preview triggered, valid:', isValid)
   if (!isValid) {
     $q.notify({ type: 'negative', message: 'Please correct the errors in the form.' })
     return
@@ -148,13 +148,21 @@ function submitJob() {
     recruiterName: recruiterProfile.value.name
   }
 
+  console.log('Submitting job:', newJob)
+
   jobsStore.postJob(newJob)
 
-  $q.notify({
+  $q.dialog({
+    title: 'Success',
+    message: 'Job posted successfully!',
+    ok: { label: 'OK', color: 'primary' }
+  })
+
+  /*$q.notify({
     type: 'positive',
     message: 'Job posted successfully!',
     actions: [{ label: 'View Job', color: 'white', handler: () => {} }]
-  })
+  })*/
 
   resetForm()
   isPreviewing.value = false
