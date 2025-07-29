@@ -1,5 +1,6 @@
 // src/stores/UserStore.js
 import { defineStore } from "pinia";
+import { computed } from "vue";
 
 export const useUserStore = defineStore("user", {
   state: () => ({
@@ -7,8 +8,9 @@ export const useUserStore = defineStore("user", {
       fullName: "Yash Pikulkar",
       phone: "+91 98765 43210",
       email: "yash@example.com",
-      role: "Candidate",
-      avatar: "https://www.svgrepo.com/show/384674/account-avatar-profile-user-11.svg",
+      role: "Candidate", // 👈 Using 'Candidate' here
+      avatar:
+        "https://www.svgrepo.com/show/384674/account-avatar-profile-user-11.svg",
     },
 
     education: {
@@ -36,12 +38,23 @@ export const useUserStore = defineStore("user", {
       portfolio: "https://yourportfolio.com",
     },
 
-    // ✅ Add this
     skills: ["React", "JavaScript", "Figma", "Teamwork", "Communication"],
 
     loading: false,
     error: null,
   }),
+
+  getters: {
+    // ✅ Normalize role for use in UI logic
+    userRole: (state) => {
+      const rawRole = state.register.role?.toLowerCase()
+      if (rawRole === "candidate") return "user"
+      if (["recruiter", "admin"].includes(rawRole)) return rawRole
+      return "user" // fallback
+    },
+
+    userName: (state) => state.register.fullName || "User",
+  },
 
   actions: {
     async fetchUser() {
@@ -67,7 +80,6 @@ export const useUserStore = defineStore("user", {
       this.additional = { ...updatedAdditional };
     },
 
-    // ✅ Add this
     updateSkills(updatedSkills) {
       this.skills = [...updatedSkills];
     },
