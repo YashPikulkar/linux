@@ -9,23 +9,34 @@ export default [
       },
       {
         path: "jobs",
-        component: () => import("src/pages/JobDashboard.vue"), // 👈 new route
+        component: () => import("src/pages/JobDashboard.vue"),
       },
-
       {
         path: "register",
-        component: () => import("src/pages/RegisterForm.vue"), // 👈 new route
+        component: () => import("src/pages/RegisterForm.vue"),
       },
       {
-        path: "/userdashboard",
-        component: () => import("src/pages/UserDashboard.vue"),
+        path: '/userdashboard',
+        component: () => import('pages/UserDashboard.vue'),
+        children: [
+          {
+            path: "",
+            component: () => import("src/components/UserDashboard/RecommJobs.vue/Jobs.vue"),
+          },
+          {
+            path: 'profile',
+            component: () => import("src/components/UserDashboard/Profile/Profile.vue"),
+          },
+          // You can add more here later like:
+          // { path: 'settings', component: () => import('pages/UserSettings.vue') }
+        ],
       },
       {
-        path: "/recruiterdashboard",
+        path: "recruiterdashboard",
         component: () => import("src/pages/RecruiterDashboard.vue"),
       },
       {
-        path: "/login",
+        path: "login",
         component: () => import("src/pages/login.vue"),
       },
     ],

@@ -1,46 +1,38 @@
 <template>
   <div class="user-panel row no-wrap items-center">
-    <!-- Avatar with Upload Trigger -->
-    <q-avatar size="74px" class="avatar-box q-mr-md clickable" @click="triggerUpload">
-      <img :src="avatarPreview || avatar" alt="User Avatar" width="100" />
-    </q-avatar>
-    <input type="file" ref="fileInput" @change="handleFileChange" accept="image/*" style="display: none" />
+    <!-- Stat Cards Row (Full Width) -->
+    <div class="row q-gutter-md stats-wrapper" style="flex: 1">
+      <div class="q-col" style="flex: 1">
+        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+          <div class="text-caption text-grey">Jobs Applied</div>
+          <div class="text-h6 text-weight-bold">24</div>
+        </q-card>
+      </div>
 
-    <!-- Main Info -->
-    <div class="main-info column justify-center">
-      <div class="user-name">{{ fullName }}</div>
-      <div class="user-skills-placeholder">Add your skills here (e.g. Vue, Node.js, Design)</div>
-    </div>
+      <div class="q-col" style="flex: 1">
+        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+          <div class="text-caption text-grey">Accepted</div>
+          <div class="text-h6 text-weight-bold">5</div>
+        </q-card>
+      </div>
 
-    <!-- Spacer -->
-    <q-space />
+      <div class="q-col" style="flex: 1">
+        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+          <div class="text-caption text-grey">Rejected</div>
+          <div class="text-h6 text-weight-bold">12</div>
+        </q-card>
+      </div>
 
-    <!-- Detail Fields & Vertical Separator -->
-    <div class="detail-info row no-wrap items-center">
-      <!-- Info Column -->
-      <div class="info-col row q-pr-xl">
-  <div class="info-block q-mr-xl">
-    <div class="label">Phone Number:</div>
-    <div class="value strong">{{ phone }}</div>
-  </div>
-  <div class="info-block q-mr-xl">
-    <div class="label">Email:</div>
-    <div class="value email">{{ email }}</div>
-  </div>
-  <div class="info-block">
-    <div class="label">Role:</div>
-    <div class="value">{{ role }}</div>
-  </div>
-</div>
-
-      <!-- Vertical Separator -->
-      <div class="vertical-separator q-mx-md"></div>
-
-      <!-- Premium Button -->
-      <q-btn label="Premium" class="premium-btn" unelevated flat rounded />
+      <div class="q-col" style="flex: 1">
+        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+          <div class="text-caption text-grey">In Review</div>
+          <div class="text-h6 text-weight-bold">7</div>
+        </q-card>
+      </div>
     </div>
   </div>
 </template>
+
 
 <script setup>
 import { ref } from 'vue'
@@ -79,7 +71,7 @@ function handleFileChange(event) {
   align-items: center;
   transition: box-shadow 0.3s ease;
 
-  background: rgba(255, 255, 255, 0.1); /* semi-transparent */
+  background: #94a3b8;
   backdrop-filter: blur(10px);         /* frosted glass effect */
   box-shadow: none;
   border: 1px solid rgba(255, 255, 255, 0.2); /* subtle border */
@@ -114,7 +106,7 @@ function handleFileChange(event) {
 .user-skills-placeholder {
   font-size: 13px;
   font-style: italic;
-  color: #94a3b8;
+  color:#94a3b8;
   margin-top: 4px;
 }
 
