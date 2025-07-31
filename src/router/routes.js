@@ -16,24 +16,41 @@ export default [
         component: () => import("src/pages/RegisterForm.vue"),
       },
       {
-        path: '/userdashboard',
-        component: () => import('pages/UserDashboard.vue'),
+        path: "userdashboard",
+        component: () => import("pages/UserDashboard.vue"),
         children: [
           {
             path: "",
-            component: () => import("src/components/UserDashboard/RecommJobs.vue/Jobs.vue"),
+            component: () =>
+              import("src/components/UserDashboard/RecommJobs.vue/Jobs.vue"),
           },
           {
-            path: 'profile',
-            component: () => import("src/components/UserDashboard/Profile/Profile.vue"),
+            path: "profile",
+            component: () =>
+              import("src/components/UserDashboard/Profile/Profile.vue"),
           },
-          // You can add more here later like:
-          // { path: 'settings', component: () => import('pages/UserSettings.vue') }
         ],
       },
       {
         path: "recruiterdashboard",
         component: () => import("src/pages/RecruiterDashboard.vue"),
+        children: [
+          {
+            path: "",
+            component: () =>
+              import("src/components/RecruiterDashboard/Profile.vue"),
+          },
+          {
+            path: "profile", // 👈 renamed to lowercase
+            component: () =>
+              import("src/components/RecruiterDashboard/Profile.vue"),
+          },
+          {
+            path: "feature2",
+            component: () =>
+              import("src/components/RecruiterDashboard/Feature1/Feature1.vue")
+          },
+        ],
       },
       {
         path: "login",

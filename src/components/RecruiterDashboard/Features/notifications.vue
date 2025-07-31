@@ -1,113 +1,90 @@
 <template>
-  <div class="dashboard-notifications">
-    <h2>Recruiter Notifications</h2>
+  <div class="form-wrapper">
+    <q-card class="post-job-card">
+      <div class="form-header">Notifications</div>
 
-    <q-card
-      v-for="(notification, index) in notifications"
-      :key="index"
-      class="q-mb-md"
-    >
-      <q-card-section>
-        <div class="text-h6">{{ notification.title }}</div>
-        <div class="text-subtitle2">{{ notification.timestamp }}</div>
-        <div class="q-mt-sm">{{ notification.message }}</div>
-      </q-card-section>
+      <div class="notification-list">
+        <div
+          class="notification-item"
+          v-for="(notification, index) in notifications"
+          :key="index"
+        >
+          <q-icon :name="notification.icon" color="primary" class="q-mr-sm" />
+          <div class="notification-text">{{ notification.text }}</div>
+          <div class="timestamp">{{ notification.time }}</div>
+        </div>
+      </div>
     </q-card>
-
-    <div v-if="notifications.length === 0" class="text-grey text-center q-mt-md">
-      No new notifications at the moment.
-    </div>
   </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
-import { useRecruiterNotificationStore } from 'src/stores/RecruiterNotificationStore'
+import { ref } from 'vue'
 
-const recruiterNotificationStore = useRecruiterNotificationStore()
-
-const notifications = computed(() => {
-  return  recruiterNotificationStore.notifications
-})
+const notifications = ref([
+  { icon: 'notifications', text: 'New applicant for Frontend Developer role', time: 'Just now' },
+  { icon: 'event', text: 'Interview scheduled with Jane Doe', time: '3 hours ago' },
+  { icon: 'done', text: 'Job listing approved by admin', time: 'Yesterday' },
+  { icon: 'info', text: 'System maintenance scheduled for Sunday', time: '2 days ago' }
+])
 </script>
 
-
-
-<style scoped lang="scss">
-.dashboard-notifications {
-  padding: 24px;
-}
-
-h2 {
-  font-size: 1.5rem;
-  font-weight: 700;
-  margin-bottom: 1.5rem;
-  color: #1e293b;
-}
-
-.q-card {
-  border-radius: 12px;
-  box-shadow:
-    0 4px 8px rgba(0, 0, 0, 0.05),
-    0 8px 16px rgba(0, 0, 0, 0.04);
-  transition: transform 0.2s ease;
-  background-color: #ffffff;
-
-  &:hover {
-    transform: translateY(-2px);
-    box-shadow:
-      0 6px 12px rgba(0, 0, 0, 0.08),
-      0 10px 20px rgba(0, 0, 0, 0.05);
-  }
-}
-
-.q-card-section {
+<style scoped>
+.form-wrapper {
+  flex: 1;
+  overflow-y: auto;
   padding: 16px;
+  box-sizing: border-box;
+  min-height: 0;
 }
 
-.text-h6 {
-  font-size: 1.125rem;
-  font-weight: 600;
-  color: #111827;
+.post-job-card {
+  width: 100%;
+  padding: 24px;
+  background-color: white;
+  border-radius: 16px;
+  box-shadow:
+    0 4px 8px rgba(255, 255, 255, 0.4),
+    0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 3px rgba(255, 255, 255, 0.6);
+  display: flex;
+  flex-direction: column;
+  gap: 24px;
+  box-sizing: border-box;
 }
 
-.text-subtitle2 {
-  font-size: 0.875rem;
-  color: #6b7280;
-  margin-top: 4px;
+.form-header {
+  font-weight: bold;
+  font-size: 20px;
+  color: #333;
+  margin-bottom: -12px;
 }
 
-.q-mt-sm {
-  margin-top: 12px;
-  font-size: 1rem;
-  color: #374151;
+.notification-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.text-grey {
-  color: #9ca3af;
+.notification-item {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  background-color: #f9f9f9;
+  padding: 12px 16px;
+  border-radius: 12px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
 }
 
-.text-center {
-  text-align: center;
+.notification-text {
+  flex: 1;
+  font-size: 15px;
+  color: #555;
 }
 
-.q-mt-md {
-  margin-top: 24px;
-}
-
-/* Responsive spacing for mobile */
-@media (max-width: 768px) {
-  .dashboard-notifications {
-    padding: 16px;
-  }
-
-  .q-card-section {
-    padding: 12px;
-  }
-
-  h2 {
-    font-size: 1.25rem;
-    margin-bottom: 1rem;
-  }
+.timestamp {
+  font-size: 13px;
+  color: #999;
+  margin-left: 16px;
 }
 </style>

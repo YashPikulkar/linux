@@ -1,22 +1,20 @@
 <template>
-  <div class="user-navbar q-py-xs q-px-md row no-wrap items-center">
+  <div class="user-navbar row no-wrap items-center">
     <q-tabs
       :model-value="tab"
       @update:model-value="$emit('update:tab', $event)"
       dense
       align="left"
       class="user-tabs"
-      indicator-color="primary"
-      active-color="primary"
       shrink
+      indicator-color="transparent"
     >
       <q-tab
         v-for="item in tabs"
         :key="item"
         :name="item"
         :label="item"
-        :class="tabClass(item)"
-        class="user-tab q-px-md"
+        :class="['user-tab', tabClass(item)]"
         no-caps
       />
     </q-tabs>
@@ -25,7 +23,7 @@
 
 <script>
 export default {
-  name: "RecNavbar",
+  name: "RecruiterNavbar",
   props: {
     tab: {
       type: String,
@@ -51,6 +49,7 @@ export default {
   },
 };
 </script>
+
 <style scoped>
 .user-tab {
   border-radius: 999px;

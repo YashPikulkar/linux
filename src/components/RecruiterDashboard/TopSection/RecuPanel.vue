@@ -1,74 +1,54 @@
 <template>
-  <div class="recruiter-profile row no-wrap items-center">
-    <!-- 👤 Recruiter Avatar -->
-    <q-avatar size="74px" class="avatar-box q-mr-md">
-      <img :src="avatar" alt="Recruiter Avatar" width="100" />
-    </q-avatar>
-
-    <!-- 👋 Welcome & Name -->
-    <div class="main-info column justify-center">
-      <div class="welcome-msg">Welcome back,</div>
-      <div class="recruiter-name">{{ fullName }}</div>
-      <div class="recruiter-role">{{ role }}</div>
-    </div>
-
-    <!-- Spacer -->
-    <q-space />
-
-    <!-- 📞 Recruiter Contact Info -->
-    <div class="detail-info row no-wrap items-center">
-      <div class="info-col row q-pr-xl">
-        <div class="info-block q-mr-xl">
-          <div class="label">Phone</div>
-          <div class="value strong">{{ phone }}</div>
-        </div>
-        <div class="info-block q-mr-xl">
-          <div class="label">Email</div>
-          <div class="value email">{{ email }}</div>
-        </div>
+  <div class="user-panel row no-wrap items-center">
+    <!-- Stat Cards Row (Full Width) -->
+    <div class="row q-gutter-md stats-wrapper" style="flex: 1">
+      <div
+        class="q-col"
+        v-for="(card, index) in statCards"
+        :key="index"
+        style="flex: 1"
+      >
+        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+          <div class="text-caption text-grey">{{ card.label }}</div>
+          <div class="text-h6 text-weight-bold">{{ card.value }}</div>
+        </q-card>
       </div>
-
-      <!-- Vertical Line -->
-      <div class="vertical-separator q-mx-md" />
-
     </div>
   </div>
 </template>
 
-
 <script setup>
-import { useUserStore } from "src/stores/UserStore";
-
-// Access recruiter data from store
-const userStore = useUserStore();
-const { fullName, phone, email, role, avatar } = userStore.register;
+const statCards = [
+  { label: 'Total Jobs', value: 12 },
+  { label: 'Active', value: 4 },
+  { label: 'Closed', value: 6 },
+  { label: 'Drafts', value: 2 },
+]
 </script>
 
 <style scoped>
-.recruiter-profile {
+.user-panel {
   width: 100%;
   border-radius: 16px;
   min-height: 94px;
   padding: 16px 24px;
   font-size: 15px;
-  display: flex;
   align-items: center;
   transition: box-shadow 0.3s ease;
 
-  background: rgba(255, 255, 255, 0.1); /* semi-transparent */
-  backdrop-filter: blur(10px);         /* frosted glass effect */
+  background: #94a3b8;
+  backdrop-filter: blur(10px);
   box-shadow: none;
-  border: 1px solid rgba(255, 255, 255, 0.2); /* subtle border */
+  border: 1px solid rgba(255, 255, 255, 0.2);
 }
 
-.recruiter-profile:hover {
+.user-panel:hover {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16), 0 6px 12px rgba(0, 0, 0, 0.08);
 }
 
 .avatar-box {
   border-radius: 50%;
   box-shadow: 0 3px 8px rgba(0, 0, 0, 0.12);
-  flex-shrink: 0;
 }
 
 .avatar-box.clickable {
@@ -81,33 +61,20 @@ const { fullName, phone, email, role, avatar } = userStore.register;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
 
-.main-info {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  min-width: 200px;
-  margin-right: 24px;
-}
-
-.main-info .welcome-msg {
-  font-size: 14px;
-  color: #64748b;
-}
-
-.recruiter-name {
+.main-info .user-name {
   font-size: 22px;
   font-weight: 700;
-  color: #1e293b;
+  color: #1f2937;
 }
 
-.recruiter-role {
-  font-size: 14px;
-  color: #4b5563;
-  margin-top: 2px;
+.user-skills-placeholder {
+  font-size: 13px;
+  font-style: italic;
+  color:#94a3b8;
+  margin-top: 4px;
 }
 
 .detail-info {
-  display: flex;
   font-size: 15px;
   color: #2d3748;
   align-items: center;
@@ -131,24 +98,18 @@ const { fullName, phone, email, role, avatar } = userStore.register;
 
 .value {
   font-size: 15px;
-  color: #1f2937;
+  color: #232c47;
   margin-top: 2px;
 }
 
 .value.strong {
   font-weight: 600;
-  color: #111827;
+  color: #242d53;
 }
 
 .value.email {
-  color: #3b82f6;
+  color: #2382fa;
   word-break: break-word;
-}
-
-.vertical-separator {
-  height: 48px;
-  width: 1px;
-  background-color: #e0e0e0;
 }
 
 .premium-btn {
@@ -166,9 +127,14 @@ const { fullName, phone, email, role, avatar } = userStore.register;
   transform: scale(1.05);
 }
 
-/* 📱 Responsive Design */
+.vertical-separator {
+  height: 48px;
+  width: 1px;
+  background-color: #e0e0e0;
+}
+
 @media (max-width: 900px) {
-  .recruiter-profile {
+  .user-panel {
     flex-direction: column;
     align-items: flex-start;
     padding: 12px;

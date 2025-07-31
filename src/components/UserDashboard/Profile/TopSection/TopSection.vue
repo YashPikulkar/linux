@@ -8,17 +8,19 @@
     />
     <UserPanel class="block-section" />
   </div>
+
 </template>
 
 <script>
 import UserNavbar from "./UserNavbar.vue";
+
 import UserPanel from "./UserPanel.vue";
 
 export default {
   name: "TopSection",
   components: {
-    UserNavbar,
-    UserPanel,
+   UserPanel,
+    UserNavbar
   },
   props: {
     tab: {
@@ -40,6 +42,5 @@ export default {
   background: white;
   padding: 16px;
   border-radius: 12px;
-  
 }
 </style>
