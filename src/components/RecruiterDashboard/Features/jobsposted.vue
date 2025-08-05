@@ -7,12 +7,19 @@
 
       <q-separator />
 
-      <q-card-section v-if="userJobs.length">
+      <!-- Loading State -->
+      <q-card-section v-if="loading" class="text-center">
+        <q-spinner-dots size="40px" color="primary" />
+        <div class="q-mt-sm">Loading your jobs...</div>
+      </q-card-section>
+
+      <!-- Jobs List -->
+      <q-card-section v-else-if="userJobs.length">
         <q-list bordered separator>
-          <q-item v-for="job in userJobs" :key="job.id" class="column q-py-md">
+          <q-item v-for="job in userJobs" :key="job.jobid" class="column q-py-md">
             <q-item-section class="q-mb-sm">
               <q-item-label><strong>{{ job.title }}</strong> at {{ job.company }}</q-item-label>
-              <q-item-label caption>{{ job.location }} | {{ job.jobType }} | Posted: {{ job.postedAt }}</q-item-label>
+              <q-item-label caption>{{ job.location }} | {{ job.jobtype }} | Posted: {{ formatDate(job.created_at) }}</q-item-label>
             </q-item-section>
 
             <q-item-section>
@@ -31,20 +38,45 @@
             </q-item-section>
 
             <q-item-section side class="q-mt-sm">
-              <q-btn
-                label="View Applications"
-                color="primary"
-                size="sm"
-                @click="openDialog(job)"
-                :disable="!job.applicants?.length"
-              />
+              <div class="q-gutter-sm">
+                <q-btn
+                  label="View Applications"
+                  color="primary"
+                  size="sm"
+                  @click="openDialog(job)"
+                  :disable="!job.applicants?.length"
+                />
+                <q-btn
+                  label="Edit Job"
+                  color="secondary"
+                  size="sm"
+                  outline
+                  @click="editJob(job)"
+                />
+                <q-btn
+                  label="Delete"
+                  color="negative"
+                  size="sm"
+                  outline
+                  @click="confirmDeleteJob(job)"
+                />
+              </div>
             </q-item-section>
           </q-item>
         </q-list>
       </q-card-section>
 
-      <q-card-section v-else class="text-grey text-center">
-        You haven't posted any jobs yet.
+      <!-- Empty State -->
+      <q-card-section v-else class="text-grey text-center q-py-xl">
+        <q-icon name="work_off" size="64px" class="q-mb-md" />
+        <div class="text-h6 q-mb-sm">No Jobs Posted Yet</div>
+        <div class="text-body2">Start by posting your first job to attract candidates</div>
+        <q-btn 
+          label="Post a Job" 
+          color="primary" 
+          class="q-mt-md"
+          @click="$router.push('/post-job')"
+        />
       </q-card-section>
     </q-card>
 
@@ -196,35 +228,58 @@
         </q-card-section>
       </q-card>
     </q-dialog>
+
+    <!-- Delete Confirmation Dialog -->
+    <q-dialog v-model="deleteDialog" persistent>
+      <q-card>
+        <q-card-section class="row items-center">
+          <q-avatar icon="warning" color="negative" text-color="white" />
+          <span class="q-ml-sm">Are you sure you want to delete this job posting?</span>
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="primary" v-close-popup />
+          <q-btn flat label="Delete" color="negative" @click="deleteJob" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 import { useQuasar } from 'quasar'
-import { useJobsStore } from 'src/stores/appStore'
-import { useRecruiterStore } from 'src/stores/recruiterStore'
+import { useRouter } from 'vue-router'
+import { useJobsStore } from 'src/stores/jobStore'
+import { useUserStore } from 'src/stores/user-store'
 
 const $q = useQuasar()
-const appStore = useJobsStore()
-const recruiterStore = useRecruiterStore()
+const router = useRouter()
+const jobsStore = useJobsStore()
+const userStore = useUserStore()
 
-const recruiterEmail = computed(() => recruiterStore.companyProfile.email)
-const userJobs = computed(() =>
-  appStore.jobs.filter(job => job?.company === recruiterStore.companyProfile.name)
-)
-
+// Reactive data
+const loading = ref(false)
 const dialogVisible = ref(false)
+const deleteDialog = ref(false)
 const selectedJob = ref(null)
+const jobToDelete = ref(null)
 const viewMode = ref('list')
 const sendEmails = ref(true)
 
+// Computed properties
+const userJobs = computed(() => {
+  return jobsStore.recruiterJobs || []
+})
+
+// Status colors
 const statusColors = {
   pending: 'grey',
   accepted: 'green',
   rejected: 'red'
 }
 
+// Table columns
 const columns = [
   { name: 'avatar', label: '', align: 'center', style: 'width: 50px' },
   { name: 'name', label: 'Candidate', align: 'left', field: 'name' },
@@ -234,9 +289,45 @@ const columns = [
   { name: 'actions', label: 'Actions', align: 'center' }
 ]
 
-const openDialog = job => {
+// Methods
+const loadJobs = async () => {
+  loading.value = true
+  try {
+    await jobsStore.fetchJobByRecruiter() // Using the correct method name from your store
+    console.log('Jobs loaded:', jobsStore.recruiterJobs)
+  } catch (error) {
+    console.error('Error loading jobs:', error)
+    notify('Failed to load jobs', 'negative')
+  } finally {
+    loading.value = false
+  }
+}
+
+const openDialog = (job) => {
   selectedJob.value = job
   dialogVisible.value = true
+}
+
+const editJob = (job) => {
+  // Navigate to edit job page with job ID
+  router.push(`/edit-job/${job.jobid}`)
+}
+
+const confirmDeleteJob = (job) => {
+  jobToDelete.value = job
+  deleteDialog.value = true
+}
+
+const deleteJob = async () => {
+  try {
+    await jobsStore.deleteJob(jobToDelete.value.jobid)
+    notify('Job deleted successfully', 'positive')
+    deleteDialog.value = false
+    jobToDelete.value = null
+  } catch (error) {
+    console.error('Error deleting job:', error)
+    notify('Failed to delete job', 'negative')
+  }
 }
 
 const updateStatus = async (applicant, newStatus) => {
@@ -245,10 +336,6 @@ const updateStatus = async (applicant, newStatus) => {
   notify(`${applicant.name} marked as ${newStatus}`, statusColors[newStatus])
 
   if (sendEmails.value) await sendEmailNotification(applicant, newStatus)
-}
-
-const notify = (msg, color = 'primary') => {
-  $q.notify({ message: msg, color })
 }
 
 const sendEmailNotification = async (applicant, newStatus) => {
@@ -265,16 +352,28 @@ const sendEmailNotification = async (applicant, newStatus) => {
     notify(`Email sent to ${applicant.name}`, 'positive')
   } catch (error) {
     notify('Failed to send email', 'negative')
+    console.error('Email error:', error)
   }
 }
 
-const viewResume = url => {
+const viewResume = (url) => {
   if (!url) return notify('No resume found', 'negative')
   window.open(url, '_blank')
 }
 
+const viewApplicantDetails = (applicant) => {
+  notify(`Viewing profile of ${applicant.name}`, 'info')
+  // You can navigate to applicant details page here
+  // router.push(`/applicant/${applicant.id}`)
+}
+
 const exportApplicants = () => {
   const applicants = selectedJob.value?.applicants || []
+  if (!applicants.length) {
+    notify('No applicants to export', 'warning')
+    return
+  }
+
   const csvContent = [
     ['Name', 'Email', 'Status', 'Phone'].join(','),
     ...applicants.map(app => [app.name, app.email, app.status, app.phone || ''].join(','))
@@ -286,21 +385,54 @@ const exportApplicants = () => {
   a.href = url
   a.download = `${selectedJob.value.title}_applicants.csv`
   a.click()
+  window.URL.revokeObjectURL(url)
+  notify('Applicants list exported', 'positive')
 }
 
-const getStatusCount = status => selectedJob.value?.applicants?.filter(app => app.status === status).length || 0
-
-const viewApplicantDetails = applicant => {
-  notify(`Viewing profile of ${applicant.name}`, 'info')
+const getStatusCount = (status) => {
+  return selectedJob.value?.applicants?.filter(app => app.status === status).length || 0
 }
+
+const formatDate = (dateString) => {
+  if (!dateString) return 'N/A'
+  try {
+    return new Date(dateString).toLocaleDateString()
+  } catch {
+    return dateString
+  }
+}
+
+const notify = (msg, color = 'primary') => {
+  $q.notify({ message: msg, color })
+}
+
+// Lifecycle
+onMounted(() => {
+  loadJobs()
+})
 </script>
 
 <style scoped>
 .applicants-section {
   width: 100%;
 }
+
 .applicant-card {
   border-radius: 16px;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+
+.applicant-card:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+}
+
+.q-item {
+  border-radius: 8px;
+}
+
+.q-item:hover {
+  background-color: rgba(0, 0, 0, 0.02);
 }
 </style>

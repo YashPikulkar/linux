@@ -45,35 +45,48 @@
     </q-card>
   </template>
   
-  <script setup>
-  import { ref } from 'vue'
-  
-  // Static data (replace with props or API data if needed)
-  const fullName = ref('John Recruiter')
-  const email = ref('john.recruiter@example.com')
-  const phone = ref('+91 98765 43210')
-  const companyName = ref('TechCorp Solutions')
-  const avatar = ref('')
-  
-  // Avatar preview
-  const avatarPreview = ref(null)
-  const fileInput = ref(null)
-  
-  function triggerUpload() {
-    fileInput.value.click()
-  }
-  
-  function handleFileChange(event) {
-    const file = event.target.files[0]
-    if (file && file.type.startsWith('image/')) {
-      const reader = new FileReader()
-      reader.onload = () => {
-        avatarPreview.value = reader.result
-      }
-      reader.readAsDataURL(file)
+ <script setup>
+import { ref, computed, onMounted } from 'vue'
+import { useUserStore } from 'src/stores/user-store'
+
+const userStore = useUserStore()
+
+const avatarPreview = ref(null)
+const fileInput = ref(null)
+
+// Bind user info from Pinia store dynamically
+const fullName = computed(() => userStore.user?.name || 'Recruiter Name')
+const email = computed(() => userStore.user?.email || 'Email not available')
+const phone = computed(() => userStore.user?.phone || 'Phone not available')
+const companyName = computed(() => userStore.user?.company?.companyName || 'Company Name')
+
+const avatar = computed(() => userStore.user?.avatar || '')
+
+// Avatar Upload Logic
+function triggerUpload() {
+  fileInput.value?.click()
+}
+
+function handleFileChange(event) {
+  const file = event.target.files[0]
+  if (file && file.type.startsWith('image/')) {
+    const reader = new FileReader()
+    reader.onload = () => {
+      avatarPreview.value = reader.result
+      // Optional: Upload avatar to server & update store
     }
+    reader.readAsDataURL(file)
   }
-  </script>
+}
+
+// Optional: Fetch user from token if not already present
+onMounted(() => {
+  if (!userStore.user) {
+    userStore.fetchUserFromToken?.()
+  }
+})
+</script>
+
   
   <style scoped>
   .sidebar-card {

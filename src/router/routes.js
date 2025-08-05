@@ -15,11 +15,11 @@ export default [
 
       {
         path: "register",
-        component: () => import("src/pages/RegisterForm.vue"),
+        component: () => import("src/components/Register/RegisterForm.vue"),
       },
       {
         path: "login",
-        component: () => import("src/pages/login.vue"),
+        component: () => import("src/pages/LoginPage.vue"),
       },
       {
         path: "userdashboard",
@@ -38,7 +38,7 @@ export default [
         ],
       },
       {
-        path: "recruiterdashboard",
+        path: "recruiter",
         component: () => import("src/pages/RecruiterDashboard.vue"),
         children: [
           {
