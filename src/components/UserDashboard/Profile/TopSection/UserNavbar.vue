@@ -36,7 +36,7 @@ export default {
       tabs: [
         "Details",
         "Application Status",
-        "Resumes & Links",
+        "Resume",
         "Recommended Jobs",
         "Special Feature ",
       ],

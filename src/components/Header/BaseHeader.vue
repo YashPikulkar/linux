@@ -1,5 +1,8 @@
 <template>
-  <div v-if="!isAuthPage" class="header row items-center justify-between q-px-md">
+  <div
+    v-if="!isAuthPage"
+    class="header row items-center justify-between q-px-md"
+  >
     <div class="logo text-h6">Job Portal</div>
 
     <div class="row items-center q-gutter-sm">
@@ -14,10 +17,18 @@
           </q-avatar>
           <q-menu anchor="bottom right" self="top right">
             <q-list style="min-width: 150px">
-              <q-item clickable v-close-popup @click="router.push('/userdashboard/profile')">
+              <q-item
+                clickable
+                v-close-popup
+                @click="router.push('/userdashboard/profile')"
+              >
                 <q-item-section>Profile</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="router.push('/userdashboard')">
+              <q-item
+                clickable
+                v-close-popup
+                @click="router.push('/userdashboard')"
+              >
                 <q-item-section>Jobs</q-item-section>
               </q-item>
               <q-separator />
@@ -40,10 +51,18 @@
           </q-avatar>
           <q-menu anchor="bottom right" self="top right">
             <q-list style="min-width: 150px">
-              <q-item clickable v-close-popup @click="router.push('/recruiterdashboard/profile')">
+              <q-item
+                clickable
+                v-close-popup
+                @click="router.push('/recruiterdashboard/profile')"
+              >
                 <q-item-section>Profile</q-item-section>
               </q-item>
-              <q-item clickable v-close-popup @click="router.push('/recruiterdashboard/feature2')">
+              <q-item
+                clickable
+                v-close-popup
+                @click="router.push('/recruiterdashboard/feature2')"
+              >
                 <q-item-section>Feature 2</q-item-section>
               </q-item>
               <q-separator />
@@ -75,26 +94,23 @@
 </template>
 
 <script setup>
-import { useRoute, useRouter } from 'vue-router'
-import { computed } from 'vue'
+import { useRoute, useRouter } from "vue-router";
+import { computed } from "vue";
+import { useUserStore } from "src/stores/user-store";
 
-const route = useRoute()
-const router = useRouter()
+const route = useRoute();
+const router = useRouter();
 
-const isAuthPage = computed(() =>
-  ['/login', '/register'].includes(route.path)
-)
-const isUserDashboard = computed(() =>
-  route.path.startsWith('/userdashboard')
-)
+const isAuthPage = computed(() => ["/login", "/register"].includes(route.path));
+const isUserDashboard = computed(() => route.path.startsWith("/userdashboard"));
 const isRecruiterDashboard = computed(() =>
-  route.path.startsWith('/recruiterdashboard')
-)
+  route.path.startsWith("/recruiterdashboard")
+);
 
 const handleLogout = () => {
-  localStorage.removeItem('token')
-  router.push('/')
-}
+  useUserStore().setEverythingToNull();
+  router.push("/");
+};
 </script>
 
 <style scoped>

@@ -3,34 +3,32 @@
     <!-- Top Row: Logo, Name, Status -->
     <div class="row items-start q-gutter-sm">
       <q-avatar size="64px" class="custom-logo-avatar q-mt-xs">
-        <img :src="job.logo" />
+        <img :src="jobData.logo" />
       </q-avatar>
 
       <div class="col">
         <div class="row items-center q-gutter-xs">
-          <div class="text-subtitle1 text-weight-bold">
-            {{ job.name }}
-          </div>
+          <div class="text-subtitle1 text-weight-bold">{{ jobData.name }}</div>
           <div v-if="job.hiringStatus" class="custom-chip custom-chip-black">
-            {{ job.hiringStatus }}
+            {{ jobData.hiringStatus }}
           </div>
           <div v-if="job.companyType" class="custom-chip custom-chip-blue">
-            {{ job.companyType }}
+            {{ jobData.companyType }}
           </div>
           <div v-if="job.jobType" class="custom-chip custom-chip-blue">
-            {{ job.jobType }}
+            {{ jobData.job_type }}
           </div>
         </div>
 
-        <div class="description-text">{{ job.shortDescription }}</div>
-        <div class="text-caption text-grey-6">{{ job.size }}</div>
+        <div class="description-text">{{ job.smallDescription }}</div>
+        <div class="text-caption text-grey-6">{{ job.opening }}</div>
       </div>
     </div>
 
     <!-- Tags -->
     <div class="row q-mt-sm q-gutter-xs">
       <div
-        v-for="(tag, i) in job.tags"
+        v-for="(tag, i) in jobData.tags"
         :key="i"
         class="custom-chip custom-chip-pink row items-center no-wrap"
       >
@@ -44,8 +42,10 @@
         <div class="row q-col-gutter-sm items-center justify-between">
           <!-- Job info (left) -->
           <div class="col-8 col-md-8">
-            <div class="job-title">{{ job.title }}</div>
-            <div class="job-meta">{{ job.location }} • ₹{{ job.salary }}L</div>
+            <div class="job-title">{{ jobData.title }}</div>
+            <div class="job-meta">
+              {{ jobData.location }} • ₹{{ jobData.salary }}L
+            </div>
           </div>
 
           <!-- Buttons (right) -->
@@ -56,7 +56,7 @@
                   Recruiter Recently Active
                 </div>
                 <div class="text-caption text-grey-6">
-                  Posted {{ job.posted }}
+                  Posted {{ jobData.posted }}
                 </div>
               </div>
               <q-btn
@@ -97,24 +97,39 @@
   </q-card>
 </template>
 
-<script>
-export default {
-  name: "JobCard",
-  props: {
-    job: {
-      type: Object,
-      required: true,
-    },
+<script setup>
+import { useRouter } from "vue-router";
+import demoLogo from "../../../assets/user (2).png";
+import { reactive } from "vue";
+
+const props = defineProps({
+  job: {
+    type: Object,
+    required: true,
   },
-  methods: {
-    goToDetails() {
-      this.$router.push({
-        name: "JobApply",
-        params: { id: this.job.id },
-      });
-    },
-  },
-};
+});
+
+const jobData = reactive({
+  logo: props.job.logo || demoLogo,
+  name: props.job.company.name || "No name",
+  hiringStatus: props.job.company.status || "No status",
+  companyType: props.job.company.type || [],
+  job_type: props.job.job_type || "No jtype",
+  tags: props.job.company.tags || [],
+  title: props.job.title || "No title",
+  location: props.job.location || "No location",
+  salary: props.job.salary || 0,
+  posted: props.job.posted.split("T")[0] || "1990-08-08",
+});
+
+const router = useRouter();
+
+function goToDetails() {
+  router.push({
+    name: "JobApply",
+    params: { id: props.job.id },
+  });
+}
 </script>
 
 <style scoped>

@@ -7,8 +7,24 @@
         <q-btn dense flat round icon="edit" size="sm" @click="toggleEdit" />
       </div>
       <div v-else class="row no-wrap items-center">
-        <q-btn dense flat round icon="check" size="sm" color="positive" @click="saveEdit" />
-        <q-btn dense flat round icon="close" size="sm" color="negative" @click="cancelEdit" />
+        <q-btn
+          dense
+          flat
+          round
+          icon="check"
+          size="sm"
+          color="positive"
+          @click="saveEdit"
+        />
+        <q-btn
+          dense
+          flat
+          round
+          icon="close"
+          size="sm"
+          color="negative"
+          @click="cancelEdit"
+        />
       </div>
     </div>
 
@@ -20,14 +36,18 @@
           v-model="tempData.gender"
           :disable="!isEditable"
           :options="['Male', 'Female', 'Other']"
-          dense flat filled
+          dense
+          flat
+          filled
           class="no-border"
           label="Gender"
         />
         <q-input
           v-model="tempData.dob"
           :disable="!isEditable"
-          dense flat filled
+          dense
+          flat
+          filled
           class="no-border"
           label="Date of Birth"
           type="date"
@@ -39,19 +59,13 @@
     <div class="section-title">Professional Details</div>
     <div class="edu-entry">
       <div class="edu-left">
-        <q-input
-          v-model="tempData.experience"
-          :disable="!isEditable"
-          dense flat filled
-          class="no-border"
-          label="Work Experience (in years)"
-          type="number"
-        />
         <q-select
           v-model="tempData.employmentStatus"
           :disable="!isEditable"
           :options="['Employed', 'Unemployed', 'Fresher']"
-          dense flat filled
+          dense
+          flat
+          filled
           class="no-border"
           label="Employment Status"
         />
@@ -66,16 +80,21 @@
           v-model="tempData.jobType"
           :disable="!isEditable"
           :options="['Full-time', 'Part-time', 'Internship']"
-          dense flat filled
+          dense
+          flat
+          filled
           class="no-border"
           label="Preferred Job Type"
         />
-        <q-input
-          v-model="tempData.preferredLocation"
+        <q-select
+          v-model="tempData.availability"
           :disable="!isEditable"
-          dense flat filled
+          :options="['Remote', 'Onsite', 'Hybrid']"
+          dense
+          flat
+          filled
           class="no-border"
-          label="Preferred Job Location"
+          label="Availability"
         />
       </div>
     </div>
@@ -83,43 +102,15 @@
     <!-- AVAILABILITY -->
     <div class="edu-entry">
       <div class="edu-left">
-        <q-option-group
-          v-model="tempData.availability"
+        <q-select
+          v-model="tempData.jobType"
           :disable="!isEditable"
-          inline
-          :options="[
-            { label: 'Remote', value: 'Remote' },
-            { label: 'Onsite', value: 'Onsite' },
-            { label: 'Hybrid', value: 'Hybrid' },
-          ]"
-          type="checkbox"
-          label="Availability"
-        />
-      </div>
-    </div>
-
-    <!-- LANGUAGE -->
-    <div class="edu-entry">
-      <div class="edu-left">
-        <q-input
-          v-model="tempData.languages"
-          :disable="!isEditable"
-          dense flat filled
+          :options="['Full-time', 'Part-time', 'Internship']"
+          dense
+          flat
+          filled
           class="no-border"
-          label="Languages Known (comma separated)"
-        />
-      </div>
-    </div>
-
-    <!-- HEADLINE -->
-    <div class="edu-entry">
-      <div class="edu-left">
-        <q-input
-          v-model="tempData.resumeHeadline"
-          :disable="!isEditable"
-          dense flat filled
-          class="no-border"
-          label="Resume Headline"
+          label="Preferred Job Type"
         />
       </div>
     </div>
@@ -129,16 +120,20 @@
     <div class="edu-entry">
       <div class="edu-left">
         <q-input
-          v-model="tempData.linkedin"
+          v-model="tempData.linkedIn"
           :disable="!isEditable"
-          dense flat filled
+          dense
+          flat
+          filled
           class="no-border"
           label="LinkedIn Profile URL"
         />
         <q-input
-          v-model="tempData.portfolio"
+          v-model="tempData.portfolioWebsite"
           :disable="!isEditable"
-          dense flat filled
+          dense
+          flat
+          filled
           class="no-border"
           label="Portfolio Website (if any)"
         />
@@ -147,36 +142,44 @@
   </q-card>
 </template>
 
-<script>
-import { useUserStore } from "src/stores/UserStore";
+<script setup>
+import { useUserStore } from "src/stores/user-store";
+import { ref, reactive } from "vue";
 
-export default {
-  data() {
-    return {
-      isEditable: false,
-      tempData: {},
-    };
-  },
-  mounted() {
-    this.tempData = { ...this.userStore.additional };
-  },
-  methods: {
-    toggleEdit() {
-      this.tempData = { ...this.userStore.additional };
-      this.isEditable = true;
-    },
-    saveEdit() {
-      this.userStore.updateAdditional(this.tempData);
-      this.isEditable = false;
-    },
-    cancelEdit() {
-      this.tempData = { ...this.userStore.additional };
-      this.isEditable = false;
-    },
-  },
-  created() {
-    this.userStore = useUserStore(); // ✅ Initialize store here
-  },
+const userStore = useUserStore();
+
+const isEditable = ref(false);
+
+const tempData = reactive({
+  gender: userStore.gender || "",
+  dob: userStore.dob,
+  employmentStatus: userStore.employmentStatus || "",
+  jobType: userStore.jobType || "",
+  preferredLocation: userStore.preferredLocation || "",
+  availability: userStore.availability || "",
+  linkedIn: userStore.linkedIn || "",
+  portfolioWebsite: userStore.portfolioWebsite || "",
+});
+
+const toggleEdit = () => {
+  isEditable.value = true;
+};
+
+const saveEdit = () => {
+  userStore.updateAdditionalData({ ...tempData });
+  isEditable.value = false;
+};
+
+const cancelEdit = () => {
+  tempData.gender = userStore.gender || "";
+  tempData.dob = userStore.dob || "";
+  tempData.employmentStatus = userStore.employmentStatus || "";
+  tempData.jobType = userStore.jobType || "";
+  tempData.preferredLocation = userStore.preferredLocation || "";
+  tempData.availability = userStore.availability || "";
+  tempData.linkedIn = userStore.linkedIn || "";
+  tempData.portfolioWebsite = userStore.portfolioWebsite || "";
+  isEditable.value = false;
 };
 </script>
 
@@ -188,10 +191,9 @@ export default {
   border-radius: 16px;
 
   /* 💡 3D Effect + white glow */
-  box-shadow:
-    0 4px 8px rgba(255, 255, 255, 0.4),   /* soft white outer glow */
-    0 8px 16px rgba(0, 0, 0, 0.05),       /* subtle shadow for depth */
-    inset 0 1px 3px rgba(255, 255, 255, 0.6); /* slight inset highlight */
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.4),
+    /* soft white outer glow */ 0 8px 16px rgba(0, 0, 0, 0.05),
+    /* subtle shadow for depth */ inset 0 1px 3px rgba(255, 255, 255, 0.6); /* slight inset highlight */
 
   display: flex;
   flex-direction: column;
@@ -199,7 +201,6 @@ export default {
   box-sizing: border-box;
   transition: box-shadow 0.3s ease;
 }
-
 
 .form-header {
   display: flex;
@@ -240,5 +241,4 @@ export default {
   padding: 0 !important;
   font-size: 14px;
 }
-
 </style>

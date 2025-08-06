@@ -33,13 +33,13 @@
       <div class="edu-left">
         <div class="edu-title">
           <q-input
-            v-model="tempData.college"
+            v-model="tempData.institution"
             :disable="!isEditable"
             dense
             flat
             filled
             class="no-border"
-            label="College Name"
+            label="Institution Name"
           />
         </div>
       </div>
@@ -56,20 +56,31 @@
             flat
             filled
             class="no-border"
-            label="Qualification/Degree"
+            label="Degree"
           />
         </div>
-        <div class="edu-subtitle">
-          <q-input
-            v-model="tempData.degreeCgpa"
-            :disable="!isEditable"
-            dense
-            flat
-            filled
-            class="no-border"
-            label="CGPA"
-          />
-        </div>
+        <q-input
+          v-model="tempData.grade_value"
+          :disable="!isEditable"
+          dense
+          flat
+          filled
+          class="no-border"
+          :label="tempData.grade_type"
+        >
+          <template v-slot:append>
+            <q-chip
+              dense
+              square
+              color="grey-3"
+              text-color="black"
+              class="q-ml-sm"
+              style="font-size: 13px"
+            >
+              {{ tempData.grade_type }}
+            </q-chip>
+          </template>
+        </q-input>
       </div>
     </div>
 
@@ -78,24 +89,13 @@
       <div class="edu-left">
         <div class="edu-title">
           <q-input
-            v-model="tempData.higherSecondary"
+            v-model="tempData.field_of_study"
             :disable="!isEditable"
             dense
             flat
             filled
             class="no-border"
-            label="Higher Secondary School"
-          />
-        </div>
-        <div class="edu-subtitle">
-          <q-input
-            v-model="tempData.higherCgpa"
-            :disable="!isEditable"
-            dense
-            flat
-            filled
-            class="no-border"
-            label="CGPA"
+            label="Field of study"
           />
         </div>
       </div>
@@ -105,85 +105,100 @@
     <div class="edu-entry">
       <div class="edu-left">
         <div class="edu-title">
-          <q-input
-            v-model="tempData.highSchool"
+          <q-select
+            v-model="tempData.education_level"
             :disable="!isEditable"
             dense
             flat
             filled
+            :options="[
+              'Undergraduate',
+              'Postgraduate',
+              'Diploma',
+              '10th',
+              '12th',
+              'Phd',
+            ]"
             class="no-border"
-            label="High School"
-          />
-        </div>
-        <div class="edu-subtitle">
-          <q-input
-            v-model="tempData.highCgpa"
-            :disable="!isEditable"
-            dense
-            flat
-            filled
-            class="no-border"
-            label="CGPA"
+            label="Education level"
           />
         </div>
       </div>
     </div>
 
-    <!-- Certifications -->
-    <div class="cert-section">
-      <div class="cert-header">Certifications</div>
-      <div
-        v-for="(cert, index) in tempData.certifications"
-        :key="index"
-        class="cert-entry"
-      >
-        <q-input
-          v-model="tempData.certifications[index]"
-          :disable="!isEditable"
-          dense
-          flat
-          filled
-          class="no-border"
-          :label="'Certificate ' + (index + 1)"
-        />
+    <div class="edu-entry">
+      <div class="edu-left">
+        <div class="edu-title">
+          <q-input
+            v-model="tempData.start_date_degree"
+            :disable="!isEditable"
+            dense
+            flat
+            filled
+            class="no-border"
+            label="Start Date"
+          />
+        </div>
+      </div>
+    </div>
+
+    <div class="edu-entry">
+      <div class="edu-left">
+        <div class="edu-title">
+          <q-input
+            v-model="tempData.end_date_degree"
+            :disable="!isEditable"
+            dense
+            flat
+            filled
+            class="no-border"
+            label="End date"
+          />
+        </div>
       </div>
     </div>
   </q-card>
 </template>
 
-<script>
-import { useUserStore } from "src/stores/UserStore";
+<script setup>
+import { ref, reactive } from "vue";
+import { useUserStore } from "src/stores/user-store";
 
-export default {
-  name: "EducationForm",
-  data() {
-    return {
-      userStore: null,
-      isEditable: false,
-      tempData: {},
-    };
-  },
-  created() {
-    this.userStore = useUserStore();
-  },
-  computed: {
-    education() {
-      return this.userStore.education;
-    },
-  },
-  methods: {
-    toggleEdit() {
-      this.tempData = JSON.parse(JSON.stringify(this.education));
-      this.isEditable = true;
-    },
-    saveEdit() {
-      this.userStore.updateEducation(this.tempData);
-      this.isEditable = false;
-    },
-    cancelEdit() {
-      this.isEditable = false;
-    },
-  },
+const userStore = useUserStore();
+
+const isEditable = ref(false);
+
+const tempData = reactive({
+  degree: userStore.degree || "",
+  institution: userStore.institution || "",
+  field_of_study: userStore.field_of_study || "",
+  start_date_degree: userStore.start_date_degree || "",
+  end_date_degree: userStore.end_date_degree || "",
+  grade_value: userStore.grade_value || "",
+  grade_type: userStore.grade_type || "",
+  education_level: userStore.education_level || "",
+});
+
+const toggleEdit = () => {
+  isEditable.value = true;
+};
+
+const saveEdit = () => {
+  userStore.updateEducation({ ...tempData });
+  isEditable.value = false;
+};
+
+const cancelEdit = () => {
+  tempData.degree = userStore.degree || "";
+  tempData.institution = userStore.institution || "";
+  tempData.field_of_study = userStore.field_of_study || "";
+  tempData.start_date_degree = userStore.start_date_degree || "";
+  tempData.end_date_degree = userStore.end_date_degree || "";
+  tempData.grade_value = userStore.grade_value || "";
+  tempData.grade_type = userStore.grade_type || "";
+  tempData.education_level = userStore.education_level || "";
+
+  isEditable.value = false;
 };
 </script>
 
@@ -193,20 +208,14 @@ export default {
   padding: 24px;
   background-color: white;
   border-radius: 16px;
-
-  /* 💡 3D Effect + white glow */
-  box-shadow:
-    0 4px 8px rgba(255, 255, 255, 0.4),   /* soft white outer glow */
-    0 8px 16px rgba(0, 0, 0, 0.05),       /* subtle shadow for depth */
-    inset 0 1px 3px rgba(255, 255, 255, 0.6); /* slight inset highlight */
-
+  box-shadow: 0 4px 8px rgba(255, 255, 255, 0.4), 0 8px 16px rgba(0, 0, 0, 0.05),
+    inset 0 1px 3px rgba(255, 255, 255, 0.6);
   display: flex;
   flex-direction: column;
   gap: 24px;
   box-sizing: border-box;
   transition: box-shadow 0.3s ease;
 }
-
 
 .form-header {
   display: flex;

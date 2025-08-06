@@ -42,92 +42,144 @@
     <div class="skills-list">
       <q-chip
         v-for="(skill, index) in localSkills"
-        :key="index"
+        :key="skill.id ?? skill.name"
         :style="chipStyle"
         class="skill-chip q-mr-sm q-mb-sm"
         :removable="isEditable"
         @remove="removeSkill(index)"
       >
-        {{ skill }}
+        {{ skill.name }}
       </q-chip>
     </div>
 
-    <!-- Add Skill Input -->
+    <!-- Search-based Skill Input -->
     <div v-if="isEditable" class="add-skill-row">
       <q-input
-  v-model="newSkill"
-  dense
-  flat
-  placeholder="Add a skill"
-  class="add-skill-input"
-  color="white"
-  @keyup.enter="addSkill"
->
-
-        <template v-slot:append>
-          <q-btn
-            icon="add"
-            round
-            dense
-            flat
-            @click="addSkill"
-            :disable="!newSkill.trim()"
-            color="white"
-          />
+        v-model="searchQuery"
+        dense
+        outlined
+        label="Search and add a skill"
+        :loading="loadingSkills"
+        color="white"
+        class="add-skill-input q-mb-sm"
+        clearable
+      >
+        <template v-slot:prepend>
+          <q-icon name="search" />
         </template>
       </q-input>
+
+      <!-- Error Message -->
+      <div v-if="skillFetchError" class="text-negative q-mb-sm">
+        <q-icon name="error" class="q-mr-xs" />
+        {{ skillFetchError }}
+      </div>
+
+      <!-- Skills Dropdown -->
+      <q-list
+        v-if="searchQuery && filteredSkills.length"
+        bordered
+        class="dropdown-skill-list"
+      >
+        <q-item
+          v-for="[id, name] in filteredSkills"
+          :key="id"
+          clickable
+          @click="selectSkill([id, name])"
+        >
+          <q-item-section>{{ name }}</q-item-section>
+          <q-item-section side>
+            <q-icon name="add" />
+          </q-item-section>
+        </q-item>
+      </q-list>
     </div>
   </q-card>
 </template>
 
-<script>
-import { useUserStore } from "src/stores/UserStore";
+<script setup>
+import { ref, computed, onMounted } from "vue";
+import { useUserStore } from "src/stores/user-store";
 
-export default {
-  name: "SkillsSection",
-  data() {
-    return {
-      isEditable: false,
-      newSkill: "",
-      localSkills: [],
-    };
-  },
-  created() {
-    this.userStore = useUserStore();
-    this.localSkills = [...this.userStore.skills];
-  },
-  computed: {
-    chipStyle() {
-      return {
-        backgroundColor: '#1f2937',
-        color: '#ffffff',
-        transition: 'all 0.2s ease',
-      };
-    },
-  },
-  methods: {
-    toggleEdit() {
-      this.isEditable = true;
-    },
-    saveSkills() {
-      this.userStore.updateSkills(this.localSkills);
-      this.isEditable = false;
-    },
-    cancelEdit() {
-      this.localSkills = [...this.userStore.skills];
-      this.isEditable = false;
-    },
-    addSkill() {
-      const trimmed = this.newSkill.trim();
-      if (trimmed && !this.localSkills.includes(trimmed)) {
-        this.localSkills.push(trimmed);
-        this.newSkill = "";
-      }
-    },
-    removeSkill(index) {
-      this.localSkills.splice(index, 1);
-    },
-  },
+const userStore = useUserStore();
+
+const isEditable = ref(false);
+const localSkills = ref([]);
+const searchQuery = ref("");
+const allSkills = ref([]);
+const loadingSkills = ref(false);
+const skillFetchError = ref(null);
+
+const chipStyle = computed(() => ({
+  backgroundColor: "#1f2937",
+  color: "#ffffff",
+  transition: "all 0.2s ease",
+}));
+
+onMounted(() => {
+  const rawSkills = userStore.skills || [];
+  localSkills.value = rawSkills.map(([id, name]) => ({ id, name }));
+  fetchAllSkills();
+});
+
+const toggleEdit = () => {
+  isEditable.value = true;
+};
+
+const saveSkills = () => {
+  const updatedSkills = localSkills.value.map(({ id, name }) => [id, name]);
+  userStore.updateSkills(updatedSkills);
+  isEditable.value = false;
+};
+
+const cancelEdit = () => {
+  const rawSkills = userStore.skills || [];
+  localSkills.value = rawSkills.map(([id, name]) => ({ id, name }));
+  isEditable.value = false;
+};
+
+const removeSkill = (index) => {
+  localSkills.value.splice(index, 1);
+};
+
+const fetchAllSkills = async () => {
+  try {
+    loadingSkills.value = true;
+    skillFetchError.value = null;
+    const res = await fetch("http://localhost:3000/skills/all", {
+      method: "GET",
+      headers: {
+        "Content-Type": "application/json",
+      },
+    });
+
+    const json = await res.json();
+    if (!res.ok || !json.success) {
+      throw new Error(json.message || "Failed to fetch skills");
+    }
+
+    allSkills.value = json.skills; // [[id, name]]
+  } catch (err) {
+    skillFetchError.value = err.message;
+    console.error("Error fetching skills:", err);
+  } finally {
+    loadingSkills.value = false;
+  }
+};
+
+const filteredSkills = computed(() => {
+  if (!searchQuery.value) return [];
+  return allSkills.value.filter(([id, name]) => {
+    return (
+      name.toLowerCase().includes(searchQuery.value.toLowerCase()) &&
+      !localSkills.value.some((skill) => skill.id === id)
+    );
+  });
+});
+
+const selectSkill = ([id, name]) => {
+  localSkills.value.push({ id, name });
+  searchQuery.value = "";
 };
 </script>
 
@@ -139,7 +191,7 @@ export default {
   background-color: #000000;
   border-radius: 16px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
-  color:white;
+  color: white;
 }
 
 .form-header {
@@ -164,5 +216,19 @@ export default {
 .add-skill-row {
   margin-top: 12px;
   max-width: 300px;
+}
+
+.dropdown-skill-list {
+  max-height: 200px;
+  overflow-y: auto;
+  background: #1f2937;
+  color: white;
+  border-radius: 8px;
+  border: 1px solid #2e2e2e;
+  margin-top: 4px;
+}
+
+.dropdown-skill-list .q-item:hover {
+  background-color: #374151;
 }
 </style>

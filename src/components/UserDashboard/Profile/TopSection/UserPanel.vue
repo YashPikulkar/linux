@@ -3,28 +3,48 @@
     <!-- Stat Cards Row (Full Width) -->
     <div class="row q-gutter-md stats-wrapper" style="flex: 1">
       <div class="q-col" style="flex: 1">
-        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+        <q-card
+          flat
+          bordered
+          class="q-pa-md"
+          style="border-radius: 12px; text-align: center"
+        >
           <div class="text-caption text-grey">Jobs Applied</div>
           <div class="text-h6 text-weight-bold">24</div>
         </q-card>
       </div>
 
       <div class="q-col" style="flex: 1">
-        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+        <q-card
+          flat
+          bordered
+          class="q-pa-md"
+          style="border-radius: 12px; text-align: center"
+        >
           <div class="text-caption text-grey">Accepted</div>
           <div class="text-h6 text-weight-bold">5</div>
         </q-card>
       </div>
 
       <div class="q-col" style="flex: 1">
-        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+        <q-card
+          flat
+          bordered
+          class="q-pa-md"
+          style="border-radius: 12px; text-align: center"
+        >
           <div class="text-caption text-grey">Rejected</div>
           <div class="text-h6 text-weight-bold">12</div>
         </q-card>
       </div>
 
       <div class="q-col" style="flex: 1">
-        <q-card flat bordered class="q-pa-md" style="border-radius: 12px; text-align: center;">
+        <q-card
+          flat
+          bordered
+          class="q-pa-md"
+          style="border-radius: 12px; text-align: center"
+        >
           <div class="text-caption text-grey">In Review</div>
           <div class="text-h6 text-weight-bold">7</div>
         </q-card>
@@ -33,30 +53,33 @@
   </div>
 </template>
 
-
 <script setup>
-import { ref } from 'vue'
-import { useUserStore } from 'src/stores/UserStore'
+import { ref } from "vue";
+import { useUserStore } from "src/stores/user-store";
 
-const userStore = useUserStore()
-const { fullName, phone, email, role, avatar } = userStore.register
+const userStore = useUserStore();
 
-const avatarPreview = ref(null)
-const fileInput = ref(null)
+const name = userStore.user?.name || "No name";
+const phone = userStore.user?.phone || "No phone";
+const email = userStore.user?.email || "No email";
+const role = userStore.user?.role || "No role";
+const avatar = userStore.user?.avatar || "No avatar";
+
+const avatarPreview = ref(null);
+const fileInput = ref(null);
 
 function triggerUpload() {
-  fileInput.value.click()
+  fileInput.value.click();
 }
 
 function handleFileChange(event) {
-  const file = event.target.files[0]
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader()
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    const reader = new FileReader();
     reader.onload = () => {
-      avatarPreview.value = reader.result
-      // Optional: uploadAvatarToBackend(file)
-    }
-    reader.readAsDataURL(file)
+      avatarPreview.value = reader.result;
+    };
+    reader.readAsDataURL(file);
   }
 }
 </script>
@@ -72,11 +95,10 @@ function handleFileChange(event) {
   transition: box-shadow 0.3s ease;
 
   background: #94a3b8;
-  backdrop-filter: blur(10px);         /* frosted glass effect */
+  backdrop-filter: blur(10px); /* frosted glass effect */
   box-shadow: none;
   border: 1px solid rgba(255, 255, 255, 0.2); /* subtle border */
 }
-
 
 .user-panel:hover {
   box-shadow: 0 12px 32px rgba(0, 0, 0, 0.16), 0 6px 12px rgba(0, 0, 0, 0.08);
@@ -106,7 +128,7 @@ function handleFileChange(event) {
 .user-skills-placeholder {
   font-size: 13px;
   font-style: italic;
-  color:#94a3b8;
+  color: #94a3b8;
   margin-top: 4px;
 }
 
@@ -126,7 +148,6 @@ function handleFileChange(event) {
   display: flex;
   flex-direction: column;
 }
-
 
 .label {
   font-size: 13px;

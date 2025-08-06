@@ -8,6 +8,44 @@ export const useUserStore = defineStore('user', {
   }),
 
   actions: {
+setEverythingToNull() {
+      this.uid = null;
+      this.name = null;
+      this.phone = null;
+      this.email = null;
+      this.role = null;
+
+      this.gender = null;
+      this.dob = null;
+      this.employmentStatus = null;
+      this.jobType = null;
+      this.preferredLocation = null;
+      this.availability = null;
+      this.linkedin = null;
+      this.portfolioWebsite = null;
+
+      this.token = null;
+
+      this.degree = null;
+      this.institution = null;
+      this.field_of_study = null;
+      this.start_date_degree = null;
+      this.end_date_degree = null;
+      this.gradeValue = null;
+      this.gradeType = null;
+      this.education_level = null;
+
+      this.expName = null;
+      this.expRole = null;
+      this.expStart = null;
+      this.expEnd = null;
+
+      this.skills = [];
+
+      this.companyName = null;
+    }
+
+    ,
     async login({ email, password }) {
       try {
         const res = await fetch(`${baseUrl}/auth/login`, {
@@ -27,6 +65,46 @@ export const useUserStore = defineStore('user', {
 
         this.user = responseJson.user
         this.token = responseJson.token
+        this.uid = responseJson.user?.uid;
+        this.name = responseJson.user?.name;
+        this.phone = responseJson.user?.phone;
+        this.role = responseJson.user?.role;
+        this.email = responseJson.user?.email;
+
+        if(this.role!='recruiter'){
+          this.gender = responseJson.user?.gender;
+          this.dob = responseJson.user?.dob.split("T")[0];
+          this.employmentStatus = responseJson.user?.employmentStatus;
+          this.jobType = responseJson.user?.jobType;
+          this.preferredLocation = responseJson.user?.preferredLocation;
+          this.availability = responseJson.user?.availability;
+          this.linkedIn = responseJson.user?.linkedIn;
+          this.portfolioWebsite = responseJson.user?.portfolioWebsite;
+
+          this.degree = responseJson.user?.degree;
+          this.institution = responseJson.user?.institution;
+          this.field_of_study = responseJson.user?.field_of_study;
+          this.start_date_degree =
+            responseJson.user?.start_date_degree.split("T")[0];
+          this.end_date_degree =
+            responseJson.user?.end_date_degree.split("T")[0];
+          this.grade_value = responseJson.user?.gradeValue;
+          this.grade_type = responseJson.user?.gradeType;
+          this.education_level = responseJson.user?.education_level;
+
+          this.expName = responseJson.user?.expName;
+          this.expRole = responseJson.user?.expRole;
+          this.expStart = responseJson.user?.expStart;
+          this.expEnd = responseJson.user?.expEnd;
+
+          const skillids = responseJson.user?.skillids || [];
+
+          for (const skillid of skillids) {
+            const response = await fetch(`${baseUrl}/skills/${skillid}`);
+            const skillName = await response.json();
+            this.skills.push([skillid, skillName.name]);
+          }
+        }
 
         return { success: true, message: responseJson.message || 'Login successful' }
       } catch (error) {
@@ -86,9 +164,7 @@ export const useUserStore = defineStore('user', {
     },
 
     async register(data) {
-      this.user = null
-      this.token = null
-
+      this.setEverythingToNull() // Reset user state before registration
       try {
         const response = await fetch(`${baseUrl}/auth/register`, {
           method: 'POST',
@@ -112,13 +188,122 @@ export const useUserStore = defineStore('user', {
         if (res.success) {
           this.user = res.user
           this.token = res.token
+          this.uid = res.user?.uid;
+          this.name = res.user?.name;
+          this.phone = res.user?.phone;
+          this.role = res.user?.role;
+          this.email = res.user?.email;
+
+          if (this.role !== 'recruiter') {
+            this.degree = res.user?.education.degree;
+            this.institution = res.user?.education.institution;
+            this.field_of_study = res.user?.education.field_of_study;
+            this.start_date_degree =
+              res.user?.education.start_date_degree.split("T")[0];
+            this.end_date_degree =
+              res.user?.education.end_date_degree.split("T")[0];
+            this.grade_value = res.user?.education.grade_value;
+            this.grade_type = res.user?.education.grade_type;
+            this.education_level = res.user?.education.education_level;
+
+            this.expName = res.user?.experience.expName;
+            this.expRole = res.user?.experience.role;
+            this.expStart = res.user?.experience.start;
+            this.expEnd = res.user?.experience.end;
+
+            const skillids = res.user?.skillids || [];
+
+            for (const skillid of skillids) {
+              const response = await fetch(`${baseUrl}/skills/${skillid}`);
+              const skillName = await response.json();
+              this.skills.push([skillid, skillName.name]);
+            }
+          }
+          
           return { success: true, message: res.message || 'Registration successful' }
         }
 
-        return { success: false, message: res.message || 'Registration failed' }
+        
       } catch (error) {
         console.error('Error during registration:', error)
         return { success: false, message: error.message || 'Network error during registration' }
+      }
+    },
+
+     async updateAdditionalData(tempData) {
+      const payload = { ...tempData, uid: this.uid };
+
+      try {
+        const response = await fetch(
+          `${baseUrl}/edit-profile/additional-details`,
+          {
+            method: "PATCH",
+            headers: {
+              "Content-Type": "application/json",
+            },
+            body: JSON.stringify({ additionalData: payload }),
+          }
+        );
+
+        if (response.ok) {
+          this.gender = tempData.gender;
+          this.dob = tempData.dob.split("T")[0];
+          this.employmentStatus = tempData.employmentStatus;
+          this.jobType = tempData.jobType;
+          this.preferredLocation = tempData.preferredLocation;
+          this.availability = tempData.availability;
+          this.linkedIn = tempData.linkedIn;
+          this.portfolioWebsite = tempData.portfolioWebsite;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    async updateEducation(tempData) {
+      const payload = { ...tempData, uid: this.uid };
+
+      try {
+        const response = await fetch(`${baseUrl}/edit-profile/education`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ educationalData: payload }),
+        });
+
+        if (response.ok) {
+          this.degree = tempData.degree;
+          this.institution = tempData.institution;
+          this.field_of_study = tempData.field_of_study;
+          this.start_date_degree = tempData.start_date_degree;
+          this.end_date_degree = tempData.end_date_degree;
+          this.grade_value = tempData.grade_value;
+          this.grade_type = tempData.grade_type;
+          this.education_level = tempData.education_level;
+        }
+      } catch (err) {
+        console.log(err);
+      }
+    },
+
+    async updateSkills(updatedSkills) {
+      const payload = { skills: updatedSkills, uid: this.uid };
+
+      try {
+        const response = await fetch(`${baseUrl}/edit-profile/skills`, {
+          method: "PATCH",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({ skillData: payload }),
+        });
+
+        if (response.ok) {
+          this.skills = updatedSkills;
+        }
+      } catch (err) {
+        console.log(err);
       }
     },
   },

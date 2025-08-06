@@ -26,24 +26,19 @@
             max="50"
           />
 
-          <!-- ✅ Min Salary -->
+          <!-- Salary Field (Single field to match table structure) -->
           <q-input
-            v-model="form.salary.min"
-            label="Min Salary (e.g. ₹5L or ₹800000)"
+            v-model.number="form.salary"
+            label="Salary (₹)"
+            type="number"
             filled
             :rules="[isRequired, isSalaryValid]"
             class="q-mb-md"
+            min="1000"
+            placeholder="e.g. 500000"
           />
 
-          <!-- ✅ Max Salary -->
-          <q-input
-            v-model="form.salary.max"
-            label="Max Salary (e.g. ₹8L or ₹1000000)"
-            filled
-            :rules="[isRequired, isSalaryValid, () => isMaxGreater(form.salary.min, form.salary.max)]"
-          />
-
-          <!-- ✅ Equity (Optional) -->
+          <!-- Equity (Optional) -->
           <q-input
             v-model.number="form.equity"
             label="Equity % (Optional)"
@@ -62,9 +57,11 @@
             :options="locationOptions"
             label="Branch Location"
             filled
-            :rules="[]"
+            :rules="[isRequired]"
             emit-value
             map-options
+            :loading="locationsLoading"
+            :disable="locationsLoading"
           />
           <q-select
             v-model="form.skillids"
@@ -76,6 +73,8 @@
             :rules="[isRequired]"
             emit-value
             map-options
+            :loading="skillsLoading"
+            :disable="skillsLoading"
           />
         </div>
 
@@ -103,7 +102,7 @@
           />
         </div>
 
-        <!-- ✅ Links Section (Optional) -->
+        <!-- Links Section (Optional) -->
         <div class="section-title">Additional Links (Optional)</div>
         <div class="form-entry">
           <div v-for="(link, index) in form.links" :key="index" class="link-row">
@@ -172,41 +171,37 @@ const $q = useQuasar();
 const jobsStore = useJobsStore();
 const userStore = useUserStore();
 
+// Base URL for API calls
+const baseUrl = "http://localhost:3000";
+
 const formRef = ref(null);
 const isPreviewing = ref(false);
 const isSubmitting = ref(false);
 
-const recruiterProfile = computed(() => userStore.user);
-const locationOptions = computed(() => {
-  // Assuming locations are fetched from API or stored in user data
-  // You'll need to implement this based on your location table structure
-  return userStore.user?.company?.locations?.map(loc => ({
-    label: loc.name,
-    value: loc.id
-  })) || [];
-});
+// Loading states for dropdowns
+const skillsLoading = ref(false);
+const locationsLoading = ref(false);
 
-const skillOptions = computed(() => {
-  // Assuming skills are fetched from API
-  // You'll need to implement this based on your skills table structure
-  return [
-    { label: "Vue.js", value: 1 },
-    { label: "JavaScript", value: 2 },
-    { label: "HTML", value: 3 },
-    { label: "CSS", value: 4 },
-    { label: "REST APIs", value: 5 },
-    { label: "Node.js", value: 6 },
-    { label: "Express", value: 7 },
-    { label: "MongoDB", value: 8 },
-    { label: "AWS", value: 9 },
-    { label: "Docker", value: 10 },
-    { label: "Kubernetes", value: 11 },
-    { label: "Figma", value: 12 },
-    { label: "Sketch", value: 13 },
-    { label: "Python", value: 14 },
-    { label: "SQL", value: 15 },
-  ];
-});
+// Data arrays
+const skills = ref([]);
+const locations = ref([]);
+
+const recruiterProfile = computed(() => userStore.user);
+
+// Convert skills and locations to select options
+const skillOptions = computed(() => 
+  skills.value.map(skill => ({
+    label: skill.name,
+    value: skill.id
+  }))
+);
+
+const locationOptions = computed(() => 
+  locations.value.map(location => ({
+    label: location.name,
+    value: location.id
+  }))
+);
 
 const form = ref({
   title: "",
@@ -214,10 +209,7 @@ const form = ref({
   job_type: "",
   mode_of_work: "",
   exp_required: 0,
-  salary: {
-    min: "",
-    max: ""
-  },
+  salary: 0,
   equity: 0,
   lid: null,
   cid: null,
@@ -229,15 +221,88 @@ const form = ref({
 
 const previewJob = computed(() => ({
   ...form.value,
-  salary: {
-    min: parseSalary(form.value.salary.min),
-    max: parseSalary(form.value.salary.max)
-  },
   posted: new Date().toISOString().split("T")[0],
 }));
 
 const jobTypes = ["Full-time", "Co-founder", "Contract", "internship"];
 const modeOptions = ["Online", "Offline", "Hybrid"];
+
+// API Functions
+async function getAllSkills() {
+  try {
+    skillsLoading.value = true;
+    const res = await fetch(`${baseUrl}/skills/all`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: Failed to fetch skills`);
+    }
+
+    const data = await res.json();
+    console.log('Skills response:', data);
+    
+    // Handle your current skills API format: {success: true, skills: [[id, name], [id, name]]}
+    if (data.success && data.skills && Array.isArray(data.skills)) {
+      skills.value = data.skills.map(skill => ({
+        id: skill[0], // skillid
+        name: skill[1] // skillName
+      }));
+    } else {
+      throw new Error('Invalid skills data format');
+    }
+  } catch (error) {
+    console.error('Error fetching skills:', error);
+    $q.notify({
+      type: "negative",
+      message: `Failed to load skills: ${error.message}`,
+    });
+    skills.value = []; // Set empty array as fallback
+  } finally {
+    skillsLoading.value = false;
+  }
+}
+
+async function getAllLocations() {
+  try {
+    locationsLoading.value = true;
+    const res = await fetch(`${baseUrl}/location/location`, {
+      method: 'GET',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+    });
+
+    if (!res.ok) {
+      throw new Error(`HTTP ${res.status}: Failed to fetch locations`);
+    }
+
+    const data = await res.json();
+    console.log('Locations response:', data);
+    
+    // Handle locations API format: {success: true, locations: [[id, name], [id, name]]}
+    if (data.success && data.locations && Array.isArray(data.locations)) {
+      locations.value = data.locations.map(location => ({
+        id: location[0], // lid
+        name: location[1] // lname
+      }));
+    } else {
+      throw new Error('Invalid locations data format');
+    }
+  } catch (error) {
+    console.error('Error fetching locations:', error);
+    $q.notify({
+      type: "negative",
+      message: `Failed to load locations: ${error.message}`,
+    });
+    locations.value = []; // Set empty array as fallback
+  } finally {
+    locationsLoading.value = false;
+  }
+}
 
 // Validation Rules
 const isRequired = (val) => !!val || "This field is required";
@@ -251,16 +316,9 @@ const isPositiveNumber = (val) => {
 };
 
 const isSalaryValid = (val) => {
-  if (!val) return 'Salary is required';
-  const salary = val.toUpperCase().replace(/[₹\s]/g, '').trim();
-  const lMatch = salary.match(/^([1-9]\d{0,3})L$/);
-  const kMatch = salary.match(/^([1-9]\d{0,5})K$/);
-  const raw = parseInt(salary);
-  if (lMatch || kMatch) return true;
-  return (
-    (!isNaN(raw) && raw > 1000 && raw < 99990000) ||
-    'Enter a valid salary like ₹5L or ₹800000'
-  );
+  if (!val || val < 1000) return 'Salary must be at least ₹1,000';
+  if (val > 99990000) return 'Salary seems too high';
+  return true;
 };
 
 const isValidUrl = (val) => {
@@ -273,20 +331,6 @@ const isValidUrl = (val) => {
   }
 };
 
-const parseSalary = (val) => {
-  if (!val) return 0;
-  const salary = val.toUpperCase().replace(/[₹\s]/g, '').trim();
-  if (salary.endsWith("L")) return parseFloat(salary) * 100000;
-  if (salary.endsWith("K")) return parseFloat(salary) * 1000;
-  return parseFloat(salary);
-};
-
-const isMaxGreater = (minVal, maxVal) => {
-  const min = parseSalary(minVal);
-  const max = parseSalary(maxVal);
-  return max >= min || "Max salary must be greater than or equal to min salary";
-};
-
 // Link management
 const addLink = () => {
   form.value.links.push({ label: "", url: "" });
@@ -296,14 +340,14 @@ const removeLink = (index) => {
   form.value.links.splice(index, 1);
 };
 
-onMounted(() => {
+onMounted(async () => {
+  // Load skills and locations from backend
+  await Promise.all([getAllSkills(), getAllLocations()]);
+
+  // Set company data if available
   if (recruiterProfile.value?.company) {
     form.value.company = recruiterProfile.value.company.companyName;
     form.value.cid = recruiterProfile.value.company.id;
-    
-    if (locationOptions.value.length > 0) {
-      form.value.lid = locationOptions.value[0].value;
-    }
   }
 });
 
@@ -325,26 +369,20 @@ async function submitJob() {
   
   isSubmitting.value = true;
   
-  
   try {
+    // Backend derives uid and cid from authenticated user, so we don't send them
     const jobData = {
-      uid: recruiterProfile.value.id,
       title: form.value.title,
       bigDescription: form.value.bigDescription,
       smallDescription: form.value.smallDescription,
       job_type: form.value.job_type,
       mode_of_work: form.value.mode_of_work,
       exp_required: form.value.exp_required,
-      salary: {
-        min: parseSalary(form.value.salary.min),
-        max: parseSalary(form.value.salary.max)
-      },
+      salary: form.value.salary,
       skillids: form.value.skillids,
       equity: form.value.equity || 0,
       lid: form.value.lid,
-      cid: form.value.cid,
-      links: form.value.links.filter(link => link.label && link.url),
-      posted: new Date().toISOString().split('T')[0]
+      links: form.value.links.filter(link => link.label && link.url)
     };
 
     const result = await jobsStore.postJob(jobData);
@@ -352,7 +390,6 @@ async function submitJob() {
     console.log('Job submission result:', result);
     console.log('Job data being submitted:', jobData);
 
-    
     if (result.success) {
       $q.notify({
         type: "positive",
@@ -371,7 +408,6 @@ async function submitJob() {
     $q.notify({
       type: "negative",
       message: "An error occurred while posting the job",
-      
     });
   } finally {
     isSubmitting.value = false;
@@ -385,12 +421,9 @@ function resetForm() {
     job_type: "",
     mode_of_work: "",
     exp_required: 0,
-    salary: {
-      min: "",
-      max: ""
-    },
+    salary: 0,
     equity: 0,
-    lid: locationOptions.value.length > 0 ? locationOptions.value[0].value : null,
+    lid: null,
     cid: recruiterProfile.value?.company?.id || null,
     skillids: [],
     bigDescription: "",

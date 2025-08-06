@@ -1,25 +1,31 @@
 <template>
   <q-card class="sidebar-card q-pa-md bg-white text-black" flat bordered>
     <q-card-section class="q-pa-none text-center">
-      <!-- Avatar with Upload Trigger -->
       <q-avatar
         size="120px"
         class="q-mt-md q-mb-sm cursor-pointer"
         @click="triggerUpload"
       >
-        <img :src="avatarPreview || avatar || 'https://cdn.quasar.dev/img/avatar2.jpg'" alt="User Avatar" />
+        <img
+          :src="
+            avatarPreview || avatar || 'https://cdn.quasar.dev/img/avatar2.jpg'
+          "
+          alt="User Avatar"
+        />
       </q-avatar>
-      <input type="file" ref="fileInput" class="hidden" @change="handleFileChange" />
+      <input
+        type="file"
+        ref="fileInput"
+        class="hidden"
+        @change="handleFileChange"
+      />
     </q-card-section>
 
     <q-separator spaced />
 
     <q-card-section>
       <div class="text-h6 text-weight-bold text-center">
-        {{ fullName }}
-      </div>
-      <div class="text-caption text-center text-grey-7">
-        {{ fieldOfStudy }}
+        {{ userStore.name || "No name" }}
       </div>
 
       <div class="q-mt-md q-gutter-sm">
@@ -27,47 +33,44 @@
           <q-item-section avatar>
             <q-icon name="phone" color="primary" />
           </q-item-section>
-          <q-item-section>{{ phone }}</q-item-section>
+          <q-item-section>{{ userStore.phone || "No phone" }}</q-item-section>
         </q-item>
 
         <q-item dense>
           <q-item-section avatar>
             <q-icon name="email" color="primary" />
           </q-item-section>
-          <q-item-section>{{ email }}</q-item-section>
+          <q-item-section>{{ userStore.email || "No email" }}</q-item-section>
         </q-item>
       </div>
     </q-card-section>
-
-    <q-card-actions vertical class="q-mt-md">
-      <q-btn label="Edit Profile" color="primary" flat class="full-width" />
-    </q-card-actions>
   </q-card>
 </template>
 
 <script setup>
-import { ref } from 'vue'
-import { useUserStore } from 'src/stores/UserStore'
+import { ref } from "vue";
+import { useUserStore } from "src/stores/user-store";
 
-const userStore = useUserStore()
-const { fullName, phone, email, avatar } = userStore.register
-const fieldOfStudy = 'Computer Science'
+const userStore = useUserStore();
 
-const avatarPreview = ref(null)
-const fileInput = ref(null)
+const avatar =
+  "https://www.svgrepo.com/show/384674/account-avatar-profile-user-11.svg";
+
+const avatarPreview = ref(null);
+const fileInput = ref(null);
 
 function triggerUpload() {
-  fileInput.value.click()
+  fileInput.value.click();
 }
 
 function handleFileChange(event) {
-  const file = event.target.files[0]
-  if (file && file.type.startsWith('image/')) {
-    const reader = new FileReader()
+  const file = event.target.files[0];
+  if (file && file.type.startsWith("image/")) {
+    const reader = new FileReader();
     reader.onload = () => {
-      avatarPreview.value = reader.result
-    }
-    reader.readAsDataURL(file)
+      avatarPreview.value = reader.result;
+    };
+    reader.readAsDataURL(file);
   }
 }
 </script>
