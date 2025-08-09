@@ -22,7 +22,7 @@ export default [
         component: () => import("src/pages/LoginPage.vue"),
       },
       {
-        path: "userdashboard",
+        path: "applicant",
         component: () => import("pages/UserDashboard.vue"),
         children: [
           {
@@ -55,6 +55,14 @@ export default [
             path: "feature2",
             component: () =>
               import("src/components/RecruiterDashboard/Feature1/Feature1.vue"),
+          },
+
+           {
+            path: "applications/:jobId",
+            name: "job-applications",
+            component: () =>
+              import("src/components/RecruiterDashboard/Features/JobApplicants.vue"),
+            props: true
           },
         ],
       },
