@@ -10,7 +10,6 @@
         <Stats v-if="tab === 'Home'" />
         <PostJob v-else-if="tab === 'Post a Job'" />
         <Combine v-else-if="tab === 'Manage Jobs'" />
-        <Notifications v-else-if="tab === 'Notifications'" />
         <Profile v-else-if="tab === 'Profile'" />
       </q-card>
   </q-layout>
@@ -21,7 +20,6 @@ import RecruiterNavbar from "src/components/RecruiterDashboard/TopSection/RecuNa
 import Stats from "src/components/RecruiterDashboard/Features/stats.vue";
 import PostJob from "src/components/RecruiterDashboard/Features/postjob.vue";
 import Combine from "src/components/RecruiterDashboard/Features/jobsposted.vue";
-import Notifications from "src/components/RecruiterDashboard/Features/notifications.vue";
 import Profile from "src/components/RecruiterDashboard/Features/companyprofile.vue";
 
 export default {
@@ -31,7 +29,6 @@ export default {
     Stats,
     PostJob,
     Combine,
-    Notifications,
     Profile,
   },
   data() {

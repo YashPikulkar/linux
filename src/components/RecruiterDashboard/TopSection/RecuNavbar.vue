@@ -37,7 +37,6 @@ export default {
         "Home",
         "Post a Job",
         "Manage Jobs",
-        "Notifications",
         "Profile",
       ],
     };
