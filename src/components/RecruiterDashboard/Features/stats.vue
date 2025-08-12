@@ -1,90 +1,761 @@
+<!-- AnalyticsRecords.vue -->
 <template>
-  <div class="form-wrapper">
-    <q-card class="post-job-card">
-      <div class="form-header">Recent Activity</div>
-
-      <div class="activity-list">
-        <div
-          class="activity-item"
-          v-for="(activity, index) in activities"
-          :key="index"
-        >
-          <q-icon :name="activity.icon" color="primary" class="q-mr-sm" />
-          <div class="activity-text">{{ activity.text }}</div>
-          <div class="timestamp">{{ activity.time }}</div>
-        </div>
+  <!-- Job Posting Analytics Header -->
+  <div class="analytics-header q-pa-lg">
+    <div class="row justify-between items-center">
+      <div>
+        <h4 class="text-h4 q-ma-none text-weight-bold">Job Posting Analytics</h4>
+        <p class="text-subtitle1 text-grey-7 q-mt-sm">Track and monitor your job posting performance</p>
       </div>
+      <q-select
+        v-model="jobAnalyticsFilter"
+        :options="jobFilterOptions"
+        label="Filter by"
+        dense
+        outlined
+        class="filter-select"
+        emit-value
+        map-options
+      />
+    </div>
+  </div>
+
+  <!-- Job Posting Stats Cards - All in one row -->
+  <div class="stats-section q-px-lg">
+    <div class="row q-gutter-md">
+      <div
+        class="col"
+        v-for="(stat, index) in jobAnalyticsStats"
+        :key="index"
+      >
+        <q-card class="stat-card-enhanced">
+          <q-card-section class="text-center">
+            <div class="stat-icon-wrapper q-mb-sm">
+              <q-icon :name="stat.icon" size="32px" :color="stat.color" />
+            </div>
+            <div class="text-h3 stat-value-enhanced" :class="`text-${stat.color}`">
+              {{ stat.value }}
+            </div>
+            <div class="text-body2 stat-label-enhanced">{{ stat.label }}</div>
+            <div class="text-caption text-grey-6 q-mt-xs" v-if="stat.change">
+              <q-icon 
+                :name="stat.change > 0 ? 'trending_up' : 'trending_down'" 
+                :color="stat.change > 0 ? 'positive' : 'negative'"
+                size="16px"
+              />
+              {{ Math.abs(stat.change) }}% from last month
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Analytics Charts - Side by Side -->
+  <div class="charts-section q-pa-lg">
+    <div class="row q-col-gutter-lg">
+      <!-- Application Status Pie Chart -->
+      <div class="col-12 col-md-6">
+        <q-card class="chart-card-enhanced">
+          <q-card-section>
+            <div class="chart-header">
+              <div class="text-h6">Application Status Distribution</div>
+              <div class="text-caption text-grey-6">Current job applications breakdown</div>
+            </div>
+            <div class="chart-container">
+              <canvas ref="pieChartCanvas"></canvas>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Monthly Trend Line Chart -->
+      <div class="col-12 col-md-6">
+        <q-card class="chart-card-enhanced">
+          <q-card-section>
+            <div class="chart-header">
+              <div class="text-h6">Job Posting Performance Trend</div>
+              <div class="text-caption text-grey-6">Monthly applications received in 2025</div>
+            </div>
+            <div class="chart-container">
+              <canvas ref="trendChartCanvas"></canvas>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+  </div>
+
+  <!-- Top Performing Job Posts -->
+  <div class="table-section q-pa-lg">
+    <q-card class="table-card-enhanced">
+      <q-card-section>
+        <div class="table-header q-mb-md">
+          <div class="text-h6">Top Performing Job Posts</div>
+          <div class="text-caption text-grey-6">Jobs with highest application rates and engagement</div>
+        </div>
+
+        <q-table
+          flat
+          bordered
+          :rows="topJobPosts"
+          :columns="jobPostColumns"
+          row-key="title"
+          class="enhanced-table"
+          :grid="$q.screen.xs"
+          :rows-per-page-options="[10, 20, 50]"
+        >
+          <!-- Status Badge Template -->
+          <template v-slot:body-cell-status="props">
+            <q-td :props="props">
+              <q-badge 
+                :color="getStatusColor(props.value)"
+                :label="props.value"
+                class="status-badge"
+              />
+            </q-td>
+          </template>
+
+          <!-- Rate with Progress Bar -->
+          <template v-slot:body-cell-rate="props">
+            <q-td :props="props">
+              <div class="rate-cell">
+                <span class="rate-text">{{ props.value }}%</span>
+                <q-linear-progress
+                  :value="props.value / 100"
+                  size="4px"
+                  :color="getRateColor(props.value)"
+                  class="rate-progress q-mt-xs"
+                />
+              </div>
+            </q-td>
+          </template>
+
+          <!-- Mobile Grid Template -->
+          <template v-slot:item="props" v-if="$q.screen.xs">
+            <div class="col-12">
+              <q-card class="mobile-job-card q-ma-sm">
+                <q-card-section>
+                  <div class="text-weight-bold text-primary">{{ props.row.title }}</div>
+                  <div class="row justify-between q-mt-sm">
+                    <div class="col">
+                      <div class="text-caption text-grey-7">Applicants</div>
+                      <div class="text-h6">{{ props.row.applicants }}</div>
+                    </div>
+                    <div class="col">
+                      <div class="text-caption text-grey-7">Success Rate</div>
+                      <div class="text-h6">{{ props.row.rate }}%</div>
+                    </div>
+                    <div class="col">
+                      <q-badge 
+                        :color="getStatusColor(props.row.status)"
+                        :label="props.row.status"
+                      />
+                    </div>
+                  </div>
+                </q-card-section>
+              </q-card>
+            </div>
+          </template>
+        </q-table>
+      </q-card-section>
     </q-card>
   </div>
 </template>
 
 <script setup>
-import { ref } from 'vue'
+import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { useQuasar } from 'quasar'
 
-const activities = ref([
-  { icon: 'work', text: 'You posted a job for UI Designer', time: '2 hours ago' },
-  { icon: 'email', text: 'Sent email to shortlisted candidates', time: '1 day ago' },
-  { icon: 'check_circle', text: 'Closed position: Backend Developer', time: '3 days ago' },
-  { icon: 'update', text: 'Updated company profile', time: '5 days ago' }
+const $q = useQuasar()
+
+// Chart refs
+const pieChartCanvas = ref(null)
+const trendChartCanvas = ref(null)
+
+// Chart instances
+let pieChartInstance = null
+let trendChartInstance = null
+
+// Sample data
+const applicants = ref([
+  { uid: 1, name: 'Alice Johnson', status: 'pending', appliedDate: '2024-01-15' },
+  { uid: 2, name: 'Bob Smith', status: 'accepted', appliedDate: '2024-01-20' },
+  { uid: 3, name: 'Charlie Davis', status: 'rejected', appliedDate: '2024-02-10' },
+  { uid: 4, name: 'Diana Prince', status: 'pending', appliedDate: '2024-02-15' },
+  { uid: 5, name: 'Edward Norton', status: 'accepted', appliedDate: '2024-03-01' },
+  { uid: 6, name: 'Fiona Green', status: 'pending', appliedDate: '2024-03-10' },
+  { uid: 7, name: 'George Lucas', status: 'rejected', appliedDate: '2024-03-20' },
+  { uid: 8, name: 'Helen Troy', status: 'accepted', appliedDate: '2024-04-05' }
 ])
+
+const jobAnalyticsFilter = ref('all')
+
+const jobFilterOptions = [
+  { label: 'All Jobs', value: 'all' },
+  { label: 'Open Only', value: 'open' },
+  { label: 'Closed Only', value: 'closed' },
+  { label: 'Active (Open + Interviewing)', value: 'active' }
+]
+
+const topJobPosts = ref([
+  { title: 'Senior Backend Engineer', applicants: 120, rate: 45, status: 'Interviewing', posted: '2025-01-01' },
+  { title: 'Frontend Developer', applicants: 150, rate: 60, status: 'Open', posted: '2025-02-01' },
+  { title: 'DevOps Engineer', applicants: 110, rate: 52, status: 'Open', posted: '2025-03-01' },
+  { title: 'UI/UX Designer', applicants: 89, rate: 38, status: 'Closed', posted: '2025-01-15' },
+  { title: 'Product Manager', applicants: 95, rate: 42, status: 'Interviewing', posted: '2025-02-20' }
+])
+
+const monthlyTrend = ref([
+  { month: 'Jan', applications: 45 },
+  { month: 'Feb', applications: 62 },
+  { month: 'Mar', applications: 78 },
+  { month: 'Apr', applications: 55 },
+  { month: 'May', applications: 89 },
+  { month: 'Jun', applications: 95 },
+  { month: 'Jul', applications: 102 },
+  { month: 'Aug', applications: 87 }
+])
+
+// Helper functions
+const getStatusCount = status =>
+  applicants.value.filter(a => a.status.toLowerCase() === status.toLowerCase()).length
+
+const getStatusColor = (status) => {
+  const colors = {
+    'Open': 'positive',
+    'Closed': 'grey',
+    'Interviewing': 'warning',
+    'Pending': 'info'
+  }
+  return colors[status] || 'grey'
+}
+
+const getRateColor = (rate) => {
+  if (rate >= 60) return 'positive'
+  if (rate >= 40) return 'warning'
+  return 'negative'
+}
+
+// Computed properties
+const pieChartData = computed(() => {
+  const pending = getStatusCount('pending')
+  const accepted = getStatusCount('accepted')
+  const rejected = getStatusCount('rejected')
+
+  return {
+    labels: ['Pending', 'Accepted', 'Rejected'],
+    counts: [pending, accepted, rejected],
+    colors: ['#FF9800', '#4CAF50', '#F44336']
+  }
+})
+
+const filteredJobs = computed(() => {
+  let jobs = [...topJobPosts.value]
+  
+  switch (jobAnalyticsFilter.value) {
+    case 'open':
+      return jobs.filter(job => job.status === 'Open')
+    case 'closed':
+      return jobs.filter(job => job.status === 'Closed')
+    case 'active':
+      return jobs.filter(job => ['Open', 'Interviewing'].includes(job.status))
+    default:
+      return jobs
+  }
+})
+
+const jobAnalyticsStats = computed(() => {
+  const jobs = filteredJobs.value
+  const totalJobs = jobs.length
+  const totalApplicants = jobs.reduce((sum, job) => sum + job.applicants, 0)
+  const avgRate = totalJobs
+    ? Math.round(jobs.reduce((sum, job) => sum + job.rate, 0) / totalJobs)
+    : 0
+  const activeJobs = jobs.filter(job => ['Open', 'Interviewing'].includes(job.status)).length
+  
+  return [
+    { 
+      value: totalJobs, 
+      label: 'Total Job Posts', 
+      icon: 'work',
+      color: 'primary',
+      change: 12 
+    },
+    { 
+      value: totalApplicants, 
+      label: 'Total Applicants', 
+      icon: 'people',
+      color: 'positive',
+      change: 8 
+    },
+    { 
+      value: `${avgRate}%`, 
+      label: 'Avg Success Rate', 
+      icon: 'trending_up',
+      color: 'warning',
+      change: -3 
+    },
+    { 
+      value: activeJobs, 
+      label: 'Active Jobs', 
+      icon: 'play_circle',
+      color: 'info',
+      change: 5 
+    }
+  ]
+})
+
+// Table columns
+const jobPostColumns = [
+  { 
+    name: 'title', 
+    label: 'Job Title', 
+    field: 'title', 
+    sortable: true, 
+    align: 'left',
+    style: 'width: 40%'
+  },
+  { 
+    name: 'applicants', 
+    label: 'Applicants', 
+    field: 'applicants', 
+    sortable: true, 
+    align: 'center',
+    style: 'width: 20%'
+  },
+  { 
+    name: 'rate', 
+    label: 'Success Rate', 
+    field: 'rate', 
+    sortable: true, 
+    align: 'center',
+    style: 'width: 20%'
+  },
+  { 
+    name: 'status', 
+    label: 'Status', 
+    field: 'status', 
+    sortable: true, 
+    align: 'center',
+    style: 'width: 20%'
+  }
+]
+
+// Chart creation functions using native Canvas API for compatibility
+function createPieChart() {
+  if (!pieChartCanvas.value) return
+
+  const canvas = pieChartCanvas.value
+  const ctx = canvas.getContext('2d')
+  const data = pieChartData.value
+  
+  // Set canvas size
+  canvas.width = 300
+  canvas.height = 300
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  
+  const centerX = canvas.width / 2
+  const centerY = canvas.height / 2
+  const radius = Math.min(centerX, centerY) - 50
+  
+  const total = data.counts.reduce((sum, count) => sum + count, 0)
+  let currentAngle = -Math.PI / 2 // Start from top
+  
+  // Draw pie slices
+  data.counts.forEach((count, index) => {
+    const sliceAngle = (count / total) * 2 * Math.PI
+    
+    // Draw slice
+    ctx.beginPath()
+    ctx.moveTo(centerX, centerY)
+    ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
+    ctx.closePath()
+    ctx.fillStyle = data.colors[index]
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 3
+    ctx.stroke()
+    
+    currentAngle += sliceAngle
+  })
+  
+  // Draw labels
+  currentAngle = -Math.PI / 2
+  data.counts.forEach((count, index) => {
+    if (count > 0) {
+      const sliceAngle = (count / total) * 2 * Math.PI
+      const labelAngle = currentAngle + sliceAngle / 2
+      const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7)
+      const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7)
+      
+      ctx.fillStyle = '#ffffff'
+      ctx.font = 'bold 14px Arial'
+      ctx.textAlign = 'center'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(count.toString(), labelX, labelY)
+      
+      currentAngle += sliceAngle
+    }
+  })
+}
+
+function createTrendChart() {
+  if (!trendChartCanvas.value) return
+
+  const canvas = trendChartCanvas.value
+  const ctx = canvas.getContext('2d')
+  
+  // Set canvas size
+  canvas.width = 400
+  canvas.height = 300
+  
+  // Clear canvas
+  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  
+  const padding = 40
+  const chartWidth = canvas.width - 2 * padding
+  const chartHeight = canvas.height - 2 * padding
+  
+  const data = monthlyTrend.value
+  const maxValue = Math.max(...data.map(d => d.applications))
+  const minValue = 0
+  
+  // Draw grid lines
+  ctx.strokeStyle = '#f0f0f0'
+  ctx.lineWidth = 1
+  
+  // Horizontal grid lines
+  for (let i = 0; i <= 5; i++) {
+    const y = padding + (chartHeight / 5) * i
+    ctx.beginPath()
+    ctx.moveTo(padding, y)
+    ctx.lineTo(canvas.width - padding, y)
+    ctx.stroke()
+  }
+  
+  // Draw line chart
+  ctx.strokeStyle = '#1976D2'
+  ctx.lineWidth = 3
+  ctx.fillStyle = '#1976D2'
+  
+  const points = data.map((item, index) => {
+    const x = padding + (chartWidth / (data.length - 1)) * index
+    const y = padding + chartHeight - ((item.applications - minValue) / (maxValue - minValue)) * chartHeight
+    return { x, y, value: item.applications, label: item.month }
+  })
+  
+  // Draw line
+  ctx.beginPath()
+  points.forEach((point, index) => {
+    if (index === 0) {
+      ctx.moveTo(point.x, point.y)
+    } else {
+      ctx.lineTo(point.x, point.y)
+    }
+  })
+  ctx.stroke()
+  
+  // Draw points
+  points.forEach(point => {
+    ctx.beginPath()
+    ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI)
+    ctx.fill()
+    ctx.strokeStyle = '#ffffff'
+    ctx.lineWidth = 2
+    ctx.stroke()
+  })
+  
+  // Draw labels
+  ctx.fillStyle = '#666'
+  ctx.font = '12px Arial'
+  ctx.textAlign = 'center'
+  
+  points.forEach(point => {
+    // Month labels
+    ctx.fillText(point.label, point.x, canvas.height - 10)
+    // Value labels
+    ctx.fillText(point.value.toString(), point.x, point.y - 15)
+  })
+}
+
+// Initialize charts function
+const initializeCharts = async () => {
+  await nextTick()
+  setTimeout(() => {
+    createPieChart()
+    createTrendChart()
+  }, 100)
+}
+
+// Watchers
+watch(pieChartData, () => {
+  createPieChart()
+}, { deep: true })
+
+watch(jobAnalyticsFilter, () => {
+  // Recreate charts when filter changes
+  setTimeout(() => {
+    createPieChart()
+    createTrendChart()
+  }, 50)
+})
+
+// Lifecycle hooks
+onMounted(() => {
+  initializeCharts()
+})
+
+onBeforeUnmount(() => {
+  // Clean up if needed
+  pieChartInstance = null
+  trendChartInstance = null
+})
 </script>
 
 <style scoped>
-.form-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  box-sizing: border-box;
-  min-height: 0;
+/* Header Styling */
+.analytics-header {
+  background: linear-gradient(135deg, black 0%, grey 100%);
+  color: white;
+  margin: -16px -16px 0 -16px;
 }
 
-.post-job-card {
-  width: 100%;
-  padding: 24px;
-  background-color: white;
+.analytics-header .filter-select {
+  min-width: 200px;
+}
+
+.analytics-header .filter-select >>> .q-field__control {
+  background: rgba(255, 255, 255, 0.1);
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  color: white;
+}
+
+.analytics-header .filter-select >>> .q-field__native {
+  color: white;
+}
+
+/* Enhanced Stats Cards */
+.stats-section {
+  background: #f8fafc;
+  padding-top: 2rem;
+  padding-bottom: 2rem;
+}
+
+.stat-card-enhanced {
+  border: 2px solid #e2e8f0;
   border-radius: 16px;
-  box-shadow:
-    0 4px 8px rgba(255, 255, 255, 0.4),
-    0 8px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 3px rgba(255, 255, 255, 0.6);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  box-sizing: border-box;
-}
-
-.form-header {
-  font-weight: bold;
-  font-size: 20px;
-  color: #333;
-  margin-bottom: -12px;
-}
-
-.activity-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.activity-item {
+  transition: all 0.3s ease;
+  background: white;
+  min-height: 160px;
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  background-color: #f9f9f9;
-  padding: 12px 16px;
-  border-radius: 12px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  position: relative;
+  overflow: hidden;
 }
 
-.activity-text {
-  flex: 1;
-  font-size: 15px;
-  color: #555;
+.stat-card-enhanced::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: linear-gradient(90deg, #667eea, #764ba2);
 }
 
-.timestamp {
-  font-size: 13px;
-  color: #999;
-  margin-left: 16px;
+.stat-card-enhanced:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
+  border-color: #cbd5e1;
+}
+
+.stat-icon-wrapper {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: rgba(102, 126, 234, 0.1);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin: 0 auto;
+}
+
+.stat-value-enhanced {
+  font-weight: 700;
+  font-size: 2.5rem;
+  line-height: 1;
+  margin: 0.5rem 0;
+}
+
+.stat-label-enhanced {
+  color: #64748b;
+  font-weight: 600;
+  font-size: 0.875rem;
+}
+
+/* Enhanced Chart Cards */
+.charts-section {
+  background: white;
+}
+
+.chart-card-enhanced {
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  transition: all 0.3s ease;
+  height: 100%;
+}
+
+.chart-card-enhanced:hover {
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
+  border-color: #cbd5e1;
+}
+
+.chart-header {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
+}
+
+.chart-container {
+  width: 100%;
+  height: 320px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+}
+
+.chart-container canvas {
+  max-width: 100%;
+  max-height: 100%;
+}
+
+/* Enhanced Table */
+.table-section {
+  background: white;
+}
+
+.table-card-enhanced {
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  overflow: hidden;
+}
+
+.table-header {
+  border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1rem;
+}
+
+.enhanced-table {
+  border: none;
+}
+
+.enhanced-table >>> .q-table__top {
+  background: #f8fafc;
+}
+
+.enhanced-table >>> .q-table thead th {
+  background: #f1f5f9;
+  color: #374151;
+  font-weight: 600;
+  font-size: 0.875rem;
+  padding: 16px 12px;
+  border-bottom: 2px solid #e2e8f0;
+}
+
+.enhanced-table >>> .q-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.enhanced-table >>> .q-table tbody tr:hover {
+  background: #f8fafc;
+}
+
+.enhanced-table >>> .q-table tbody td {
+  padding: 12px;
+  border-bottom: 1px solid #f1f5f9;
+}
+
+.status-badge {
+  font-size: 0.75rem;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-weight: 500;
+}
+
+.rate-cell {
+  min-width: 100px;
+}
+
+.rate-text {
+  font-weight: 600;
+  color: #374151;
+}
+
+.rate-progress {
+  width: 60px;
+  margin: 0 auto;
+}
+
+.mobile-job-card {
+  border: 1px solid #e2e8f0;
+  border-radius: 8px;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+  .stat-value-enhanced {
+    font-size: 2rem;
+  }
+  
+  .chart-container {
+    height: 280px;
+  }
+}
+
+@media (max-width: 768px) {
+  .analytics-header {
+    text-align: center;
+  }
+  
+  .analytics-header .row {
+    flex-direction: column;
+    gap: 1rem;
+  }
+  
+  .stat-card-enhanced {
+    min-height: 140px;
+  }
+  
+  .stat-value-enhanced {
+    font-size: 1.8rem;
+  }
+  
+  .chart-container {
+    height: 250px;
+    padding: 10px;
+  }
+}
+
+@media (max-width: 599px) {
+  .stat-card-enhanced {
+    min-height: 120px;
+  }
+  
+  .stat-value-enhanced {
+    font-size: 1.5rem;
+  }
+  
+  .stat-icon-wrapper {
+    width: 48px;
+    height: 48px;
+  }
+  
+  .chart-container {
+    height: 220px;
+  }
 }
 </style>

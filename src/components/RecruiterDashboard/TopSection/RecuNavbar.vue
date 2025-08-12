@@ -1,5 +1,5 @@
 <template>
-  <div class="user-navbar row no-wrap items-center">
+  <div class="user-navbar sticky row no-wrap items-center">
     <q-tabs
       :model-value="tab"
       @update:model-value="$emit('update:tab', $event)"
@@ -37,7 +37,6 @@ export default {
         "Home",
         "Post a Job",
         "Manage Jobs",
-        "Notifications",
         "Profile",
       ],
     };
@@ -51,18 +50,54 @@ export default {
 </script>
 
 <style scoped>
+.user-navbar {
+  max-width: 100%;
+  flex-shrink: 0;
+  overflow-x: auto;
+  background-color: transparent !important;
+  padding: 0 !important;
+  margin: 0;
+  border: none;
+  display: flex;
+}
+
+/* Optional sticky navbar */
+.user-navbar.sticky {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  background: inherit;
+}
+
+.user-tabs {
+  display: flex;
+  flex-wrap: nowrap;
+  overflow-x: auto;
+  overflow-y: hidden;
+  scrollbar-width: none;       /* Firefox */
+  -ms-overflow-style: none;    /* IE/Edge */
+  width: 100%;
+}
+
+.user-tabs::-webkit-scrollbar {
+  display: none; /* Chrome, Safari */
+}
+
 .user-tab {
   border-radius: 999px;
   background-color: white;
   color: #111827;
   transition: all 0.2s ease;
   font-weight: 500;
-  padding: 0px 10px;
-  margin-right: 8px; /* 👈 this adds spacing between tabs */
+  padding: 6px 12px;
+  margin-right: 8px;
+  white-space: nowrap;
+  flex-shrink: 0;
+  font-size: 14px;
 }
 
 .user-tab:last-child {
-  margin-right: 0; /* remove right margin for last tab */
+  margin-right: 0;
 }
 
 .user-tab.is-active {
@@ -70,15 +105,10 @@ export default {
   color: white;
 }
 
-.user-tabs {
-  display: flex; /* ensure flex to support margin/gap */
-  align-items: center;
-}
-
-.user-navbar {
-  background-color: transparent !important;
-  padding: 0 !important;
-  margin: 0;
-  border: none;
+@media (max-width: 600px) {
+  .user-tab {
+    font-size: 13px;
+    padding: 4px 10px;
+  }
 }
 </style>
