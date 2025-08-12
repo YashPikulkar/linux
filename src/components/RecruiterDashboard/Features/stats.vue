@@ -21,173 +21,236 @@
   </div>
 
   <!-- Job Posting Stats Cards - All in one row -->
-  <div class="stats-section q-px-lg">
-    <div class="row q-gutter-md">
-      <div
-        class="col"
-        v-for="(stat, index) in jobAnalyticsStats"
-        :key="index"
-      >
-        <q-card class="stat-card-enhanced">
-          <q-card-section class="text-center">
-            <div class="stat-icon-wrapper q-mb-sm">
-              <q-icon :name="stat.icon" size="32px" :color="stat.color" />
-            </div>
-            <div class="text-h3 stat-value-enhanced" :class="`text-${stat.color}`">
-              {{ stat.value }}
-            </div>
-            <div class="text-body2 stat-label-enhanced">{{ stat.label }}</div>
-            <div class="text-caption text-grey-6 q-mt-xs" v-if="stat.change">
+<div class="stats-section q-px-lg">
+  <!-- Optional refresh button -->
+  <div class="row justify-end q-mb-md">
+    <q-btn 
+      flat 
+      round 
+      icon="refresh" 
+      @click="refreshStats"
+      :loading="isLoadingStats"
+      color="primary"
+      size="sm"
+    >
+      <q-tooltip>Refresh Stats</q-tooltip>
+    </q-btn>
+  </div>
+
+  <div class="row q-gutter-md">
+    <div
+      class="col"
+      v-for="(stat, index) in jobAnalyticsStats"
+      :key="index"
+    >
+      <q-card class="stat-card-enhanced">
+        <q-card-section class="text-center">
+          <div class="stat-icon-wrapper q-mb-sm">
+            <q-icon :name="stat.icon" size="32px" :color="stat.color" />
+            <!-- Optional: Add a small globe icon for global stats -->
+            <q-icon 
+              v-if="stat.isGlobal" 
+              name="public" 
+              size="12px" 
+              color="grey-5" 
+              class="absolute-top-right q-ma-xs"
+            >
+              <q-tooltip>Platform-wide metric</q-tooltip>
+            </q-icon>
+          </div>
+          
+          <!-- Loading skeleton or actual value -->
+          <div v-if="isLoadingStats" class="text-h3 stat-value-enhanced">
+            <q-skeleton type="text" width="60px" height="40px" />
+          </div>
+          <div v-else class="text-h3 stat-value-enhanced" :class="`text-${stat.color}`">
+            {{ stat.value }}
+          </div>
+          
+          <div class="text-body2 stat-label-enhanced">{{ stat.label }}</div>
+          
+          <!-- Enhanced change display -->
+          <div class="text-caption text-grey-6 q-mt-xs" v-if="stat.change !== undefined && !isLoadingStats">
+            <template v-if="stat.isGlobal">
+              <!-- For global stats, show platform growth -->
               <q-icon 
-                :name="stat.change > 0 ? 'trending_up' : 'trending_down'" 
-                :color="stat.change > 0 ? 'positive' : 'negative'"
+                name="trending_up" 
+                color="positive"
                 size="16px"
               />
-              {{ Math.abs(stat.change) }}% from last month
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-    </div>
-  </div>
-
-  <!-- Analytics Charts - Side by Side -->
-  <div class="charts-section q-pa-lg">
-    <div class="row q-col-gutter-lg">
-      <!-- Application Status Pie Chart -->
-      <div class="col-12 col-md-6">
-        <q-card class="chart-card-enhanced">
-          <q-card-section>
-            <div class="chart-header">
-              <div class="text-h6">Application Status Distribution</div>
-              <div class="text-caption text-grey-6">Current job applications breakdown</div>
-            </div>
-            <div class="chart-container">
-              <canvas ref="pieChartCanvas"></canvas>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <!-- Monthly Trend Line Chart -->
-      <div class="col-12 col-md-6">
-        <q-card class="chart-card-enhanced">
-          <q-card-section>
-            <div class="chart-header">
-              <div class="text-h6">Job Posting Performance Trend</div>
-              <div class="text-caption text-grey-6">Monthly applications received in 2025</div>
-            </div>
-            <div class="chart-container">
-              <canvas ref="trendChartCanvas"></canvas>
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-    </div>
-  </div>
-
-  <!-- Top Performing Job Posts -->
-  <div class="table-section q-pa-lg">
-    <q-card class="table-card-enhanced">
-      <q-card-section>
-        <div class="table-header q-mb-md">
-          <div class="text-h6">Top Performing Job Posts</div>
-          <div class="text-caption text-grey-6">Jobs with highest application rates and engagement</div>
-        </div>
-
-        <q-table
-          flat
-          bordered
-          :rows="topJobPosts"
-          :columns="jobPostColumns"
-          row-key="title"
-          class="enhanced-table"
-          :grid="$q.screen.xs"
-          :rows-per-page-options="[10, 20, 50]"
-        >
-          <!-- Status Badge Template -->
-          <template v-slot:body-cell-status="props">
-            <q-td :props="props">
-              <q-badge 
-                :color="getStatusColor(props.value)"
-                :label="props.value"
-                class="status-badge"
+              {{ Math.abs(stat.change) }}% platform growth
+            </template>
+            <template v-else>
+              <!-- For personal stats, show month-over-month change -->
+              <q-icon 
+                :name="stat.change > 0 ? 'trending_up' : stat.change < 0 ? 'trending_down' : 'trending_flat'" 
+                :color="stat.change > 0 ? 'positive' : stat.change < 0 ? 'negative' : 'grey'"
+                size="16px"
               />
-            </q-td>
-          </template>
+              <span v-if="stat.change !== 0">{{ Math.abs(stat.change) }}% from last month</span>
+              <span v-else>No change from last month</span>
+            </template>
+          </div>
+        </q-card-section>
+      </q-card>
+    </div>
+  </div>
+</div>
 
-          <!-- Rate with Progress Bar -->
-          <template v-slot:body-cell-rate="props">
-            <q-td :props="props">
-              <div class="rate-cell">
-                <span class="rate-text">{{ props.value }}%</span>
-                <q-linear-progress
-                  :value="props.value / 100"
-                  size="4px"
-                  :color="getRateColor(props.value)"
-                  class="rate-progress q-mt-xs"
-                />
-              </div>
-            </q-td>
-          </template>
-
-          <!-- Mobile Grid Template -->
-          <template v-slot:item="props" v-if="$q.screen.xs">
-            <div class="col-12">
-              <q-card class="mobile-job-card q-ma-sm">
-                <q-card-section>
-                  <div class="text-weight-bold text-primary">{{ props.row.title }}</div>
-                  <div class="row justify-between q-mt-sm">
-                    <div class="col">
-                      <div class="text-caption text-grey-7">Applicants</div>
-                      <div class="text-h6">{{ props.row.applicants }}</div>
-                    </div>
-                    <div class="col">
-                      <div class="text-caption text-grey-7">Success Rate</div>
-                      <div class="text-h6">{{ props.row.rate }}%</div>
-                    </div>
-                    <div class="col">
-                      <q-badge 
-                        :color="getStatusColor(props.row.status)"
-                        :label="props.row.status"
-                      />
-                    </div>
-                  </div>
-                </q-card-section>
-              </q-card>
+  <!-- Analytics Charts and Table Layout -->
+  <div class="content-section q-pa-lg">
+    <div class="row q-col-gutter-lg">
+      <!-- Application Status Pie Chart - Reduced Size -->
+      <div class="col-12 col-md-4">
+        <q-card class="chart-card-enhanced">
+          <q-card-section>
+            <div class="chart-header">
+              <div class="text-h6">Application Status</div>
+              <div class="text-caption text-grey-6">Current applications breakdown</div>
             </div>
-          </template>
-        </q-table>
-      </q-card-section>
-    </q-card>
+            <div class="pie-chart-container">
+              <canvas ref="pieChartCanvas"></canvas>
+              <!-- Legend -->
+              <div class="pie-legend q-mt-md">
+                <div 
+                  v-for="(label, index) in pieChartData.labels" 
+                  :key="label"
+                  class="legend-item"
+                >
+                  <div 
+                    class="legend-color" 
+                    :style="{ backgroundColor: pieChartData.colors[index] }"
+                  ></div>
+                  <span class="legend-text">{{ label }}: {{ pieChartData.counts[index] }}</span>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Top Performing Job Posts - Takes More Space -->
+      <div class="col-12 col-md-8">
+        <q-card class="table-card-enhanced">
+          <q-card-section>
+            <div class="table-header q-mb-md">
+              <div class="row justify-between items-center">
+                <div>
+                  <div class="text-h6">Top Performing Job Posts</div>
+                  <div class="text-caption text-grey-6">Live job market data with highest engagement</div>
+                </div>
+                <q-btn 
+                  flat 
+                  round 
+                  icon="refresh" 
+                  @click="refreshJobData"
+                  :loading="isLoadingJobs"
+                  color="primary"
+                  size="sm"
+                >
+                  <q-tooltip>Refresh Job Data</q-tooltip>
+                </q-btn>
+              </div>
+            </div>
+
+            <q-table
+              flat
+              bordered
+              :rows="filteredJobs"
+              :columns="jobPostColumns"
+              row-key="title"
+              class="enhanced-table"
+              :grid="$q.screen.xs"
+              :rows-per-page-options="[5, 10, 15]"
+              :pagination="{ rowsPerPage: 5 }"
+            >
+              <!-- Status Badge Template -->
+              <template v-slot:body-cell-status="props">
+                <q-td :props="props">
+                  <q-badge 
+                    :color="getStatusColor(props.value)"
+                    :label="props.value"
+                    class="status-badge"
+                  />
+                </q-td>
+              </template>
+
+              <!-- Rate with Progress Bar -->
+              <template v-slot:body-cell-rate="props">
+                <q-td :props="props">
+                  <div class="rate-cell">
+                    <span class="rate-text">{{ props.value }}%</span>
+                    <q-linear-progress
+                      :value="props.value / 100"
+                      size="4px"
+                      :color="getRateColor(props.value)"
+                      class="rate-progress q-mt-xs"
+                    />
+                  </div>
+                </q-td>
+              </template>
+
+              <!-- Company Column -->
+              <template v-slot:body-cell-company="props">
+                <q-td :props="props">
+                  <div class="company-cell">
+                    <q-avatar size="24px" color="primary" text-color="white" class="q-mr-sm">
+                      {{ props.value.charAt(0) }}
+                    </q-avatar>
+                    <span>{{ props.value }}</span>
+                  </div>
+                </q-td>
+              </template>
+
+              <!-- Mobile Grid Template -->
+              <template v-slot:item="props" v-if="$q.screen.xs">
+                <div class="col-12">
+                  <q-card class="mobile-job-card q-ma-sm">
+                    <q-card-section>
+                      <div class="text-weight-bold text-primary">{{ props.row.title }}</div>
+                      <div class="text-caption text-grey-7 q-mb-sm">{{ props.row.company }}</div>
+                      <div class="row justify-between q-mt-sm">
+                        <div class="col">
+                          <div class="text-caption text-grey-7">Applicants</div>
+                          <div class="text-h6">{{ props.row.applicants }}</div>
+                        </div>
+                        <div class="col">
+                          <div class="text-caption text-grey-7">Success Rate</div>
+                          <div class="text-h6">{{ props.row.rate }}%</div>
+                        </div>
+                        <div class="col">
+                          <q-badge 
+                            :color="getStatusColor(props.row.status)"
+                            :label="props.row.status"
+                          />
+                        </div>
+                      </div>
+                    </q-card-section>
+                  </q-card>
+                </div>
+              </template>
+            </q-table>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
   </div>
 </template>
 
 <script setup>
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
+import { useUserStore } from 'src/stores/user-store' 
 
+const userStore = useUserStore();
+const token = userStore.token || sessionStorage.getItem("token");
 const $q = useQuasar()
 
 // Chart refs
 const pieChartCanvas = ref(null)
-const trendChartCanvas = ref(null)
 
 // Chart instances
 let pieChartInstance = null
-let trendChartInstance = null
-
-// Sample data
-const applicants = ref([
-  { uid: 1, name: 'Alice Johnson', status: 'pending', appliedDate: '2024-01-15' },
-  { uid: 2, name: 'Bob Smith', status: 'accepted', appliedDate: '2024-01-20' },
-  { uid: 3, name: 'Charlie Davis', status: 'rejected', appliedDate: '2024-02-10' },
-  { uid: 4, name: 'Diana Prince', status: 'pending', appliedDate: '2024-02-15' },
-  { uid: 5, name: 'Edward Norton', status: 'accepted', appliedDate: '2024-03-01' },
-  { uid: 6, name: 'Fiona Green', status: 'pending', appliedDate: '2024-03-10' },
-  { uid: 7, name: 'George Lucas', status: 'rejected', appliedDate: '2024-03-20' },
-  { uid: 8, name: 'Helen Troy', status: 'accepted', appliedDate: '2024-04-05' }
-])
 
 const jobAnalyticsFilter = ref('all')
 
@@ -198,28 +261,114 @@ const jobFilterOptions = [
   { label: 'Active (Open + Interviewing)', value: 'active' }
 ]
 
-const topJobPosts = ref([
-  { title: 'Senior Backend Engineer', applicants: 120, rate: 45, status: 'Interviewing', posted: '2025-01-01' },
-  { title: 'Frontend Developer', applicants: 150, rate: 60, status: 'Open', posted: '2025-02-01' },
-  { title: 'DevOps Engineer', applicants: 110, rate: 52, status: 'Open', posted: '2025-03-01' },
-  { title: 'UI/UX Designer', applicants: 89, rate: 38, status: 'Closed', posted: '2025-01-15' },
-  { title: 'Product Manager', applicants: 95, rate: 42, status: 'Interviewing', posted: '2025-02-20' }
-])
+// Job posts with API integration
+const topJobPosts = ref([])
+const isLoadingJobs = ref(false)
 
-const monthlyTrend = ref([
-  { month: 'Jan', applications: 45 },
-  { month: 'Feb', applications: 62 },
-  { month: 'Mar', applications: 78 },
-  { month: 'Apr', applications: 55 },
-  { month: 'May', applications: 89 },
-  { month: 'Jun', applications: 95 },
-  { month: 'Jul', applications: 102 },
-  { month: 'Aug', applications: 87 }
-])
+// Table columns
+const jobPostColumns = [
+  {
+    name: 'title',
+    required: true,
+    label: 'TITLE',
+    align: 'left',
+    field: 'title',
+    sortable: true
+  },
+  {
+    name: 'company',
+    label: 'COMPANY',
+    align: 'left',
+    field: 'company',
+    sortable: true
+  },
+  {
+    name: 'applicants',
+    label: 'APPLICANTS',
+    align: 'center',
+    field: 'applicants',
+    sortable: true
+  },
+  {
+    name: 'rate',
+    label: 'RATE',
+    align: 'center',
+    field: 'rate',
+    sortable: true
+  },
+  {
+    name: 'status',
+    label: 'STATUS',
+    align: 'center',
+    field: 'status'
+  },
+  {
+    name: 'posted',
+    label: 'POSTED',
+    align: 'center',
+    field: 'posted',
+    sortable: true
+  }
+]
 
-// Helper functions
-const getStatusCount = status =>
-  applicants.value.filter(a => a.status.toLowerCase() === status.toLowerCase()).length
+// API Integration for Job Posts
+const fetchMockJobData = async () => {
+  isLoadingJobs.value = true
+  try {
+    // Get user data for company names
+    const response = await fetch('https://jsonplaceholder.typicode.com/users')
+    const users = await response.json()
+    
+    const jobTitles = [
+      'Senior Frontend Developer', 'Backend Engineer', 'Full Stack Developer',
+      'DevOps Engineer', 'UI/UX Designer', 'Product Manager',
+      'Data Scientist', 'Software Engineer', 'Mobile Developer',
+      'Cloud Architect', 'Machine Learning Engineer', 'QA Engineer'
+    ]
+    
+    const statuses = ['Open', 'Closed', 'Interviewing']
+    
+    topJobPosts.value = jobTitles.slice(0, 8).map((title, index) => ({
+      title,
+      company: users[index]?.company?.name || `Tech Corp ${index + 1}`,
+      applicants: Math.floor(Math.random() * 200) + 80,
+      rate: Math.floor(Math.random() * 50) + 25,
+      status: statuses[Math.floor(Math.random() * statuses.length)],
+      posted: new Date(2025 - Math.floor(Math.random() * 2), 
+                      Math.floor(Math.random() * 12), 
+                      Math.floor(Math.random() * 28) + 1)
+                .toISOString().split('T')[0]
+    })).sort((a, b) => b.applicants - a.applicants)
+  } catch (error) {
+    console.error('Error fetching mock data:', error)
+    // Fallback to static data
+    topJobPosts.value = generateFallbackData()
+  } finally {
+    isLoadingJobs.value = false
+  }
+}
+
+const generateFallbackData = () => {
+  const fallbackJobs = [
+    'Senior React Developer', 'Node.js Engineer', 'Python Developer',
+    'DevOps Specialist', 'UX Designer', 'Product Manager'
+  ]
+  
+  return fallbackJobs.map((title, index) => ({
+    title,
+    company: `Company ${index + 1}`,
+    applicants: Math.floor(Math.random() * 150) + 70,
+    rate: Math.floor(Math.random() * 40) + 30,
+    status: ['Open', 'Interviewing'][Math.floor(Math.random() * 2)],
+    posted: new Date(2025, Math.floor(Math.random() * 8), 
+                    Math.floor(Math.random() * 28) + 1)
+              .toISOString().split('T')[0]
+  }))
+}
+
+const refreshJobData = () => {
+  fetchMockJobData()
+}
 
 const getStatusColor = (status) => {
   const colors = {
@@ -237,11 +386,50 @@ const getRateColor = (rate) => {
   return 'negative'
 }
 
+const piestats = ref({
+  pending: 0,
+  accepted: 0,
+  rejected: 0
+})
+
+// Fetch pie chart data
+const fetchPie = async () => {
+  isLoadingStats.value = true
+  try {
+    const response = await fetch('http://localhost:3000/jobs/PieChart', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+        
+    if (response.ok) {
+      const data = await response.json()
+      piestats.value = {
+        pending: data.pending,
+        accepted: data.accepted, 
+        rejected: data.rejected
+      }
+      console.log('Updated pie stats:', piestats.value)
+      
+      await nextTick()
+      createPieChart()
+    } else {
+      console.error('Failed to fetch pie chart data:', response.status)
+    }
+  } catch (error) {
+    console.error('Error fetching pie chart data:', error)
+  } finally {
+    isLoadingStats.value = false
+  }
+}
+
 // Computed properties
 const pieChartData = computed(() => {
-  const pending = getStatusCount('pending')
-  const accepted = getStatusCount('accepted')
-  const rejected = getStatusCount('rejected')
+  const pending = piestats.value.pending
+  const accepted = piestats.value.accepted
+  const rejected = piestats.value.rejected
 
   return {
     labels: ['Pending', 'Accepted', 'Rejected'],
@@ -265,84 +453,85 @@ const filteredJobs = computed(() => {
   }
 })
 
+// API Stats
+const apiStats = ref({
+  total_jobs: 0,
+  jobs_this_month: 0,
+  total_recruiters: 0,
+  active_jobs: 0,
+  jobs_change: 0,
+  jobs_this_month_change: 0,
+  platform_growth: 0,
+  active_jobs_change: 0
+})
+
+const isLoadingStats = ref(false)
+
+const fetchJobStats = async () => {
+  isLoadingStats.value = true
+  try {
+    const response = await fetch('http://localhost:3000/jobs/getTotalJobsByRecruiter', {
+      method: 'GET',
+      headers: {
+        'Authorization': `Bearer ${token}`,
+        'Content-Type': 'application/json'
+      }
+    })
+        
+    if (response.ok) {
+      const data = await response.json()
+      apiStats.value = data.stats
+      console.log('Updated stats:', data.stats)
+    } else {
+      console.error('Failed to fetch job stats:', response.status)
+    }
+  } catch (error) {
+    console.error('Error fetching job stats:', error)
+  } finally {
+    isLoadingStats.value = false
+  }
+}
+
 const jobAnalyticsStats = computed(() => {
-  const jobs = filteredJobs.value
-  const totalJobs = jobs.length
-  const totalApplicants = jobs.reduce((sum, job) => sum + job.applicants, 0)
-  const avgRate = totalJobs
-    ? Math.round(jobs.reduce((sum, job) => sum + job.rate, 0) / totalJobs)
-    : 0
-  const activeJobs = jobs.filter(job => ['Open', 'Interviewing'].includes(job.status)).length
-  
   return [
-    { 
-      value: totalJobs, 
-      label: 'Total Job Posts', 
+    {
+      value: apiStats.value.total_jobs || 0,
+      label: 'Total Job Posts',
       icon: 'work',
       color: 'primary',
-      change: 12 
+      change: apiStats.value.jobs_change || 0
     },
-    { 
-      value: totalApplicants, 
-      label: 'Total Applicants', 
-      icon: 'people',
+    {
+      value: apiStats.value.jobs_this_month || 0,
+      label: 'Jobs This Month',
+      icon: 'calendar_today',
       color: 'positive',
-      change: 8 
+      change: apiStats.value.jobs_this_month_change || 0
     },
-    { 
-      value: `${avgRate}%`, 
-      label: 'Avg Success Rate', 
-      icon: 'trending_up',
+    {
+      value: apiStats.value.total_recruiters || 0,
+      label: 'Platform Recruiters',
+      icon: 'people',
       color: 'warning',
-      change: -3 
+      change: apiStats.value.platform_growth || 0,
+      isGlobal: true
     },
-    { 
-      value: activeJobs, 
-      label: 'Active Jobs', 
+    {
+      value: apiStats.value.active_jobs || 0,
+      label: 'Active Jobs',
       icon: 'play_circle',
       color: 'info',
-      change: 5 
+      change: apiStats.value.active_jobs_change || 0
     }
   ]
 })
 
-// Table columns
-const jobPostColumns = [
-  { 
-    name: 'title', 
-    label: 'Job Title', 
-    field: 'title', 
-    sortable: true, 
-    align: 'left',
-    style: 'width: 40%'
-  },
-  { 
-    name: 'applicants', 
-    label: 'Applicants', 
-    field: 'applicants', 
-    sortable: true, 
-    align: 'center',
-    style: 'width: 20%'
-  },
-  { 
-    name: 'rate', 
-    label: 'Success Rate', 
-    field: 'rate', 
-    sortable: true, 
-    align: 'center',
-    style: 'width: 20%'
-  },
-  { 
-    name: 'status', 
-    label: 'Status', 
-    field: 'status', 
-    sortable: true, 
-    align: 'center',
-    style: 'width: 20%'
-  }
-]
+const refreshStats = () => {
+  fetchJobStats()
+  fetchPie()
+}
 
-// Chart creation functions using native Canvas API for compatibility
+// Enhanced pie chart with better styling
 function createPieChart() {
   if (!pieChartCanvas.value) return
 
@@ -350,143 +539,91 @@ function createPieChart() {
   const ctx = canvas.getContext('2d')
   const data = pieChartData.value
   
-  // Set canvas size
-  canvas.width = 300
-  canvas.height = 300
+  // Set canvas size - smaller for better layout
+  canvas.width = 220
+  canvas.height = 220
   
-  // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   
   const centerX = canvas.width / 2
   const centerY = canvas.height / 2
-  const radius = Math.min(centerX, centerY) - 50
+  const radius = Math.min(centerX, centerY) - 30
   
   const total = data.counts.reduce((sum, count) => sum + count, 0)
-  let currentAngle = -Math.PI / 2 // Start from top
   
-  // Draw pie slices
-  data.counts.forEach((count, index) => {
-    const sliceAngle = (count / total) * 2 * Math.PI
-    
-    // Draw slice
+  if (total === 0) {
+    // Draw empty state
+    ctx.fillStyle = '#f0f0f0'
     ctx.beginPath()
-    ctx.moveTo(centerX, centerY)
-    ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
-    ctx.closePath()
-    ctx.fillStyle = data.colors[index]
+    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
     ctx.fill()
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 3
-    ctx.stroke()
     
-    currentAngle += sliceAngle
-  })
+    ctx.fillStyle = '#666'
+    ctx.font = '14px Arial'
+    ctx.textAlign = 'center'
+    ctx.fillText('No Data', centerX, centerY)
+    return
+  }
   
-  // Draw labels
-  currentAngle = -Math.PI / 2
+  let currentAngle = -Math.PI / 2
+  
+  // Draw pie slices with shadow effect
   data.counts.forEach((count, index) => {
     if (count > 0) {
       const sliceAngle = (count / total) * 2 * Math.PI
-      const labelAngle = currentAngle + sliceAngle / 2
-      const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7)
-      const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7)
       
-      ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 14px Arial'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(count.toString(), labelX, labelY)
+      // Shadow
+      ctx.shadowColor = 'rgba(0,0,0,0.2)'
+      ctx.shadowBlur = 8
+      ctx.shadowOffsetX = 2
+      ctx.shadowOffsetY = 2
+      
+      // Draw slice
+      ctx.beginPath()
+      ctx.moveTo(centerX, centerY)
+      ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
+      ctx.closePath()
+      ctx.fillStyle = data.colors[index]
+      ctx.fill()
+      
+      // Reset shadow
+      ctx.shadowColor = 'transparent'
+      ctx.shadowBlur = 0
+      ctx.shadowOffsetX = 0
+      ctx.shadowOffsetY = 0
+      
+      // White border
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 2
+      ctx.stroke()
       
       currentAngle += sliceAngle
     }
   })
-}
-
-function createTrendChart() {
-  if (!trendChartCanvas.value) return
-
-  const canvas = trendChartCanvas.value
-  const ctx = canvas.getContext('2d')
   
-  // Set canvas size
-  canvas.width = 400
-  canvas.height = 300
-  
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  
-  const padding = 40
-  const chartWidth = canvas.width - 2 * padding
-  const chartHeight = canvas.height - 2 * padding
-  
-  const data = monthlyTrend.value
-  const maxValue = Math.max(...data.map(d => d.applications))
-  const minValue = 0
-  
-  // Draw grid lines
-  ctx.strokeStyle = '#f0f0f0'
-  ctx.lineWidth = 1
-  
-  // Horizontal grid lines
-  for (let i = 0; i <= 5; i++) {
-    const y = padding + (chartHeight / 5) * i
-    ctx.beginPath()
-    ctx.moveTo(padding, y)
-    ctx.lineTo(canvas.width - padding, y)
-    ctx.stroke()
-  }
-  
-  // Draw line chart
-  ctx.strokeStyle = '#1976D2'
-  ctx.lineWidth = 3
-  ctx.fillStyle = '#1976D2'
-  
-  const points = data.map((item, index) => {
-    const x = padding + (chartWidth / (data.length - 1)) * index
-    const y = padding + chartHeight - ((item.applications - minValue) / (maxValue - minValue)) * chartHeight
-    return { x, y, value: item.applications, label: item.month }
-  })
-  
-  // Draw line
+  // Draw center circle for donut effect
   ctx.beginPath()
-  points.forEach((point, index) => {
-    if (index === 0) {
-      ctx.moveTo(point.x, point.y)
-    } else {
-      ctx.lineTo(point.x, point.y)
-    }
-  })
+  ctx.arc(centerX, centerY, radius * 0.4, 0, 2 * Math.PI)
+  ctx.fillStyle = '#ffffff'
+  ctx.fill()
+  ctx.strokeStyle = '#e0e0e0'
+  ctx.lineWidth = 2
   ctx.stroke()
   
-  // Draw points
-  points.forEach(point => {
-    ctx.beginPath()
-    ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI)
-    ctx.fill()
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 2
-    ctx.stroke()
-  })
-  
-  // Draw labels
-  ctx.fillStyle = '#666'
-  ctx.font = '12px Arial'
+  // Center text
+  ctx.fillStyle = '#333'
+  ctx.font = 'bold 16px Arial'
   ctx.textAlign = 'center'
-  
-  points.forEach(point => {
-    // Month labels
-    ctx.fillText(point.label, point.x, canvas.height - 10)
-    // Value labels
-    ctx.fillText(point.value.toString(), point.x, point.y - 15)
-  })
+  ctx.fillText(total.toString(), centerX, centerY - 5)
+  ctx.font = '12px Arial'
+  ctx.fillText('Total', centerX, centerY + 12)
 }
 
-// Initialize charts function
+// Initialize charts
 const initializeCharts = async () => {
   await nextTick()
   setTimeout(() => {
     createPieChart()
-    createTrendChart()
   }, 100)
 }
 
@@ -495,23 +632,23 @@ watch(pieChartData, () => {
   createPieChart()
 }, { deep: true })
 
-watch(jobAnalyticsFilter, () => {
-  // Recreate charts when filter changes
-  setTimeout(() => {
-    createPieChart()
-    createTrendChart()
-  }, 50)
-})
-
 // Lifecycle hooks
 onMounted(() => {
+  fetchJobStats()
+  fetchPie()
+  fetchMockJobData()
   initializeCharts()
+  
+  // Auto-refresh job data every 60 seconds
+  setInterval(() => {
+    if (!isLoadingJobs.value) {
+      fetchMockJobData()
+    }
+  }, 60000)
 })
 
 onBeforeUnmount(() => {
-  // Clean up if needed
   pieChartInstance = null
-  trendChartInstance = null
 })
 </script>
 
@@ -596,11 +733,12 @@ onBeforeUnmount(() => {
   font-size: 0.875rem;
 }
 
-/* Enhanced Chart Cards */
-.charts-section {
+/* Content Section */
+.content-section {
   background: white;
 }
 
+/* Pie Chart Styling */
 .chart-card-enhanced {
   border: 2px solid #e2e8f0;
   border-radius: 16px;
@@ -617,31 +755,50 @@ onBeforeUnmount(() => {
   border-bottom: 1px solid #f1f5f9;
   padding-bottom: 1rem;
   margin-bottom: 1rem;
+  text-align: center;
 }
 
-.chart-container {
-  width: 100%;
-  height: 320px;
+.pie-chart-container {
   display: flex;
-  justify-content: center;
+  flex-direction: column;
   align-items: center;
-  padding: 20px;
+  padding: 10px;
 }
 
-.chart-container canvas {
+.pie-chart-container canvas {
   max-width: 100%;
-  max-height: 100%;
+}
+
+.pie-legend {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  align-items: flex-start;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+}
+
+.legend-text {
+  font-size: 12px;
+  color: #666;
 }
 
 /* Enhanced Table */
-.table-section {
-  background: white;
-}
-
 .table-card-enhanced {
   border: 2px solid #e2e8f0;
   border-radius: 16px;
   overflow: hidden;
+  height: 100%;
 }
 
 .table-header {
@@ -662,7 +819,7 @@ onBeforeUnmount(() => {
   color: #374151;
   font-weight: 600;
   font-size: 0.875rem;
-  padding: 16px 12px;
+  padding: 12px 8px;
   border-bottom: 2px solid #e2e8f0;
 }
 
@@ -675,7 +832,7 @@ onBeforeUnmount(() => {
 }
 
 .enhanced-table >>> .q-table tbody td {
-  padding: 12px;
+  padding: 10px 8px;
   border-bottom: 1px solid #f1f5f9;
 }
 
@@ -687,17 +844,23 @@ onBeforeUnmount(() => {
 }
 
 .rate-cell {
-  min-width: 100px;
+  min-width: 80px;
 }
 
 .rate-text {
   font-weight: 600;
   color: #374151;
+  font-size: 0.875rem;
 }
 
 .rate-progress {
-  width: 60px;
-  margin: 0 auto;
+  width: 50px;
+}
+
+.company-cell {
+  display: flex;
+  align-items: center;
+  font-size: 0.875rem;
 }
 
 .mobile-job-card {
@@ -711,8 +874,9 @@ onBeforeUnmount(() => {
     font-size: 2rem;
   }
   
-  .chart-container {
-    height: 280px;
+  .pie-chart-container canvas {
+    width: 180px !important;
+    height: 180px !important;
   }
 }
 
@@ -734,13 +898,16 @@ onBeforeUnmount(() => {
     font-size: 1.8rem;
   }
   
-  .chart-container {
-    height: 250px;
-    padding: 10px;
+  .pie-chart-container {
+    padding: 5px;
   }
 }
 
 @media (max-width: 599px) {
+  .content-section .row {
+    flex-direction: column;
+  }
+  
   .stat-card-enhanced {
     min-height: 120px;
   }
@@ -754,8 +921,9 @@ onBeforeUnmount(() => {
     height: 48px;
   }
   
-  .chart-container {
-    height: 220px;
+  .pie-chart-container canvas {
+    width: 150px !important;
+    height: 150px !important;
   }
 }
 </style>
