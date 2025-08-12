@@ -8,7 +8,7 @@
       <q-form v-if="!isPreviewing" ref="formRef" @submit.prevent="handlePreview">
         <div class="section-title">Basic Details</div>
         <div class="form-entry">
-          <q-input v-model="form.title" label="Job Title" filled :rules="[isRequired, maxLength(100)]" />
+          <q-input v-model="form.custom_title" label="Job Title" filled :rules="[isRequired, maxLength(100)]" />
           <q-input v-model="form.company" label="Company Name" filled readonly />
           <q-select v-model="form.job_type" :options="jobTypes" label="Job Type" filled :rules="[isRequired]" />
         </div>
@@ -16,37 +16,112 @@
         <div class="section-title">Job Logistics</div>
         <div class="form-entry">
           <q-select v-model="form.mode_of_work" :options="modeOptions" label="Mode of Work" filled :rules="[isRequired]" />
-          <q-input 
-            v-model.number="form.exp_required" 
-            label="Experience Required (Years)" 
-            type="number" 
-            filled 
-            :rules="[isRequired, isPositiveNumber]" 
-            min="0"
-            max="50"
-          />
+          
+          <!-- Experience Range -->
+          <div class="experience-range">
+            <q-input 
+              v-model.number="form.experience_min" 
+              label="Min Experience (Years)" 
+              type="number" 
+              filled 
+              :rules="[isRequired, isPositiveNumber]" 
+              min="0"
+              max="50"
+              class="experience-input"
+            />
+            <q-input 
+              v-model.number="form.experience_max" 
+              label="Max Experience (Years)" 
+              type="number" 
+              filled 
+              :rules="[isPositiveNumber, validateExperienceRange]" 
+              min="0"
+              max="50"
+              class="experience-input"
+            />
+          </div>
 
-          <!-- Salary Field (Single field to match table structure) -->
+          <!-- Salary Range -->
+          <div class="salary-range">
+            <q-input
+              v-model.number="form.salary_min"
+              label="Min Salary (₹)"
+              type="number"
+              filled
+              :rules="[isRequired, isSalaryValid]"
+              min="1000"
+              placeholder="e.g. 400000"
+              class="salary-input"
+            />
+            <q-input
+              v-model.number="form.salary_max"
+              label="Max Salary (₹)"
+              type="number"
+              filled
+              :rules="[isSalaryValid, validateSalaryRange]"
+              min="1000"
+              placeholder="e.g. 600000"
+              class="salary-input"
+            />
+          </div>
+
+          <!-- Equity Range (Optional) -->
+          <div class="equity-range">
+            <q-input
+              v-model.number="form.equity_min"
+              label="Min Equity % (Optional)"
+              type="number"
+              filled
+              min="0"
+              max="100"
+              step="0.1"
+              class="equity-input"
+            />
+            <q-input
+              v-model.number="form.equity_max"
+              label="Max Equity % (Optional)"
+              type="number"
+              filled
+              min="0"
+              max="100"
+              step="0.1"
+              :rules="[validateEquityRange]"
+              class="equity-input"
+            />
+          </div>
+
+          <!-- Number of Openings -->
           <q-input
-            v-model.number="form.salary"
-            label="Salary (₹)"
+            v-model.number="form.opening"
+            label="Number of Openings"
             type="number"
             filled
-            :rules="[isRequired, isSalaryValid]"
-            class="q-mb-md"
-            min="1000"
-            placeholder="e.g. 500000"
-          />
-
-          <!-- Equity (Optional) -->
-          <q-input
-            v-model.number="form.equity"
-            label="Equity % (Optional)"
-            type="number"
-            filled
-            min="0"
+            :rules="[isRequired, isPositiveOpenings]"
+            min="1"
             max="100"
-            step="0.1"
+          />
+        </div>
+
+        <div class="section-title">Additional Details</div>
+        <div class="form-entry">
+          <!-- Qualification ID (Simple integer input for now) -->
+          <q-input
+            v-model.number="form.qualification_id"
+            label="Qualification ID (Optional)"
+            type="number"
+            filled
+            min="1"
+            placeholder="Enter qualification ID"
+          />
+          
+          <!-- Market ID (Simple integer input for now) -->
+          <q-input
+            v-model.number="form.marketid"
+            label="Market ID (Optional)"
+            type="number"
+            filled
+            min="1"
+            placeholder="Enter market ID"
           />
         </div>
 
@@ -204,13 +279,19 @@ const locationOptions = computed(() =>
 );
 
 const form = ref({
-  title: "",
+  custom_title: "",
   company: "",
   job_type: "",
   mode_of_work: "",
-  exp_required: 0,
-  salary: 0,
-  equity: 0,
+  experience_min: 0,
+  experience_max: 0,
+  salary_min: 0,
+  salary_max: 0,
+  equity_min: 0,
+  equity_max: 0,
+  opening: 1,
+  qualification_id: null,
+  marketid: null,
   lid: null,
   cid: null,
   skillids: [],
@@ -224,7 +305,7 @@ const previewJob = computed(() => ({
   posted: new Date().toISOString().split("T")[0],
 }));
 
-const jobTypes = ["Full-time", "Co-founder", "Contract", "internship"];
+const jobTypes = ["Full-time", "Co-founder", "Contract", "Internship"];
 const modeOptions = ["Online", "Offline", "Hybrid"];
 
 // API Functions
@@ -315,9 +396,37 @@ const isPositiveNumber = (val) => {
   return (val >= 0 && val <= 50) || "Experience should be between 0-50 years";
 };
 
+const isPositiveOpenings = (val) => {
+  return (val >= 1 && val <= 100) || "Openings should be between 1-100";
+};
+
 const isSalaryValid = (val) => {
   if (!val || val < 1000) return 'Salary must be at least ₹1,000';
   if (val > 99990000) return 'Salary seems too high';
+  return true;
+};
+
+const validateExperienceRange = (val) => {
+  if (!val) return true; // Optional max experience
+  if (form.value.experience_min && val < form.value.experience_min) {
+    return 'Max experience should be greater than or equal to min experience';
+  }
+  return true;
+};
+
+const validateSalaryRange = (val) => {
+  if (!val) return true; // Optional max salary
+  if (form.value.salary_min && val < form.value.salary_min) {
+    return 'Max salary should be greater than or equal to min salary';
+  }
+  return true;
+};
+
+const validateEquityRange = (val) => {
+  if (!val) return true; // Optional max equity
+  if (form.value.equity_min && val < form.value.equity_min) {
+    return 'Max equity should be greater than or equal to min equity';
+  }
   return true;
 };
 
@@ -372,15 +481,21 @@ async function submitJob() {
   try {
     // Backend derives uid and cid from authenticated user, so we don't send them
     const jobData = {
-      title: form.value.title,
+      custom_title: form.value.custom_title,
       bigDescription: form.value.bigDescription,
       smallDescription: form.value.smallDescription,
       job_type: form.value.job_type,
       mode_of_work: form.value.mode_of_work,
-      exp_required: form.value.exp_required,
-      salary: form.value.salary,
+      experience_min: form.value.experience_min,
+      experience_max: form.value.experience_max,
+      salary_min: form.value.salary_min,
+      salary_max: form.value.salary_max,
+      equity_min: form.value.equity_min || 0,
+      equity_max: form.value.equity_max || 0,
+      opening: form.value.opening,
+      qualification_id: form.value.qualification_id,
+      marketid: form.value.marketid,
       skillids: form.value.skillids,
-      equity: form.value.equity || 0,
       lid: form.value.lid,
       links: form.value.links.filter(link => link.label && link.url)
     };
@@ -416,13 +531,19 @@ async function submitJob() {
 
 function resetForm() {
   form.value = {
-    title: "",
+    custom_title: "",
     company: recruiterProfile.value?.company?.companyName || "",
     job_type: "",
     mode_of_work: "",
-    exp_required: 0,
-    salary: 0,
-    equity: 0,
+    experience_min: 0,
+    experience_max: 0,
+    salary_min: 0,
+    salary_max: 0,
+    equity_min: 0,
+    equity_max: 0,
+    opening: 1,
+    qualification_id: null,
+    marketid: null,
     lid: null,
     cid: recruiterProfile.value?.company?.id || null,
     skillids: [],
@@ -494,5 +615,20 @@ function resetForm() {
 .link-remove {
   flex: 0 0 auto;
   margin-top: 8px;
+}
+
+/* New styles for range inputs */
+.experience-range,
+.salary-range,
+.equity-range {
+  display: flex;
+  gap: 16px;
+  align-items: flex-start;
+}
+
+.experience-input,
+.salary-input,
+.equity-input {
+  flex: 1;
 }
 </style>
