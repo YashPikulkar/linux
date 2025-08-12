@@ -64,6 +64,9 @@
             </div>
             <div class="chart-container">
               <canvas ref="pieChartCanvas"></canvas>
+              <div class="text-center text-caption q-mt-md">
+                <b>Total Applications:</b> {{ pieChartData.total }}
+              </div>
             </div>
           </q-card-section>
         </q-card>
@@ -100,14 +103,7 @@
             <div class="skills-chart-container">
               <canvas ref="jobSkillsChartCanvas"></canvas>
             </div>
-            <div class="skills-legend q-mt-md">
-              <div class="row justify-center">
-                <div class="legend-item">
-                  <div class="legend-color job-skills"></div>
-                  <span class="text-caption">Job Skills Required (%)</span>
-                </div>
-              </div>
-            </div>
+            
           </q-card-section>
         </q-card>
       </div>
@@ -122,14 +118,6 @@
             </div>
             <div class="skills-chart-container">
               <canvas ref="applicantSkillsChartCanvas"></canvas>
-            </div>
-            <div class="skills-legend q-mt-md">
-              <div class="row justify-center">
-                <div class="legend-item">
-                  <div class="legend-color applicant-skills"></div>
-                  <span class="text-caption">Applicant Skills Available (%)</span>
-                </div>
-              </div>
             </div>
           </q-card-section>
         </q-card>
@@ -228,8 +216,29 @@ const trendChartCanvas = ref(null)
 const jobSkillsChartCanvas = ref(null)
 const applicantSkillsChartCanvas = ref(null)
 
+// Set larger chart sizes after mount
+function setLargeChartSizes() {
+  if (pieChartCanvas.value) {
+    pieChartCanvas.value.width = 500;
+    pieChartCanvas.value.height = 500;
+  }
+  if (trendChartCanvas.value) {
+    trendChartCanvas.value.width = 700;
+    trendChartCanvas.value.height = 500;
+  }
+  if (jobSkillsChartCanvas.value) {
+    jobSkillsChartCanvas.value.width = 700;
+    jobSkillsChartCanvas.value.height = 500;
+  }
+  if (applicantSkillsChartCanvas.value) {
+    applicantSkillsChartCanvas.value.width = 700;
+    applicantSkillsChartCanvas.value.height = 500;
+  }
+}
+
 // Import Chart.js library
-import Chart from 'chart.js/auto'
+import Chart from './charts.js'
+let pieChartInstance = null
 let applicantSkillsChartInstance = null
 let jobSkillsChartInstance = null
 let trendChartInstance = null
@@ -303,14 +312,18 @@ const getRateColor = (rate) => {
 
 // Computed properties
 const pieChartData = computed(() => {
-  const pending = getStatusCount('pending')
-  const accepted = getStatusCount('accepted')
-  const rejected = getStatusCount('rejected')
-
+  // Calculate directly from applicants
+  const statusMap = { Pending: 0, Accepted: 0, Rejected: 0 }
+  applicants.value.forEach(a => {
+    if (a.status.toLowerCase() === 'pending') statusMap.Pending++
+    if (a.status.toLowerCase() === 'accepted') statusMap.Accepted++
+    if (a.status.toLowerCase() === 'rejected') statusMap.Rejected++
+  })
   return {
     labels: ['Pending', 'Accepted', 'Rejected'],
-    counts: [pending, accepted, rejected],
-    colors: ['#FF9800', '#4CAF50', '#F44336']
+    counts: [statusMap.Pending, statusMap.Accepted, statusMap.Rejected],
+    colors: ['#FF9800', '#4CAF50', '#F44336'],
+    total: statusMap.Pending + statusMap.Accepted + statusMap.Rejected
   }
 })
 
@@ -345,13 +358,6 @@ const jobAnalyticsStats = computed(() => {
       icon: 'work',
       color: 'primary',
       change: 12 
-    },
-    { 
-      value: totalApplicants, 
-      label: 'Total Applicants', 
-      icon: 'people',
-      color: 'positive',
-      change: 8 
     },
     { 
       value: `${avgRate}%`, 
@@ -406,122 +412,61 @@ const jobPostColumns = [
   }
 ]
 
-// Chart creation functions using native Canvas API for compatibility
+// Chart creation functions using Chart.js (no hiding logic, always visible)
 function createPieChart() {
   if (!pieChartCanvas.value) return
 
-  const canvas = pieChartCanvas.value
-  const ctx = canvas.getContext('2d')
-  const data = pieChartData.value
-  
-  // Set canvas size
-  canvas.width = 350
-  canvas.height = 350
-  
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  
-  const centerX = canvas.width / 2
-  const centerY = canvas.height / 2
-  const radius = Math.min(centerX, centerY) - 80
-  
-  const total = data.counts.reduce((sum, count) => sum + count, 0)
-  let currentAngle = -Math.PI / 2 // Start from top
-  
-  const slices = []
-  
-  // Draw pie slices and store slice data
-  data.counts.forEach((count, index) => {
-    if (count > 0) {
-      const sliceAngle = (count / total) * 2 * Math.PI
-      
-      // Store slice data for hover detection
-      slices.push({
-        startAngle: currentAngle,
-        endAngle: currentAngle + sliceAngle,
-        color: data.colors[index],
-        label: data.labels[index],
-        value: count,
-        percentage: ((count / total) * 100).toFixed(1)
-      })
-      
-      // Draw slice
-      ctx.beginPath()
-      ctx.moveTo(centerX, centerY)
-      ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
-      ctx.closePath()
-      ctx.fillStyle = data.colors[index]
-      ctx.fill()
-      ctx.strokeStyle = '#ffffff'
-      ctx.lineWidth = 3
-      ctx.stroke()
-      
-      // Draw value labels inside slices
-      const labelAngle = currentAngle + sliceAngle / 2
-      const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7)
-      const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7)
-      
-      ctx.fillStyle = '#ffffff'
-      ctx.font = 'bold 14px Arial'
-      ctx.textAlign = 'center'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(count.toString(), labelX, labelY)
-      
-      currentAngle += sliceAngle
-    }
-  })
-  
-  // Draw legend
-  const legendX = centerX + radius + 20
-  let legendY = centerY - (data.labels.length * 25) / 2
-  
-  data.labels.forEach((label, index) => {
-    if (data.counts[index] > 0) {
-      // Legend color box
-      ctx.fillStyle = data.colors[index]
-      ctx.fillRect(legendX, legendY - 8, 16, 16)
-      
-      // Legend text
-      ctx.fillStyle = '#333'
-      ctx.font = '12px Arial'
-      ctx.textAlign = 'left'
-      ctx.textBaseline = 'middle'
-      ctx.fillText(`${label}: ${data.counts[index]} (${((data.counts[index] / total) * 100).toFixed(1)}%)`, legendX + 24, legendY)
-      
-      legendY += 25
-    }
-  })
-  
-  // Add hover functionality
-  canvas.onmousemove = (event) => {
-    const rect = canvas.getBoundingClientRect()
-    const mouseX = event.clientX - rect.left
-    const mouseY = event.clientY - rect.top
-    
-    const dx = mouseX - centerX
-    const dy = mouseY - centerY
-    const distance = Math.sqrt(dx * dx + dy * dy)
-    
-    if (distance <= radius) {
-      let angle = Math.atan2(dy, dx) + Math.PI / 2
-      if (angle < 0) angle += 2 * Math.PI
-      
-      const hoveredSlice = slices.find(slice => 
-        angle >= slice.startAngle && angle <= slice.endAngle
-      )
-      
-      if (hoveredSlice) {
-        canvas.style.cursor = 'pointer'
-        canvas.title = `${hoveredSlice.label}: ${hoveredSlice.value} (${hoveredSlice.percentage}%)`
-      } else {
-        canvas.style.cursor = 'default'
-        canvas.title = ''
-      }
-    } else {
-      canvas.style.cursor = 'default'
-      canvas.title = ''
-    }
+  // Destroy previous instance if exists
+  if (pieChartInstance) {
+    pieChartInstance.destroy()
   }
+
+  const data = pieChartData.value
+  pieChartInstance = new Chart(pieChartCanvas.value, {
+    type: 'pie',
+    data: {
+      labels: data.labels,
+      datasets: [
+        {
+          data: data.counts,
+          backgroundColor: data.colors,
+          borderColor: '#fff',
+          borderWidth: 3
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      hover: { mode: 'nearest', intersect: true },
+      plugins: {
+        legend: {
+          display: true,
+          position: 'right',
+          labels: {
+            color: '#333',
+            font: { size: 12 }
+          }
+        },
+        title: {
+          display: true,
+          text: 'Application Status Distribution',
+          font: { size: 16 }
+        },
+        tooltip: {
+          enabled: true,
+          callbacks: {
+            label: function(context) {
+              const label = context.label || ''
+              const value = context.parsed || 0
+              const total = data.total || 1
+              const percent = ((value / total) * 100).toFixed(1)
+              return `${label}: ${value} (${percent}%)`
+            }
+          }
+        }
+      }
+    }
+  })
 }
 
 function createTrendChart() {
@@ -561,7 +506,16 @@ function createTrendChart() {
       scales: {
         y: {
           title: { display: true, text: 'Applications' },
-          beginAtZero: true
+          beginAtZero: true,
+          suggestedMin: 0,
+          suggestedMax: Math.max(...data.map(d => d.applications)) + 20,
+          ticks: {
+            stepSize: 10 // Each grid value is 10
+          },
+          grid: {
+            drawOnChartArea: true,
+            color: '#e0e0e0'
+          }
         },
         x: {
           title: { display: true, text: 'Month' }
@@ -608,7 +562,16 @@ function createJobSkillsChart() {
       scales: {
         y: {
           title: { display: true, text: 'Demand (%)' },
-          beginAtZero: true
+          beginAtZero: true,
+          suggestedMin: 0,
+          suggestedMax: Math.max(...data.jobDemand) + 20,
+          ticks: {
+            stepSize: 10 // Each grid value is 10
+          },
+          grid: {
+            drawOnChartArea: true,
+            color: '#e0e0e0'
+          }
         },
         x: {
           title: { display: true, text: 'Skills' }
@@ -655,7 +618,16 @@ function createApplicantSkillsChart() {
       scales: {
         y: {
           title: { display: true, text: 'Available (%)' },
-          beginAtZero: true
+          beginAtZero: true,
+          suggestedMin: 0,
+          suggestedMax: Math.max(...data.applicantSkills) + 20,
+          ticks: {
+            stepSize: 10 // Each grid value is 10
+          },
+          grid: {
+            drawOnChartArea: true,
+            color: '#e0e0e0'
+          }
         },
         x: {
           title: { display: true, text: 'Skills' }
@@ -668,6 +640,7 @@ function createApplicantSkillsChart() {
 // Initialize charts function
 const initializeCharts = async () => {
   await nextTick()
+  setLargeChartSizes()
   setTimeout(() => {
     createPieChart()
     createTrendChart()
