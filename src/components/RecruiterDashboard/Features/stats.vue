@@ -64,9 +64,6 @@
             </div>
             <div class="chart-container">
               <canvas ref="pieChartCanvas"></canvas>
-              <div class="text-center text-caption q-mt-md">
-                <b>Total Applications:</b> {{ pieChartData.total }}
-              </div>
             </div>
           </q-card-section>
         </q-card>
@@ -358,6 +355,13 @@ const jobAnalyticsStats = computed(() => {
       icon: 'work',
       color: 'primary',
       change: 12 
+    },
+    { 
+      value: totalApplicants, 
+      label: 'Total Applicants', 
+      icon: 'people',
+      color: 'positive',
+      change: 8 
     },
     { 
       value: `${avgRate}%`, 
