@@ -86,6 +86,57 @@
     </div>
   </div>
 
+  <!-- Skills Analytics Charts - Side by Side -->
+  <div class="skills-section q-pa-lg">
+    <div class="row q-col-gutter-lg">
+      <!-- Job Skills Required Chart -->
+      <div class="col-12 col-md-6">
+        <q-card class="chart-card-enhanced">
+          <q-card-section>
+            <div class="chart-header">
+              <div class="text-h6">Job Skills Required</div>
+              <div class="text-caption text-grey-6">Skills demand in job postings (All Time)</div>
+            </div>
+            <div class="skills-chart-container">
+              <canvas ref="jobSkillsChartCanvas"></canvas>
+            </div>
+            <div class="skills-legend q-mt-md">
+              <div class="row justify-center">
+                <div class="legend-item">
+                  <div class="legend-color job-skills"></div>
+                  <span class="text-caption">Job Skills Required (%)</span>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+
+      <!-- Applicant Skills Available Chart -->
+      <div class="col-12 col-md-6">
+        <q-card class="chart-card-enhanced">
+          <q-card-section>
+            <div class="chart-header">
+              <div class="text-h6">Applicant Skills Available</div>
+              <div class="text-caption text-grey-6">Skills competency among applicants (All Time)</div>
+            </div>
+            <div class="skills-chart-container">
+              <canvas ref="applicantSkillsChartCanvas"></canvas>
+            </div>
+            <div class="skills-legend q-mt-md">
+              <div class="row justify-center">
+                <div class="legend-item">
+                  <div class="legend-color applicant-skills"></div>
+                  <span class="text-caption">Applicant Skills Available (%)</span>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+  </div>
+
   <!-- Top Performing Job Posts -->
   <div class="table-section q-pa-lg">
     <q-card class="table-card-enhanced">
@@ -164,6 +215,8 @@
 </template>
 
 <script setup>
+// Reference: Chart.js documentation https://www.chartjs.org/docs/latest/
+// Chart.js is used for rendering all line and pie charts in this component.
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 
@@ -172,9 +225,13 @@ const $q = useQuasar()
 // Chart refs
 const pieChartCanvas = ref(null)
 const trendChartCanvas = ref(null)
+const jobSkillsChartCanvas = ref(null)
+const applicantSkillsChartCanvas = ref(null)
 
-// Chart instances
-let pieChartInstance = null
+// Import Chart.js library
+import Chart from 'chart.js/auto'
+let applicantSkillsChartInstance = null
+let jobSkillsChartInstance = null
 let trendChartInstance = null
 
 // Sample data
@@ -188,6 +245,13 @@ const applicants = ref([
   { uid: 7, name: 'George Lucas', status: 'rejected', appliedDate: '2024-03-20' },
   { uid: 8, name: 'Helen Troy', status: 'accepted', appliedDate: '2024-04-05' }
 ])
+
+// Skills data - Only "all time" data
+const skillsData = ref({
+  skills: ['JavaScript', 'React', 'Node.js', 'Python', 'SQL', 'AWS', 'Docker', 'Git'],
+  jobDemand: [88, 80, 82, 76, 72, 68, 55, 86],
+  applicantSkills: [78, 70, 72, 73, 62, 50, 45, 81]
+})
 
 const jobAnalyticsFilter = ref('all')
 
@@ -351,42 +415,48 @@ function createPieChart() {
   const data = pieChartData.value
   
   // Set canvas size
-  canvas.width = 300
-  canvas.height = 300
+  canvas.width = 350
+  canvas.height = 350
   
   // Clear canvas
   ctx.clearRect(0, 0, canvas.width, canvas.height)
   
   const centerX = canvas.width / 2
   const centerY = canvas.height / 2
-  const radius = Math.min(centerX, centerY) - 50
+  const radius = Math.min(centerX, centerY) - 80
   
   const total = data.counts.reduce((sum, count) => sum + count, 0)
   let currentAngle = -Math.PI / 2 // Start from top
   
-  // Draw pie slices
-  data.counts.forEach((count, index) => {
-    const sliceAngle = (count / total) * 2 * Math.PI
-    
-    // Draw slice
-    ctx.beginPath()
-    ctx.moveTo(centerX, centerY)
-    ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
-    ctx.closePath()
-    ctx.fillStyle = data.colors[index]
-    ctx.fill()
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 3
-    ctx.stroke()
-    
-    currentAngle += sliceAngle
-  })
+  const slices = []
   
-  // Draw labels
-  currentAngle = -Math.PI / 2
+  // Draw pie slices and store slice data
   data.counts.forEach((count, index) => {
     if (count > 0) {
       const sliceAngle = (count / total) * 2 * Math.PI
+      
+      // Store slice data for hover detection
+      slices.push({
+        startAngle: currentAngle,
+        endAngle: currentAngle + sliceAngle,
+        color: data.colors[index],
+        label: data.labels[index],
+        value: count,
+        percentage: ((count / total) * 100).toFixed(1)
+      })
+      
+      // Draw slice
+      ctx.beginPath()
+      ctx.moveTo(centerX, centerY)
+      ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
+      ctx.closePath()
+      ctx.fillStyle = data.colors[index]
+      ctx.fill()
+      ctx.strokeStyle = '#ffffff'
+      ctx.lineWidth = 3
+      ctx.stroke()
+      
+      // Draw value labels inside slices
       const labelAngle = currentAngle + sliceAngle / 2
       const labelX = centerX + Math.cos(labelAngle) * (radius * 0.7)
       const labelY = centerY + Math.sin(labelAngle) * (radius * 0.7)
@@ -400,84 +470,198 @@ function createPieChart() {
       currentAngle += sliceAngle
     }
   })
+  
+  // Draw legend
+  const legendX = centerX + radius + 20
+  let legendY = centerY - (data.labels.length * 25) / 2
+  
+  data.labels.forEach((label, index) => {
+    if (data.counts[index] > 0) {
+      // Legend color box
+      ctx.fillStyle = data.colors[index]
+      ctx.fillRect(legendX, legendY - 8, 16, 16)
+      
+      // Legend text
+      ctx.fillStyle = '#333'
+      ctx.font = '12px Arial'
+      ctx.textAlign = 'left'
+      ctx.textBaseline = 'middle'
+      ctx.fillText(`${label}: ${data.counts[index]} (${((data.counts[index] / total) * 100).toFixed(1)}%)`, legendX + 24, legendY)
+      
+      legendY += 25
+    }
+  })
+  
+  // Add hover functionality
+  canvas.onmousemove = (event) => {
+    const rect = canvas.getBoundingClientRect()
+    const mouseX = event.clientX - rect.left
+    const mouseY = event.clientY - rect.top
+    
+    const dx = mouseX - centerX
+    const dy = mouseY - centerY
+    const distance = Math.sqrt(dx * dx + dy * dy)
+    
+    if (distance <= radius) {
+      let angle = Math.atan2(dy, dx) + Math.PI / 2
+      if (angle < 0) angle += 2 * Math.PI
+      
+      const hoveredSlice = slices.find(slice => 
+        angle >= slice.startAngle && angle <= slice.endAngle
+      )
+      
+      if (hoveredSlice) {
+        canvas.style.cursor = 'pointer'
+        canvas.title = `${hoveredSlice.label}: ${hoveredSlice.value} (${hoveredSlice.percentage}%)`
+      } else {
+        canvas.style.cursor = 'default'
+        canvas.title = ''
+      }
+    } else {
+      canvas.style.cursor = 'default'
+      canvas.title = ''
+    }
+  }
 }
 
 function createTrendChart() {
   if (!trendChartCanvas.value) return
 
-  const canvas = trendChartCanvas.value
-  const ctx = canvas.getContext('2d')
-  
-  // Set canvas size
-  canvas.width = 400
-  canvas.height = 300
-  
-  // Clear canvas
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
-  
-  const padding = 40
-  const chartWidth = canvas.width - 2 * padding
-  const chartHeight = canvas.height - 2 * padding
-  
-  const data = monthlyTrend.value
-  const maxValue = Math.max(...data.map(d => d.applications))
-  const minValue = 0
-  
-  // Draw grid lines
-  ctx.strokeStyle = '#f0f0f0'
-  ctx.lineWidth = 1
-  
-  // Horizontal grid lines
-  for (let i = 0; i <= 5; i++) {
-    const y = padding + (chartHeight / 5) * i
-    ctx.beginPath()
-    ctx.moveTo(padding, y)
-    ctx.lineTo(canvas.width - padding, y)
-    ctx.stroke()
+  // Destroy previous instance if exists
+  if (trendChartInstance) {
+    trendChartInstance.destroy()
   }
-  
-  // Draw line chart
-  ctx.strokeStyle = '#1976D2'
-  ctx.lineWidth = 3
-  ctx.fillStyle = '#1976D2'
-  
-  const points = data.map((item, index) => {
-    const x = padding + (chartWidth / (data.length - 1)) * index
-    const y = padding + chartHeight - ((item.applications - minValue) / (maxValue - minValue)) * chartHeight
-    return { x, y, value: item.applications, label: item.month }
-  })
-  
-  // Draw line
-  ctx.beginPath()
-  points.forEach((point, index) => {
-    if (index === 0) {
-      ctx.moveTo(point.x, point.y)
-    } else {
-      ctx.lineTo(point.x, point.y)
+
+  const data = monthlyTrend.value
+  trendChartInstance = new Chart(trendChartCanvas.value, {
+    type: 'line',
+    data: {
+      labels: data.map(d => d.month),
+      datasets: [
+        {
+          label: 'Applications',
+          data: data.map(d => d.applications),
+          borderColor: '#1976D2',
+          backgroundColor: 'rgba(25,118,210,0.2)',
+          tension: 0.4,
+          pointBackgroundColor: '#1976D2',
+          pointBorderColor: '#fff',
+          pointRadius: 6,
+          pointHoverRadius: 10,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true },
+        title: { display: true, text: 'Job Posting Performance Trend' },
+        tooltip: { enabled: true }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Applications' },
+          beginAtZero: true
+        },
+        x: {
+          title: { display: true, text: 'Month' }
+        }
+      }
     }
   })
-  ctx.stroke()
-  
-  // Draw points
-  points.forEach(point => {
-    ctx.beginPath()
-    ctx.arc(point.x, point.y, 6, 0, 2 * Math.PI)
-    ctx.fill()
-    ctx.strokeStyle = '#ffffff'
-    ctx.lineWidth = 2
-    ctx.stroke()
+}
+
+function createJobSkillsChart() {
+  if (!jobSkillsChartCanvas.value) return
+
+  // Destroy previous instance if exists
+  if (jobSkillsChartInstance) {
+    jobSkillsChartInstance.destroy()
+  }
+
+  const data = skillsData.value
+  jobSkillsChartInstance = new Chart(jobSkillsChartCanvas.value, {
+    type: 'line',
+    data: {
+      labels: data.skills,
+      datasets: [
+        {
+          label: 'Job Skills Required (%)',
+          data: data.jobDemand,
+          borderColor: '#1976D2',
+          backgroundColor: 'rgba(25,118,210,0.2)',
+          tension: 0.4,
+          pointBackgroundColor: '#1976D2',
+          pointBorderColor: '#fff',
+          pointRadius: 5,
+          pointHoverRadius: 8,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true },
+        title: { display: true, text: 'Job Skills Required' },
+        tooltip: { enabled: true }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Demand (%)' },
+          beginAtZero: true
+        },
+        x: {
+          title: { display: true, text: 'Skills' }
+        }
+      }
+    }
   })
-  
-  // Draw labels
-  ctx.fillStyle = '#666'
-  ctx.font = '12px Arial'
-  ctx.textAlign = 'center'
-  
-  points.forEach(point => {
-    // Month labels
-    ctx.fillText(point.label, point.x, canvas.height - 10)
-    // Value labels
-    ctx.fillText(point.value.toString(), point.x, point.y - 15)
+}
+
+function createApplicantSkillsChart() {
+  if (!applicantSkillsChartCanvas.value) return
+
+  // Destroy previous instance if exists
+  if (applicantSkillsChartInstance) {
+    applicantSkillsChartInstance.destroy()
+  }
+
+  const data = skillsData.value
+  applicantSkillsChartInstance = new Chart(applicantSkillsChartCanvas.value, {
+    type: 'line',
+    data: {
+      labels: data.skills,
+      datasets: [
+        {
+          label: 'Applicant Skills Available (%)',
+          data: data.applicantSkills,
+          borderColor: '#FF6B35',
+          backgroundColor: 'rgba(255,107,53,0.2)',
+          tension: 0.4,
+          pointBackgroundColor: '#FF6B35',
+          pointBorderColor: '#fff',
+          pointRadius: 5,
+          pointHoverRadius: 8,
+        }
+      ]
+    },
+    options: {
+      responsive: true,
+      plugins: {
+        legend: { display: true },
+        title: { display: true, text: 'Applicant Skills Available' },
+        tooltip: { enabled: true }
+      },
+      scales: {
+        y: {
+          title: { display: true, text: 'Available (%)' },
+          beginAtZero: true
+        },
+        x: {
+          title: { display: true, text: 'Skills' }
+        }
+      }
+    }
   })
 }
 
@@ -487,6 +671,8 @@ const initializeCharts = async () => {
   setTimeout(() => {
     createPieChart()
     createTrendChart()
+    createJobSkillsChart()
+    createApplicantSkillsChart()
   }, 100)
 }
 
@@ -500,6 +686,8 @@ watch(jobAnalyticsFilter, () => {
   setTimeout(() => {
     createPieChart()
     createTrendChart()
+    createJobSkillsChart()
+    createApplicantSkillsChart()
   }, 50)
 })
 
@@ -511,7 +699,18 @@ onMounted(() => {
 onBeforeUnmount(() => {
   // Clean up if needed
   pieChartInstance = null
-  trendChartInstance = null
+  if (trendChartInstance) {
+    trendChartInstance.destroy()
+    trendChartInstance = null
+  }
+  if (jobSkillsChartInstance) {
+    jobSkillsChartInstance.destroy()
+    jobSkillsChartInstance = null
+  }
+  if (applicantSkillsChartInstance) {
+    applicantSkillsChartInstance.destroy()
+    applicantSkillsChartInstance = null
+  }
 })
 </script>
 
@@ -621,7 +820,7 @@ onBeforeUnmount(() => {
 
 .chart-container {
   width: 100%;
-  height: 320px;
+  height: 380px;
   display: flex;
   justify-content: center;
   align-items: center;
@@ -631,6 +830,53 @@ onBeforeUnmount(() => {
 .chart-container canvas {
   max-width: 100%;
   max-height: 100%;
+  cursor: default;
+}
+
+/* Skills Section Styling */
+.skills-section {
+  background: #f8fafc;
+}
+
+.skills-chart-container {
+  width: 100%;
+  height: 480px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  padding: 20px;
+  overflow-x: auto;
+}
+
+.skills-chart-container canvas {
+  max-width: 100%;
+  max-height: 100%;
+  cursor: default;
+}
+
+.skills-legend {
+  border-top: 1px solid #e2e8f0;
+  padding-top: 1rem;
+}
+
+.legend-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.legend-color {
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+}
+
+.legend-color.job-skills {
+  background-color: #1976D2;
+}
+
+.legend-color.applicant-skills {
+  background-color: #FF6B35;
 }
 
 /* Enhanced Table */
@@ -712,7 +958,11 @@ onBeforeUnmount(() => {
   }
   
   .chart-container {
-    height: 280px;
+    height: 320px;
+  }
+  
+  .skills-chart-container {
+    height: 420px;
   }
 }
 
@@ -735,7 +985,12 @@ onBeforeUnmount(() => {
   }
   
   .chart-container {
-    height: 250px;
+    height: 280px;
+    padding: 10px;
+  }
+  
+  .skills-chart-container {
+    height: 360px;
     padding: 10px;
   }
 }
@@ -755,7 +1010,23 @@ onBeforeUnmount(() => {
   }
   
   .chart-container {
-    height: 220px;
+    height: 250px;
+  }
+  
+  .skills-chart-container {
+    height: 320px;
+  }
+  
+  .skills-legend .row {
+    flex-direction: column;
+    gap: 0.5rem;
+    align-items: center;
+  }
+  
+  /* Ensure tooltips work properly on mobile */
+  .chart-container canvas,
+  .skills-chart-container canvas {
+    touch-action: none;
   }
 }
 </style>
