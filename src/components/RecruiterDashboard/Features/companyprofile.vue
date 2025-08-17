@@ -1,349 +1,398 @@
 <template>
-  <div class="form-wrapper">
-    <q-card class="company-profile-card">
-      <!-- Loading State -->
-      <div v-if="companyStore.loading" class="text-center q-pa-md">
-        <q-spinner-dots size="40px" color="primary" />
-        <div class="q-mt-sm">Loading company information...</div>
+  <q-card flat bordered class="company-profile-card">
+    <div class="card-header">
+      <div class="card-title">Company Profile</div>
+      <div class="action-buttons">
+        <q-btn dense flat round icon="edit" v-if="!isEditable" @click="enableEdit" color="black" />
+        <q-btn dense flat round icon="check" v-if="isEditable" @click="save" color="positive" />
+        <q-btn
+          dense
+          flat
+          round
+          icon="close"
+          v-if="isEditable"
+          @click="cancelEdit"
+          color="negative"
+        />
       </div>
+    </div>
 
-      <!-- Error State -->
-      <div v-else-if="companyStore.error" class="text-center q-pa-md">
-        <q-icon name="error" size="48px" color="negative" />
-        <div class="q-mt-sm text-negative">{{ companyStore.error }}</div>
-        <q-btn 
-          label="Retry" 
-          color="primary" 
-          flat 
-          class="q-mt-sm" 
-          @click="fetchCompanyData" 
+    <q-separator class="custom-separator" />
+
+    <q-form class="form-content">
+      <q-input
+        v-model="editData.name"
+        :disable="!isEditable"
+        filled
+        label="Company Name"
+        class="styled-input"
+      />
+      <q-input
+        v-model="editData.description"
+        :disable="!isEditable"
+        filled
+        type="textarea"
+        label="Description"
+        class="styled-input"
+      />
+      <q-select
+        v-model="editData.companySize"
+        :disable="!isEditable"
+        filled
+        label="Company Size"
+        :options="sizeOptions"
+        class="styled-input"
+      />
+      <q-select
+        v-model="editData.status"
+        :disable="!isEditable"
+        filled
+        label="Status"
+        :options="statusOptions"
+        class="styled-input"
+      />
+      <q-input
+        v-model="editData.CEO"
+        :disable="!isEditable"
+        filled
+        label="CEO"
+        class="styled-input"
+      />
+      <q-input
+        v-model="editData.companyEmail"
+        :disable="!isEditable"
+        filled
+        label="Company Email"
+        class="styled-input"
+      />
+
+      <q-input
+        v-model="editData.location"
+        :disable="!isEditable"
+        filled
+        label="Location"
+        class="styled-input"
+      />
+
+      <!-- Tags -->
+      <div class="section-header">
+        <div class="section-title">Tags</div>
+        <q-btn v-if="isEditable" flat dense round icon="add" class="add-btn" @click="addTag" />
+      </div>
+      <div v-for="(tag, index) in editData.tags" :key="'tag-' + index" class="dynamic-item">
+        <q-input
+          v-model="editData.tags[index]"
+          :disable="!isEditable"
+          filled
+          class="styled-input dynamic-input"
+        />
+        <q-btn
+          v-if="isEditable"
+          flat
+          dense
+          round
+          icon="remove"
+          class="remove-btn"
+          @click="removeTag(index)"
         />
       </div>
 
-      <!-- Main Content -->
-      <div v-else-if="company">
-        <!-- Header -->
-        <div class="form-header">
-          <div>Company Profile</div>
-          <div v-if="!isEditable">
-            <q-btn dense flat round icon="edit" size="sm" @click="enableEditMode" />
-          </div>
-          <div v-else class="row no-wrap items-center">
-            <q-btn dense flat round icon="check" size="sm" color="positive" @click="saveProfile" :loading="saving" />
-            <q-btn dense flat round icon="close" size="sm" color="negative" @click="cancelEdit" />
-          </div>
-        </div>
-
-        <!-- Logo Upload -->
-        <div class="section-title">Logo</div>
-        <div class="form-entry items-center">
-          <q-img :src="company.logoUrl || placeholder" style="width: 100px; height: 100px" />
-          <q-uploader
-            v-if="isEditable"
-            :factory="uploadLogo"
-            accept="image/*"
-            auto-upload
-            flat
-            class="q-mt-sm"
-            @uploaded="onUploadSuccess"
-          />
-        </div>
-
-        <div class="section-title">Company Information</div>
-        <div class="form-entry">
-          <q-input v-model="company.name" :disable="!isEditable" dense filled label="Company Name" :rules="[isRequired]" />
-          <q-input v-model="company.email" :disable="!isEditable" dense filled label="Email" :rules="[isEmail]" />
-          <q-input v-model="company.phone" :disable="!isEditable" dense filled label="Phone" :rules="[isPhone]" />
-          <q-input v-model="company.password" :type="showPassword ? 'text' : 'password'" :disable="!isEditable" dense filled label="Password" :rules="[isStrongPassword]">
-            <template v-if="isEditable" #append>
-              <q-icon :name="showPassword ? 'visibility_off' : 'visibility'" class="cursor-pointer" @click="showPassword = !showPassword" />
-            </template>
-          </q-input>
-          <q-input v-model="company.companyType" :disable="!isEditable" dense filled label="Company Type" />
-          <q-select v-model="company.industry" :options="industryOptions" label="Industry" filled dense :disable="!isEditable" />
-          <q-select v-model="company.companySize" :options="sizeOptions" label="Company Size" filled dense :disable="!isEditable" />
-        </div>
-
-        <!-- Branch Locations -->
-        <div class="section-title">Branch Locations</div>
-        <div class="form-entry">
-          <div v-if="!isEditable">
-            <ul class="q-pl-md" v-if="company.locations && company.locations.length">
-              <li v-for="(loc, i) in company.locations" :key="i">{{ loc }}</li>
-            </ul>
-            <div v-else class="text-grey-6">No locations added</div>
-          </div>
-          <div v-else>
-            <div v-for="(loc, index) in company.locations" :key="index" class="row items-center q-gutter-sm">
-              <q-input v-model="company.locations[index]" filled dense placeholder="Enter location" class="col" :rules="[isRequired]" />
-              <q-btn icon="delete" flat dense color="negative" @click="removeLocation(index)" />
-            </div>
-            <q-btn icon="add" label="Add Location" flat color="primary" class="q-mt-sm" @click="addLocation" />
-          </div>
-        </div>
-
-        <div class="section-title">Other Information</div>
-        <div class="form-entry">
-          <q-input v-model="company.description" :disable="!isEditable" type="textarea" dense filled label="Description" :rules="[minLength(10)]" />
-          <q-input v-model="company.taxIdOrGst" :disable="!isEditable" dense filled label="GST / Tax ID (Optional)" :rules="[isOptionalGst]" />
-        </div>
-
-        <!-- Certificate Upload -->
-        <div class="section-title">Registration Certificate</div>
-        <div class="form-entry">
-          <div v-if="!isEditable && company.registrationCertificateUrl">
-            <q-btn label="View Certificate" color="primary" flat @click="viewCertificate" />
-          </div>
-          <div v-else-if="!isEditable" class="text-grey-6">
-            No certificate uploaded
-          </div>
-          <q-uploader
-            v-if="isEditable"
-            :factory="uploadCertificate"
-            accept=".pdf,.jpg,.png"
-            auto-upload
-            flat
-            @uploaded="onCertificateUploadSuccess"
-          />
-        </div>
+      <!-- Links -->
+      <div class="section-header">
+        <div class="section-title">Links</div>
+        <q-btn v-if="isEditable" flat dense round icon="add" class="add-btn" @click="addLink" />
       </div>
-
-      <!-- No Company Data -->
-      <div v-else class="text-center q-pa-md">
-        <q-icon name="business" size="48px" color="grey-5" />
-        <div class="q-mt-sm">No company information found</div>
-        <q-btn 
-          label="Refresh" 
-          color="primary" 
-          flat 
-          class="q-mt-sm" 
-          @click="fetchCompanyData" 
+      <div v-for="(link, index) in editData.links" :key="'link-' + index" class="dynamic-item">
+        <q-input
+          v-model="editData.links[index]"
+          :disable="!isEditable"
+          filled
+          class="styled-input dynamic-input"
+        />
+        <q-btn
+          v-if="isEditable"
+          flat
+          dense
+          round
+          icon="remove"
+          class="remove-btn"
+          @click="removeLink(index)"
         />
       </div>
-    </q-card>
-  </div>
+    </q-form>
+  </q-card>
 </template>
 
 <script setup>
-import { ref, reactive, onMounted, computed } from 'vue'
+import { onMounted, reactive, ref } from 'vue'
 import { useQuasar } from 'quasar'
-import { useCompanyStore } from 'src/stores/comapanyStore' // Adjust path as needed
+import { useUserStore } from 'src/stores/user-store'
 
 const $q = useQuasar()
-const companyStore = useCompanyStore()
 const isEditable = ref(false)
-const showPassword = ref(false)
-const saving = ref(false)
-const placeholder = 'https://cdn.quasar.dev/img/avatar.png'
 
-// Reactive company object that syncs with store
-const company = computed({
-  get: () => companyStore.company ? { ...companyStore.company } : null,
-  set: (value) => {
-    // This will be handled by the store update
-  }
+const editData = reactive(JSON.parse(JSON.stringify(useUserStore().company)))
+
+const sizeOptions = [
+  '1-10',
+  '11-50',
+  '51-200',
+  '201-500',
+  '501-1000',
+  '1001-5000',
+  '5001-10000',
+  '10000+',
+]
+const statusOptions = ['Hiring', 'Not-Hiring']
+
+onMounted(() => {
+  console.log('Reactive Edit Data:', editData)
 })
 
-// Create a local reactive copy for editing
-const editableCompany = reactive({})
-const originalCompany = ref({})
-
-const industryOptions = ['IT', 'Finance', 'Healthcare', 'Retail', 'Technology', 'Other']
-const sizeOptions = ['1-10', '11-50', '51-200', '201-500', '500+']
-
-// Fetch company data on component mount
-onMounted(async () => {
-  await fetchCompanyData()
-})
-
-async function fetchCompanyData() {
-  await companyStore.fetchCompanyByRecruiter()
-  if (companyStore.company) {
-    // Ensure locations is an array
-    if (!companyStore.company.locations) {
-      companyStore.company.locations = []
-    } else if (typeof companyStore.company.locations === 'string') {
-      // If locations is stored as comma-separated string, convert to array
-      companyStore.company.locations = companyStore.company.locations.split(',').map(loc => loc.trim())
-    }
-    
-    // Initialize editable copy
-    Object.assign(editableCompany, JSON.parse(JSON.stringify(companyStore.company)))
-  }
-}
-
-function enableEditMode() {
-  if (!company.value) return
-  
-  // Store original data
-  originalCompany.value = JSON.parse(JSON.stringify(company.value))
-  
-  // Initialize editable data
-  Object.assign(editableCompany, JSON.parse(JSON.stringify(company.value)))
-  
+function enableEdit() {
   isEditable.value = true
 }
 
-function cancelEdit() {
-  if (originalCompany.value) {
-    Object.assign(editableCompany, originalCompany.value)
-    // Update the store with original data
-    companyStore.company = { ...originalCompany.value }
+function addTag() {
+  if (!Array.isArray(editData.tags)) {
+    editData.tags = []
   }
+  editData.tags.push('')
+}
+
+function addLink() {
+  if (!Array.isArray(editData.links)) {
+    editData.links = []
+  }
+  editData.links.push('')
+}
+
+function removeTag(index) {
+  if (Array.isArray(editData.tags)) {
+    editData.tags.splice(index, 1)
+  }
+}
+
+function removeLink(index) {
+  if (Array.isArray(editData.links)) {
+    editData.links.splice(index, 1)
+  }
+}
+
+function cancelEdit() {
+  Object.assign(editData, JSON.parse(JSON.stringify(useUserStore().company)))
   isEditable.value = false
 }
 
-async function saveProfile() {
-  $q.dialog({
-    title: 'Confirm Submission',
-    message: 'Submit updated profile?',
-    ok: { label: 'Yes', color: 'primary' },
-    cancel: { label: 'No', color: 'grey' }
-  }).onOk(async () => {
-    saving.value = true
-    
-    try {
-      // Prepare data for backend (convert locations array to string if needed)
-      const dataToSave = { ...editableCompany }
-      if (Array.isArray(dataToSave.locations)) {
-        dataToSave.locations = dataToSave.locations.join(', ')
-      }
-      
-      const success = await companyStore.updateCompany(dataToSave)
-      
-      if (success) {
-        isEditable.value = false
-        $q.notify({ type: 'positive', message: 'Profile updated successfully.' })
-        
-        // Refresh the data to get the latest from backend
-        await fetchCompanyData()
-      } else {
-        $q.notify({ 
-          type: 'negative', 
-          message: companyStore.error || 'Failed to update profile.' 
-        })
-      }
-    } catch (error) {
-      console.error('Save profile error:', error)
-      $q.notify({ 
-        type: 'negative', 
-        message: 'An error occurred while saving the profile.' 
-      })
-    } finally {
-      saving.value = false
+async function save() {
+  isEditable.value = false
+  try {
+    const response = await useUserStore().updateRecruiter(editData)
+
+    if (response.message == 'success') {
+      $q.notify({ type: 'positive', message: 'Company updated.' })
+    } else {
+      $q.notify({ type: 'negative', message: 'Company updated failed.' })
     }
-  })
-}
-
-function addLocation() {
-  if (!editableCompany.locations) {
-    editableCompany.locations = []
-  }
-  editableCompany.locations.push('')
-}
-
-function removeLocation(index) {
-  if (editableCompany.locations) {
-    editableCompany.locations.splice(index, 1)
+  } catch (err) {
+    $q.notify({ type: 'negative', message: 'Failed to save changes.', error: err })
   }
 }
-
-function viewCertificate() {
-  if (company.value?.registrationCertificateUrl) {
-    window.open(company.value.registrationCertificateUrl, '_blank')
-  }
-}
-
-// Upload functions (you may need to implement actual file upload to your backend)
-function uploadLogo(files) {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      editableCompany.logoUrl = reader.result
-      if (companyStore.company) {
-        companyStore.company.logoUrl = reader.result
-      }
-      resolve({ url: reader.result })
-    }
-    reader.readAsDataURL(files[0])
-  })
-}
-
-function uploadCertificate(files) {
-  return new Promise(resolve => {
-    const reader = new FileReader()
-    reader.onload = () => {
-      editableCompany.registrationCertificateUrl = reader.result
-      if (companyStore.company) {
-        companyStore.company.registrationCertificateUrl = reader.result
-      }
-      resolve({ url: reader.result })
-    }
-    reader.readAsDataURL(files[0])
-  })
-}
-
-function onUploadSuccess() {
-  $q.notify({ type: 'positive', message: 'Logo uploaded.' })
-}
-
-function onCertificateUploadSuccess() {
-  $q.notify({ type: 'positive', message: 'Certificate uploaded.' })
-}
-
-// Validation Rules
-const isRequired = val => !!val || 'Required'
-const isEmail = val => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(val) || 'Invalid email'
-const isPhone = val => /^\d{10}$/.test(val) || 'Enter 10-digit number'
-const isStrongPassword = val =>
-  !val || /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?#&]).{8,}$/.test(val) ||
-  'Must include upper, lower, number, special char'
-const minLength = n => val => !val || val.length >= n || `Min ${n} characters`
-const isOptionalGst = val => !val || /^[A-Z0-9\-]{5,20}$/i.test(val) || 'Invalid GST/Tax ID'
 </script>
 
 <style scoped>
-.form-wrapper {
-  flex: 1;
-  overflow-y: auto;
-  padding: 16px;
-  box-sizing: border-box;
-  min-height: 0;
-}
-
 .company-profile-card {
-  width: 100%;
-  padding: 24px;
-  background-color: white;
-  border-radius: 16px;
-  box-shadow:
-    0 4px 8px rgba(255, 255, 255, 0.4),
-    0 8px 16px rgba(0, 0, 0, 0.05),
-    inset 0 1px 3px rgba(255, 255, 255, 0.6);
-  display: flex;
-  flex-direction: column;
-  gap: 24px;
-  box-sizing: border-box;
+  background: white !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  height: auto;
 }
 
-.form-header {
+.card-header {
   display: flex;
   justify-content: space-between;
-  font-weight: bold;
-  font-size: 20px;
-  color: #333;
-  margin-bottom: -12px;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  background: #f5f5f5 !important;
+  color: #000000 !important;
+  border-radius: 0.375rem !important;
+}
+
+.edit-btn:hover {
+  background: #e5e5e5 !important;
+}
+
+.save-btn {
+  background: #10b981 !important;
+  color: white !important;
+  border-radius: 0.375rem !important;
+}
+
+.save-btn:hover {
+  background: #059669 !important;
+}
+
+.cancel-btn {
+  background: #ef4444 !important;
+  color: white !important;
+  border-radius: 0.375rem !important;
+}
+
+.cancel-btn:hover {
+  background: #dc2626 !important;
+}
+
+.custom-separator {
+  background-color: #e5e5e5 !important;
+  margin: 1rem 0 !important;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.styled-input {
+  background: white;
+}
+
+.styled-input :deep(.q-field__control) {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  color: #000000 !important;
+}
+
+.styled-input :deep(.q-field__control):before {
+  border: none !important;
+}
+
+.styled-input :deep(.q-field__control):after {
+  border: 2px solid #000000 !important;
+  border-radius: 0.375rem !important;
+}
+
+.styled-input :deep(.q-field__label) {
+  color: #374151 !important;
+  font-weight: 500 !important;
+}
+
+.styled-input :deep(.q-field__native) {
+  color: #000000 !important;
+}
+
+.styled-input :deep(.q-field--disabled) {
+  opacity: 0.7 !important;
+}
+
+.styled-input :deep(.q-field--disabled .q-field__control) {
+  background: #f9fafb !important;
+  color: #6b7280 !important;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
 }
 
 .section-title {
-  font-size: 16px;
-  font-weight: 600;
-  color: #444;
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000000;
 }
 
-.form-entry {
+.add-btn {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  color: #000000 !important;
+  border-radius: 0.375rem !important;
+}
+
+.add-btn:hover {
+  background: #f9fafb !important;
+  border-color: #000000 !important;
+}
+
+.dynamic-item {
   display: flex;
-  flex-direction: column;
-  gap: 16px;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.dynamic-input {
+  flex: 1;
+}
+
+.remove-btn {
+  background: white !important;
+  border: 1px solid #ef4444 !important;
+  color: #ef4444 !important;
+  border-radius: 0.375rem !important;
+}
+
+.remove-btn:hover {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .company-profile-card {
+    padding: 1rem !important;
+    max-height: 80vh;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .action-buttons {
+    align-self: flex-end;
+  }
+
+  .dynamic-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .remove-btn {
+    align-self: flex-end;
+    width: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-profile-card {
+    padding: 0.75rem !important;
+    border-radius: 0.25rem !important;
+  }
+
+  .section-header {
+    margin-top: 1rem;
+  }
 }
 </style>

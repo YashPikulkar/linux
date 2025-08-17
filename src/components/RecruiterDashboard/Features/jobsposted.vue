@@ -1,231 +1,152 @@
 <template>
   <div class="q-pa-lg applicants-section">
-    <!-- Show Job Applicants Component if viewing applicants -->
-    <JobApplicants 
-      v-if="showingApplicants"
-      :job-details="selectedJobForApplicants"
-      :applicants="selectedJobForApplicants?.applicants || []"
-      @back="closeApplicantsView"
-      @status-updated="handleStatusUpdate"
-    />
-
-    <!-- Original Jobs Posted View -->
-    <q-card v-else class="q-mx-auto" style="max-width: 900px">
-      <q-card-section>
-        <div class="text-h6">Jobs You've Posted</div>
-      </q-card-section>
-
-      <q-separator />
-
-      <!-- Loading State -->
-      <q-card-section v-if="loading" class="text-center">
-        <q-spinner-dots size="40px" color="primary" />
-        <div class="q-mt-sm">Loading your jobs...</div>
-      </q-card-section>
-
-      <!-- Jobs List -->
-      <q-card-section v-else-if="userJobs.length">
-        <q-list bordered separator>
-          <q-item v-for="job in userJobs" :key="job.jobid" class="column q-py-md">
-            <q-item-section class="q-mb-sm">
-              <q-item-label><strong>{{ job.title }}</strong> at {{ job.company }}</q-item-label>
-              <q-item-label caption>{{ job.location }} | {{ job.jobtype }} | Posted: {{ formatDate(job.created_at) }}</q-item-label>
-            </q-item-section>
-
-            <q-item-section>
-              <div v-if="job.applicants?.length">
-                <div class="q-mb-sm text-weight-medium">Candidates: {{ job.applicants.length }}</div>
-                <div class="q-gutter-sm row items-center">
-                  <div v-for="status in ['pending', 'accepted', 'rejected']" :key="status" class="text-caption">
-                    <q-badge :color="statusColors[status]" class="q-mr-sm">
-                      {{ status }}:
-                      {{ job.applicants.filter(app => app.status === status).length }}
-                    </q-badge>
-                  </div>
+    <div v-if="currentJob == null && component == 'jobs-list'">
+      <div v-for="job in jobs" :key="job.id">
+        <q-card class="job-card q-my-md" flat>
+          <!-- Header Section -->
+          <q-card-section class="card-header">
+            <div class="header-content">
+              <div class="title-section">
+                <h5 class="job-title">{{ job.title }}</h5>
+                <div class="job-badges">
+                  <q-badge class="job-badge" :label="job.job_type" />
+                  <q-badge class="job-badge work-mode" :label="job.mode_of_work" />
                 </div>
               </div>
-              <div v-else class="text-grey">No candidates applied yet.</div>
-            </q-item-section>
-
-            <q-item-section side class="q-mt-sm">
-              <div class="q-gutter-sm">
+              <div class="header-actions">
                 <q-btn
-                  label="View Applications"
-                  color="primary"
-                  size="sm"
-                  @click="viewApplications(job.jobid)"
-                  
-                />
+                  round
+                  flat
+                  icon="visibility"
+                  class="icon-btn"
+                  @click="changeComponent('view-job', job)"
+                >
+                  <q-tooltip>View Job</q-tooltip>
+                </q-btn>
                 <q-btn
-                  label="Edit Job"
-                  color="secondary"
-                  size="sm"
-                  outline
-                  @click="editJob(job)"
-                />
-                <q-btn
-                  label="Delete"
-                  color="negative"
-                  size="sm"
-                  outline
-                  @click="confirmDeleteJob(job)"
-                />
+                  round
+                  flat
+                  icon="group"
+                  class="icon-btn"
+                  @click="changeComponent('job-app', job)"
+                >
+                  <q-tooltip>View Applications</q-tooltip>
+                </q-btn>
               </div>
-            </q-item-section>
-          </q-item>
-        </q-list>
-      </q-card-section>
+            </div>
+          </q-card-section>
 
-      <!-- Empty State -->
-      <q-card-section v-else class="text-grey text-center q-py-xl">
-        <q-icon name="work_off" size="64px" class="q-mb-md" />
-        <div class="text-h6 q-mb-sm">No Jobs Posted Yet</div>
-        <div class="text-body2">Start by posting your first job to attract candidates</div>
-        <q-btn 
-          label="Post a Job" 
-          color="primary" 
-          class="q-mt-md"
-          @click="$router.push('/post-job')"
-        />
-      </q-card-section>
-    </q-card>
+          <!-- Main Content -->
+          <q-card-section class="card-content">
+            <div class="info-grid">
+              <div class="info-card">
+                <div class="info-icon"><q-icon name="work_history" /></div>
+                <div class="info-content">
+                  <div class="info-label">Experience (MAX - MIN)</div>
+                  <div class="info-value">{{ job.experience_max - job.experience_min }} years</div>
+                </div>
+              </div>
 
-    <!-- Delete Confirmation Dialog -->
-    <q-dialog v-model="deleteDialog" persistent>
-      <q-card>
-        <q-card-section class="row items-center">
-          <q-avatar icon="warning" color="negative" text-color="white" />
-          <span class="q-ml-sm">Are you sure you want to delete this job posting?</span>
-        </q-card-section>
+              <div class="info-card">
+                <div class="info-icon"><q-icon name="payments" /></div>
+                <div class="info-content">
+                  <div class="info-label">Salary Level</div>
+                  <div class="info-value">{{ job.salary_max - job.salary_min }}</div>
+                </div>
+              </div>
 
-        <q-card-actions align="right">
-          <q-btn flat label="Cancel" color="primary" v-close-popup />
-          <q-btn flat label="Delete" color="negative" @click="deleteJob" />
-        </q-card-actions>
-      </q-card>
-    </q-dialog>
+              <div class="info-card" v-if="job.opening">
+                <div class="info-icon"><q-icon name="mail" /></div>
+                <div class="info-content">
+                  <div class="info-label">Openings</div>
+                  <div class="info-value">{{ job.opening }} positions</div>
+                </div>
+              </div>
+
+              <div class="info-card" v-if="job.popularity_score > 0">
+                <div class="info-icon">
+                  <q-icon name="local_fire_department" />
+                </div>
+                <div class="info-content">
+                  <div class="info-label">Popularity</div>
+                  <div class="info-value">{{ job.popularity_score }} score</div>
+                </div>
+              </div>
+            </div>
+          </q-card-section>
+
+          <!-- Footer -->
+          <q-card-section class="card-footer">
+            <div class="footer-content">
+              <q-icon name="schedule" class="footer-icon" />
+              <span class="posted-text">Posted {{ getTimeAgo(job.posted) }}</span>
+              <q-space />
+              <div class="status-indicator">
+                <div class="status-dot active"></div>
+                <span class="status-text">Active</span>
+              </div>
+            </div>
+          </q-card-section>
+        </q-card>
+      </div>
+    </div>
+
+    <JobApplicants
+      v-if="currentJob !== null && component == 'job-app'"
+      :job-details="currentJob"
+      :go-back="goBack"
+    />
+
+    <ViewJob
+      v-if="currentJob !== null && component == 'view-job'"
+      :job="currentJob"
+      :go-back="goBack"
+    />
   </div>
 </template>
 
 <script setup>
-import { onMounted, ref, computed } from 'vue'
-import { useQuasar } from 'quasar'
-import { useRouter } from 'vue-router'
+import { onMounted, ref } from 'vue'
 import { useJobsStore } from 'src/stores/jobStore'
-import { useUserStore } from 'src/stores/user-store'
-import JobApplicants from './JobApplicants.vue' // Import the new component
+import ViewJob from './ViewJob.vue'
+import JobApplicants from './JobApplicants.vue'
 
-const $q = useQuasar()
-const router = useRouter()
 const jobsStore = useJobsStore()
-const userStore = useUserStore()
+const jobs = ref([])
+const component = ref('jobs-list')
+const currentJob = ref(null)
 
-// Reactive data
-const loading = ref(false)
-const deleteDialog = ref(false)
-const jobToDelete = ref(null)
-const showingApplicants = ref(false)
-const selectedJobForApplicants = ref(null)
-
-// Computed properties
-const userJobs = computed(() => {
-  return jobsStore.recruiterJobs || []
-})
-
-// Status colors
-const statusColors = {
-  pending: 'grey',
-  accepted: 'green',
-  rejected: 'red'
-}
-
-// Methods
 const loadJobs = async () => {
-  loading.value = true
   try {
-    await jobsStore.fetchJobByRecruiter()
+    jobs.value = await jobsStore.fetchJobByRecruiter()
     console.log('Jobs loaded:', jobsStore.recruiterJobs)
   } catch (error) {
     console.error('Error loading jobs:', error)
-    notify('Failed to load jobs', 'negative')
-  } finally {
-    loading.value = false
   }
 }
 
+function getTimeAgo(dateString) {
+  const now = new Date()
+  const posted = new Date(dateString)
+  const diffTime = Math.abs(now - posted)
+  const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24))
 
-function viewApplications(jobId) {
-  if (!jobId) {
-    $q.notify({
-      type: 'warning',
-      message: 'Job ID is required'
-    });
-    return;
-  }
-
-  try {
-    // Navigate to the applications page within recruiter dashboard
-    router.push({
-      name: 'job-applications',
-      params: { jobId: jobId.toString() } // Ensure it's a string
-    });
-  } catch (err) {
-    $q.notify({
-      type: 'negative',
-      message: `Error navigating to applications: ${err.message}`
-    });
-  }
+  if (diffDays === 1) return '1 day ago'
+  if (diffDays < 7) return `${diffDays} days ago`
+  if (diffDays < 30) return `${Math.ceil(diffDays / 7)} weeks ago`
+  return `${Math.ceil(diffDays / 30)} months ago`
 }
 
-const closeApplicantsView = () => {
-  showingApplicants.value = false
-  selectedJobForApplicants.value = null
-  // Optionally reload jobs to get updated applicant counts
-  loadJobs()
+function changeComponent(val, curr) {
+  component.value = val
+  currentJob.value = curr
 }
 
-const handleStatusUpdate = (updateData) => {
-  // Handle status update event from JobApplicants component
-  console.log('Status updated:', updateData)
-  // You can update local job data here if needed
-  notify(`Application status updated to ${updateData.newStatus}`, 'positive')
+function goBack() {
+  currentJob.value = null
+  component.value = 'jobs-list'
 }
 
-const editJob = (job) => {
-  router.push(`/edit-job/${job.jobid}`)
-}
-
-const confirmDeleteJob = (job) => {
-  jobToDelete.value = job
-  deleteDialog.value = true
-}
-
-const deleteJob = async () => {
-  try {
-    await jobsStore.deleteJob(jobToDelete.value.jobid)
-    notify('Job deleted successfully', 'positive')
-    deleteDialog.value = false
-    jobToDelete.value = null
-  } catch (error) {
-    console.error('Error deleting job:', error)
-    notify('Failed to delete job', 'negative')
-  }
-}
-
-const formatDate = (dateString) => {
-  if (!dateString) return 'N/A'
-  try {
-    return new Date(dateString).toLocaleDateString()
-  } catch {
-    return dateString
-  }
-}
-
-const notify = (msg, color = 'primary') => {
-  $q.notify({ message: msg, color })
-}
-
-// Lifecycle
 onMounted(() => {
   loadJobs()
 })
@@ -242,5 +163,262 @@ onMounted(() => {
 
 .q-item:hover {
   background-color: rgba(0, 0, 0, 0.02);
+}
+
+.job-card {
+  border-radius: 20px;
+  border: 1px solid #e8e8e8;
+  background: white;
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+  overflow: hidden;
+}
+
+.job-card:hover {
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  transform: translateY(-4px);
+  border-color: #d0d0d0;
+}
+
+/* Header Section */
+.card-header {
+  background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+  padding: 16px;
+  color: white;
+}
+
+.header-content {
+  display: flex;
+  justify-content: space-between;
+  align-items: flex-start;
+  gap: 16px;
+}
+
+.title-section {
+  flex: 1;
+}
+
+.job-title {
+  font-size: 1.2rem;
+  font-weight: 700;
+  color: white;
+  margin: 0 0 8px 0;
+  line-height: 1.1;
+}
+
+.job-badges {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.job-badge {
+  background: rgba(255, 255, 255, 0.2);
+  color: white;
+  font-size: 0.8rem;
+  font-weight: 500;
+  padding: 4px 12px;
+  border-radius: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.job-badge.work-mode {
+  background: rgba(255, 255, 255, 0.15);
+}
+
+.header-actions {
+  display: flex;
+  gap: 8px;
+}
+
+.icon-btn {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  width: 40px;
+  height: 40px;
+  backdrop-filter: blur(10px);
+  transition: all 0.3s ease;
+}
+
+.icon-btn:hover {
+  background: rgba(255, 255, 255, 0.2);
+  transform: scale(1.1);
+}
+
+/* Main Content Grid */
+.card-content {
+  padding: 16px;
+  background: white;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
+  gap: 12px;
+}
+
+.info-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px;
+  background: #fafafa;
+  border-radius: 12px;
+  border: 1px solid #f0f0f0;
+  transition: all 0.3s ease;
+}
+
+.info-card:hover {
+  background: #f5f5f5;
+  transform: translateY(-2px);
+  border-color: #e0e0e0;
+}
+
+.info-icon {
+  width: 36px;
+  height: 36px;
+  background: black;
+  color: white;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  flex-shrink: 0;
+}
+
+.info-content {
+  flex: 1;
+}
+
+.info-label {
+  font-size: 0.7rem;
+  color: #666;
+  font-weight: 500;
+  margin-bottom: 2px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.info-value {
+  font-size: 0.85rem;
+  color: #2c2c2c;
+  font-weight: 700;
+}
+
+/* Footer Section */
+.card-footer {
+  padding: 12px 16px;
+  background: #f9f9f9;
+  border-top: 1px solid #f0f0f0;
+}
+
+.footer-content {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.footer-icon {
+  color: #666;
+  font-size: 1rem;
+}
+
+.posted-text {
+  color: #666;
+  font-size: 0.9rem;
+  font-weight: 500;
+}
+
+.status-indicator {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.status-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: #666;
+}
+
+.status-dot.active {
+  background: #4caf50;
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    opacity: 1;
+  }
+  50% {
+    opacity: 0.5;
+  }
+  100% {
+    opacity: 1;
+  }
+}
+
+.status-text {
+  color: #4caf50;
+  font-size: 0.8rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .header-content {
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .header-actions {
+    align-self: flex-end;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .job-title {
+    font-size: 1.3rem;
+  }
+
+  .card-content {
+    padding: 24px 16px;
+  }
+
+  .card-header {
+    padding: 20px 16px;
+  }
+
+  .card-footer {
+    padding: 16px;
+  }
+}
+
+@media (max-width: 480px) {
+  .info-card {
+    padding: 16px;
+  }
+
+  .info-icon {
+    width: 40px;
+    height: 40px;
+    font-size: 1rem;
+  }
+
+  .footer-content {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 12px;
+  }
+
+  .status-indicator {
+    align-self: flex-end;
+  }
 }
 </style>
