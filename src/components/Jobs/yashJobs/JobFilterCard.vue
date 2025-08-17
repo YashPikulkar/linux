@@ -4,13 +4,19 @@
       <div class="filter-content scroll q-pa-md">
         <!-- Selected Filters -->
         <div class="q-mb-lg spacing-bottom">
-          <div class="text-h6 q-mb-sm">Selected Filters</div>
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="check_circle" class="section-icon" />
+            Selected Filters
+          </div>
           <SelectedTags />
         </div>
 
         <!-- Basic Filters -->
         <div class="q-mb-lg spacing-bottom">
-          <div class="text-h6 q-mb-sm">Basic Filters</div>
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="tune" class="section-icon" />
+            Basic Filters
+          </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <JobRoleFilter />
@@ -25,6 +31,10 @@
 
         <!-- Salary + Equity -->
         <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="attach_money" class="section-icon" />
+            Compensation
+          </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <SalaryFilter />
@@ -34,11 +44,14 @@
             </div>
           </div>
         </div>
-
         <q-separator spaced class="spacing-bottom" />
 
         <!-- Areas of Interest -->
         <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="psychology" class="section-icon" />
+            Areas of Interest
+          </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <SkillsFilter />
@@ -48,10 +61,14 @@
             </div>
           </div>
         </div>
-
         <q-separator spaced class="spacing-bottom" />
+
         <!-- Job Details -->
         <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="work" class="section-icon" />
+            Job Details
+          </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <JobTypeFilter />
@@ -60,16 +77,18 @@
               <ExperienceFilter />
               <div class="q-mt-md">
                 <JobModeFilter />
-                <!-- ✅ Placed below Experience -->
               </div>
             </div>
           </div>
         </div>
-
         <q-separator spaced class="spacing-bottom" />
 
         <!-- Company Size + Company Type -->
         <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="business" class="section-icon" />
+            Company
+          </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <CompanySizeFilter />
@@ -79,11 +98,14 @@
             </div>
           </div>
         </div>
-
         <q-separator spaced class="spacing-bottom" />
 
         <!-- Education + Top Companies -->
         <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="school" class="section-icon" />
+            Education & Top Companies
+          </div>
           <div class="row q-col-gutter-md">
             <div class="col-12 col-md-6">
               <EducationFilter />
@@ -175,6 +197,7 @@ export default {
 .spacing-bottom {
   margin-bottom: 24px;
 }
+
 .filter-wrapper {
   width: 100%;
   max-width: 1000px;
@@ -185,11 +208,24 @@ export default {
   display: flex;
   flex-direction: column;
 }
+
 .filter-content {
   flex: 1;
   overflow-y: auto;
   padding-bottom: 10px;
   width: 95%;
   margin: 0 auto;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.section-icon {
+  color: #2563eb;
+  font-size: 20px;
 }
 </style>

@@ -13,12 +13,13 @@
 
       <div v-if="job" class="scroll">
         <div class="centered-div">
-          <!-- Wrapper: First card + side card -->
-          <div class="row justify-center no-wrap q-gutter-md">
-            <!-- First Card -->
-            <q-card class="stacked-card" flat bordered>
-              <div class="row no-wrap">
-                <div class="col q-pa-lg">
+          <!-- Main wrapper with left cards and right apply card -->
+          <div class="main-content-wrapper">
+            <!-- Left column with stacked cards -->
+            <div class="left-column">
+              <!-- Top Card - Job Details -->
+              <q-card class="job-details-card" flat bordered>
+                <div class="q-pa-lg">
                   <!-- Title & Meta -->
                   <div>
                     <div class="job-title">{{ job.title }}</div>
@@ -34,7 +35,7 @@
                   <q-separator spaced class="q-my-lg" />
 
                   <!-- Grid Info -->
-                  <div class="row q-col-gutter-lg">
+                  <div class="info-grid">
                     <div class="info-col">
                       <div class="text-caption text-grey-7">Job Location</div>
                       <div class="text-body1">{{ job.jobLocation }}</div>
@@ -55,9 +56,9 @@
                       <div class="text-caption text-grey-7">Education Requirement</div>
                       <div class="text-body1">{{ job.education }}</div>
                     </div>
-                    <div class="info-col">
+                    <div class="info-col skills-col">
                       <div class="text-caption text-grey-7">Skills</div>
-                      <div class="row q-gutter-sm q-mt-sm">
+                      <div class="skills-container">
                         <div
                           v-for="(skill, i) in job.skills"
                           :key="i"
@@ -68,51 +69,52 @@
                       </div>
                     </div>
                   </div>
+                </div>
+              </q-card>
 
-                  <q-separator spaced class="q-my-lg" />
-
-                  <!-- About the Job -->
+              <!-- Bottom Card - About the Job -->
+              <q-card class="about-job-card" flat bordered>
+                <div class="q-pa-lg">
                   <div class="about-job-section">
                     <div class="about-job-title">About the Job</div>
-                    <div class="about-job-text">{{ job.description }}</div>
+                    <div
+                      class="about-job-content"
+                      v-html="formatJobDescription(job.description)"
+                    ></div>
                   </div>
                 </div>
-              </div>
-            </q-card>
+              </q-card>
+            </div>
 
-            <!-- Side Card -->
-            <q-card flat bordered class="apply-card q-pa-none">
-              <div class="apply-header">Apply to {{ job.name }}</div>
-              <div class="apply-body">
-                <p class="apply-text">
-                  Please make any changes to your profile as this information
-                  <strong>will be sent to recruiters</strong>.
-                  <router-link to="/profile" class="apply-link">Go to your profile</router-link>
-                  to update it.
-                </p>
-                <div class="apply-warning" v-if="missingCriticalInfo.length">
-                  <strong
-                    >You cannot apply to this job because your profile is missing the following
-                    critical pieces of information {{ job.name }} uses to evaluate
-                    applicants.</strong
-                  >
-                  <ul>
-                    <li v-for="item in missingCriticalInfo" :key="item">
-                      {{ item }}
-                    </li>
-                  </ul>
+            <!-- Right Side Card - Apply -->
+            <div class="right-column">
+              <q-card flat bordered class="apply-card">
+                <div class="apply-header">Apply to {{ job.name }}</div>
+                <div class="apply-body">
+                  <p class="apply-text">
+                    Please make sure your profile is complete as this information
+                    <strong>will be sent to recruiters</strong>.
+                    <router-link to="/profile" class="apply-link">Go to your profile</router-link>
+                    to update it.
+                  </p>
+                  <div class="apply-warning" v-if="missingCriticalInfo.length">
+                    <strong
+                      >You cannot apply to this job because your profile is missing the following
+                      critical pieces of information {{ job.name }} uses to evaluate
+                      applicants.</strong
+                    >
+                    <ul>
+                      <li v-for="item in missingCriticalInfo" :key="item">
+                        {{ item }}
+                      </li>
+                    </ul>
+                  </div>
+                  <button class="apply-button" :disabled="applyDisabled" @click="applyForJob">
+                    Apply Now
+                  </button>
                 </div>
-                <div class="apply-question">What interests you about working for this company?</div>
-                <textarea
-                  v-model="coverLetter"
-                  class="apply-textarea"
-                  placeholder="Write your cover letter here..."
-                ></textarea>
-                <button class="apply-button" :disabled="applyDisabled" @click="applyForJob">
-                  Apply
-                </button>
-              </div>
-            </q-card>
+              </q-card>
+            </div>
           </div>
         </div>
       </div>
@@ -121,6 +123,7 @@
     </q-card>
   </q-dialog>
 </template>
+
 <script>
 import { computed, ref } from 'vue'
 import { useJobsStore } from 'src/stores/job-store'
@@ -139,8 +142,6 @@ export default {
         if (!val) jobsStore.closeLearnMoreDialog()
       },
     })
-
-    const coverLetter = ref('')
 
     const job = computed(() => {
       const rawJob = jobsStore.selectedJob
@@ -193,12 +194,7 @@ export default {
         console.error('No job selected for application')
         return
       }
-      console.log(
-        'Applying for job',
-        jobsStore.selectedJob.jobid,
-        'with cover letter:',
-        coverLetter.value,
-      )
+      console.log('Applying for job', jobsStore.selectedJob.jobid)
       await jobsStore.openApplicationDialog(jobsStore.selectedJob.jobid)
     }
 
@@ -206,15 +202,67 @@ export default {
       jobsStore.closeLearnMoreDialog()
     }
 
+    function formatJobDescription(description) {
+      if (!description) return ''
+
+      // Clean up the description and split into sections
+      let cleanedDescription = description.replace(/\r\n/g, '\n').replace(/\r/g, '\n')
+
+      // Split by double line breaks or more to identify sections
+      const sections = cleanedDescription.split(/\n\s*\n+/).filter((section) => section.trim())
+
+      return sections
+        .map((section) => {
+          const trimmed = section.trim()
+          const lines = trimmed
+            .split('\n')
+            .map((line) => line.trim())
+            .filter((line) => line)
+
+          if (lines.length === 0) return ''
+
+          const processedLines = lines.map((line) => {
+            // Check if line is a heading (various patterns)
+            const isHeading =
+              // Short line with colon at end
+              (line.length < 100 && line.endsWith(':')) ||
+              // All caps short line
+              (line.length < 80 && /^[A-Z\s\-_&]+:?$/.test(line)) ||
+              // Title case with specific keywords
+              (/^(About|Role|Responsibilities|Requirements|Qualifications|Skills|Experience|Benefits|Company|Job|What|Key|Primary|Essential|Preferred|Nice|Must|Should)/i.test(
+                line,
+              ) &&
+                line.length < 120) ||
+              // Numbered or bulleted headings
+              (/^(\d+\.|•|\*|-)\s*[A-Z]/.test(line) && line.length < 80)
+
+            if (isHeading) {
+              return `<div class="job-heading">${line.replace(/:$/, '')}</div>`
+            }
+
+            // Check if it's a bullet point
+            if (/^[-•*]\s/.test(line) || /^\d+\.\s/.test(line)) {
+              return `<div class="job-bullet">${line}</div>`
+            }
+
+            // Regular paragraph line
+            return `<div class="job-paragraph">${line}</div>`
+          })
+
+          return processedLines.join('')
+        })
+        .join('<div class="job-section-break"></div>')
+    }
+
     return {
       showDialog,
       job,
       jobDetail,
       closeDialog,
-      coverLetter,
       applyDisabled,
       applyForJob,
       missingCriticalInfo,
+      formatJobDescription,
     }
   },
 }
@@ -223,10 +271,16 @@ export default {
 <style scoped>
 .dialog-card {
   width: 100vw;
-  height: 80vh;
+  height: 85vh;
   max-width: 100vw;
-  border-radius: 20px; /* Rounded edges for dialog */
+  border-radius: 20px;
   position: relative;
+}
+.centered-div {
+  width: 100%; /* take full available width */
+  max-width: 2000px; /* was 1800px, increase cap */
+  margin: 0 auto; /* keep centered */
+  padding-top: 20px;
 }
 
 .scroll {
@@ -234,21 +288,60 @@ export default {
   overflow-y: auto;
 }
 
-.centered-div {
-  width: 80%;
+.main-content-wrapper {
+  display: flex;
+  gap: 30px;
+  align-items: flex-start;
+  justify-content: center;
+  max-width: 1600px;
   margin: 0 auto;
-  padding-top: 20px;
+}
+
+.left-column {
+  flex: 1;
+  max-width: 1000px;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.stacked-card {
-  width: 70%;
+.right-column {
+  width: 420px;
+  flex-shrink: 0;
+}
+
+/* Job Details Card (Top) */
+.job-details-card {
   border-radius: 16px;
   background-color: white;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
   border: 1px solid #ccc;
+}
+
+/* About Job Card (Bottom) */
+.about-job-card {
+  border-radius: 16px;
+  background-color: white;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ccc;
+}
+
+.info-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 20px 24px;
+  align-items: start;
+}
+
+.skills-col {
+  grid-column: 1 / -1;
+}
+
+.skills-container {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 8px;
 }
 
 .custom-chip {
@@ -258,7 +351,6 @@ export default {
   padding: 5px 14px;
 }
 
-/* Blue chip for skills */
 .custom-chip-blue {
   border: 1px solid #2a6fdb;
   background-color: #e6f0ff;
@@ -266,16 +358,21 @@ export default {
 }
 
 .info-col {
-  width: calc(50% - 8px);
+  min-width: 0;
 }
 
 .job-title {
   font-size: 30px;
   font-weight: 700;
+  line-height: 1.2;
+  margin-bottom: 8px;
 }
 
 .job-meta {
   font-size: 16px;
+  font-weight: 500;
+  color: #333;
+  margin-bottom: 4px;
 }
 
 .job-posted {
@@ -287,13 +384,19 @@ export default {
   position: absolute;
   top: 8px;
   right: 8px;
+  z-index: 10;
 }
 
+/* Apply Card */
 .apply-card {
-  flex: 0 0 320px;
   background: white;
   border-radius: 16px;
   border: 1px solid #ccc;
+  display: flex;
+  flex-direction: column;
+  position: sticky;
+  top: 20px;
+  max-height: calc(85vh - 40px);
 }
 
 .apply-header {
@@ -301,16 +404,23 @@ export default {
   color: white;
   font-size: 18px;
   font-weight: bold;
-  padding: 12px 16px;
+  padding: 16px 20px;
+  border-radius: 16px 16px 0 0;
 }
 
 .apply-body {
-  padding: 16px;
+  padding: 20px;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
 }
 
 .apply-text {
   font-size: 14px;
-  margin-bottom: 12px;
+  line-height: 1.5;
+  margin: 0;
+  color: #555;
 }
 
 .apply-link {
@@ -320,22 +430,18 @@ export default {
 }
 
 .apply-warning {
-  background-color: #ffe6e6;
-  border-radius: 6px;
-  padding: 12px;
+  background-color: #fff3f3;
+  border: 1px solid #ffcccc;
+  border-radius: 8px;
+  padding: 16px;
   font-size: 14px;
   color: #d60000;
-  margin-bottom: 16px;
+  line-height: 1.4;
 }
 
-.apply-textarea {
-  width: 100%;
-  height: 60px;
-  border-radius: 6px;
-  border: 1px solid #ccc;
-  padding: 8px;
-  margin-bottom: 12px;
-  resize: none;
+.apply-warning ul {
+  margin: 8px 0 0 16px;
+  padding: 0;
 }
 
 .apply-button {
@@ -343,9 +449,17 @@ export default {
   background-color: black;
   color: white;
   border: none;
-  padding: 10px;
-  font-size: 14px;
-  border-radius: 6px;
+  padding: 14px;
+  font-size: 16px;
+  font-weight: 600;
+  border-radius: 8px;
+  cursor: pointer;
+  margin-top: auto;
+  transition: background-color 0.2s ease;
+}
+
+.apply-button:hover:not(:disabled) {
+  background-color: #333;
 }
 
 .apply-button:disabled {
@@ -353,29 +467,104 @@ export default {
   cursor: not-allowed;
 }
 
-/* About Job Section Styling - moved up */
+/* About Job Section Styling */
 .about-job-section {
-  margin-bottom: 16px;
+  margin-bottom: 0;
 }
 
 .about-job-title {
-  font-size: 22px;
+  font-size: 24px;
   font-weight: 700;
-  margin-bottom: 12px;
+  margin-bottom: 20px;
+  color: #1a1a1a;
 }
 
-.about-job-text {
+.about-job-content {
   font-size: 16px;
   line-height: 1.6;
   color: #333;
 }
 
-@media (max-width: 1024px) {
-  .stacked-card {
-    width: 100%;
+/* Job Description Formatting */
+.about-job-content :deep(.job-heading) {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1a1a1a;
+  margin: 24px 0 12px 0;
+  line-height: 1.3;
+}
+
+.about-job-content :deep(.job-heading:first-child) {
+  margin-top: 0;
+}
+
+.about-job-content :deep(.job-paragraph) {
+  margin-bottom: 12px;
+  line-height: 1.6;
+  color: #444;
+  text-align: justify;
+}
+
+.about-job-content :deep(.job-bullet) {
+  margin-bottom: 8px;
+  line-height: 1.6;
+  color: #444;
+  padding-left: 12px;
+}
+
+.about-job-content :deep(.job-section-break) {
+  margin: 20px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1200px) {
+  .main-content-wrapper {
+    flex-direction: column;
+    gap: 20px;
   }
+
+  .right-column {
+    width: 100%;
+    max-width: 1000px;
+    margin: 0 auto;
+  }
+
   .apply-card {
-    display: none;
+    position: static;
+    max-height: none;
+  }
+}
+
+@media (max-width: 768px) {
+  .centered-div {
+    width: 98%;
+  }
+
+  .info-grid {
+    grid-template-columns: 1fr;
+    gap: 16px;
+  }
+
+  .job-title {
+    font-size: 24px;
+  }
+
+  .about-job-title {
+    font-size: 20px;
+  }
+
+  .about-job-content {
+    font-size: 15px;
+  }
+
+  .about-job-content :deep(.job-heading) {
+    font-size: 16px;
+    margin: 20px 0 10px 0;
+  }
+
+  .about-job-content :deep(.job-paragraph),
+  .about-job-content :deep(.job-bullet) {
+    font-size: 14px;
   }
 }
 </style>

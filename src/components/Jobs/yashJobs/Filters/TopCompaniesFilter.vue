@@ -92,7 +92,7 @@ export default {
       return this.store.companies
         .filter((c) => !this.selectedCompanies.includes(c.value))
         .filter((c) => c.label.toLowerCase().includes(searchLower))
-        .slice(0, 6) // ✅ limit AFTER filtering
+        .slice(0, 7) // ✅ limit AFTER filtering
     },
     isActive() {
       return this.selectedCompanies.length > 0

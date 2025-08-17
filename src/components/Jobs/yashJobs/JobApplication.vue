@@ -1,203 +1,146 @@
 <template>
-  <q-dialog v-model="jobsStore.applicationDialogVisible" persistent>
-    <q-card flat class="application-card">
-      <!-- Header with gradient background -->
-      <div class="dialog-header">
-        <div class="header-content">
-          <div class="header-text">
-            <h2 class="dialog-title">Apply for Position</h2>
-            <p class="dialog-subtitle">Review job details and submit your application</p>
-          </div>
-          <q-btn flat round icon="close" size="md" class="close-btn" @click="closeDialog" />
-        </div>
-      </div>
+  <q-dialog v-model="jobsStore.applicationDialogVisible" persistent @hide="closeDialog">
+    <q-card flat bordered class="q-pa-lg dialog-card">
+      <!-- Close icon -->
+      <q-btn icon="close" flat round dense color="grey-6" class="close-icon" @click="closeDialog" />
 
-      <div class="dialog-body" v-if="normalizedJob">
-        <!-- Company & Job Info Card -->
-        <div class="job-info-card">
-          <div class="company-section">
-            <div class="company-avatar">
-              <q-avatar size="64px" class="company-logo">
-                <img v-if="normalizedJob.logo" :src="normalizedJob.logo" />
-                <div v-else class="avatar-fallback">
-                  {{ normalizedJob.name.charAt(0).toUpperCase() }}
+      <div v-if="normalizedJob" class="scroll">
+        <div class="centered-div">
+          <!-- Main application card -->
+          <q-card class="application-card" flat bordered>
+            <div class="q-pa-lg">
+              <!-- Company header -->
+              <div class="company-header">
+                <div class="company-info">
+                  <div class="company-name">{{ normalizedJob.name }}</div>
+                  <div class="job-title-large">{{ normalizedJob.title }}</div>
+                  <div class="job-meta-info">
+                    ₹{{ normalizedJob.salary }} &nbsp;|&nbsp;
+                    {{ normalizedJob.location }} &nbsp;|&nbsp; {{ normalizedJob.type }}
+                  </div>
                 </div>
-              </q-avatar>
-            </div>
-
-            <div class="company-details">
-              <h3 class="company-name">{{ normalizedJob.name }}</h3>
-              <div class="company-meta">
-                <q-icon name="business" size="14px" class="meta-icon" />
-                {{ normalizedJob.size }}
-                <span class="separator">•</span>
-                <q-icon name="domain" size="14px" class="meta-icon" />
-                {{ normalizedJob.industry }}
               </div>
-            </div>
 
-            <div class="job-status-badge">
-              <q-chip
-                :color="normalizedJob.hiringStatus === 'urgent' ? 'red' : 'primary'"
-                text-color="white"
-                size="sm"
-                icon="schedule"
-              >
-                {{ normalizedJob.hiringStatus || 'Active' }}
-              </q-chip>
-            </div>
-          </div>
+              <q-separator spaced class="q-my-lg" />
 
-          <div class="job-header">
-            <h1 class="job-title">{{ normalizedJob.title }}</h1>
-            <div class="job-meta">
-              <div class="meta-item">
-                <q-icon name="place" size="16px" />
-                <span>{{ normalizedJob.location }}</span>
+              <!-- Quick info grid -->
+              <div class="row q-col-gutter-lg q-mb-lg">
+                <div class="info-col">
+                  <div class="text-caption text-grey-7">Experience Required</div>
+                  <div class="text-body1">{{ normalizedJob.experience }}</div>
+                </div>
+                <div class="info-col">
+                  <div class="text-caption text-grey-7">Work Policy</div>
+                  <div class="text-body1">{{ normalizedJob.remotePolicy }}</div>
+                </div>
+                <div class="info-col">
+                  <div class="text-caption text-grey-7">Openings</div>
+                  <div class="text-body1">{{ normalizedJob.openings }}</div>
+                </div>
+                <div class="info-col">
+                  <div class="text-caption text-grey-7">Education</div>
+                  <div class="text-body1">{{ normalizedJob.education }}</div>
+                </div>
               </div>
-              <div class="meta-item">
-                <q-icon name="payments" size="16px" />
-                <span>₹{{ normalizedJob.salary }}</span>
+
+              <!-- Skills section -->
+              <div v-if="normalizedJob.skills.length" class="skills-section q-mb-lg">
+                <div class="text-caption text-grey-7 q-mb-sm">Required Skills</div>
+                <div class="row q-gutter-sm">
+                  <div
+                    v-for="(skill, i) in normalizedJob.skills"
+                    :key="i"
+                    class="custom-chip custom-chip-blue"
+                  >
+                    {{ skill }}
+                  </div>
+                </div>
               </div>
-              <div class="meta-item">
-                <q-icon name="work" size="16px" />
-                <span>{{ normalizedJob.type }}</span>
+
+              <q-separator spaced class="q-my-lg" />
+
+              <!-- Profile status section -->
+              <div class="profile-status-section">
+                <div class="status-title">Application Status</div>
+
+                <div v-if="missingCriticalInfo.length" class="status-warning">
+                  <div class="warning-content">
+                    <q-icon name="warning" size="20px" class="warning-icon" />
+                    <div class="warning-text">
+                      <div class="warning-title">Profile Incomplete</div>
+                      <div class="warning-subtitle">
+                        Complete your profile to apply for this position
+                      </div>
+                    </div>
+                  </div>
+                  <div class="missing-items q-mt-md">
+                    <div class="missing-label">Missing information:</div>
+                    <div class="missing-chips">
+                      <div
+                        v-for="item in missingCriticalInfo"
+                        :key="item"
+                        class="custom-chip custom-chip-warning"
+                      >
+                        {{ item }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div v-else class="status-success">
+                  <div class="success-content">
+                    <q-icon name="check_circle" size="20px" class="success-icon" />
+                    <div class="success-text">
+                      <div class="success-title">Ready to Apply</div>
+                      <div class="success-subtitle">
+                        Your profile is complete and ready for submission
+                      </div>
+                    </div>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        </div>
 
-        <!-- Quick Stats Grid -->
-        <div class="stats-grid">
-          <div class="stat-card">
-            <div class="stat-icon">
-              <q-icon name="trending_up" size="24px" />
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Experience</div>
-              <div class="stat-value">{{ normalizedJob.experience }}</div>
-            </div>
-          </div>
+              <q-separator spaced class="q-my-lg" />
 
-          <div class="stat-card">
-            <div class="stat-icon">
-              <q-icon name="computer" size="24px" />
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Work Mode</div>
-              <div class="stat-value">{{ normalizedJob.remotePolicy }}</div>
-            </div>
-          </div>
+              <!-- Action section -->
+              <div class="action-section">
+                <div class="action-text q-mb-md">
+                  Your profile information will be sent directly to the recruiter.
+                  <router-link to="/profile" class="profile-link" @click="closeDialog">
+                    Review your profile
+                  </router-link>
+                </div>
 
-          <div class="stat-card">
-            <div class="stat-icon">
-              <q-icon name="group" size="24px" />
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Openings</div>
-              <div class="stat-value">{{ normalizedJob.openings }}</div>
-            </div>
-          </div>
+                <div class="action-buttons">
+                  <q-btn flat label="Cancel" class="cancel-button" @click="closeDialog" />
 
-          <div class="stat-card">
-            <div class="stat-icon">
-              <q-icon name="school" size="24px" />
-            </div>
-            <div class="stat-content">
-              <div class="stat-label">Education</div>
-              <div class="stat-value">{{ normalizedJob.education }}</div>
-            </div>
-          </div>
-        </div>
+                  <q-btn
+                    v-if="missingCriticalInfo.length"
+                    unelevated
+                    color="primary"
+                    label="Complete Profile"
+                    class="primary-button"
+                    @click="goToProfile"
+                  />
 
-        <!-- Skills Section -->
-        <div class="skills-section" v-if="normalizedJob.skills.length">
-          <div class="section-header">
-            <q-icon name="code" size="20px" class="section-icon" />
-            <h4 class="section-title">Required Skills</h4>
-          </div>
-          <div class="skills-container">
-            <q-chip
-              v-for="(skill, index) in normalizedJob.skills"
-              :key="index"
-              class="skill-chip"
-              color="primary"
-              text-color="white"
-              size="md"
-            >
-              {{ skill }}
-            </q-chip>
-          </div>
-        </div>
-
-        <!-- Missing Info Alert -->
-        <q-card v-if="missingCriticalInfo.length" class="missing-info-card" flat>
-          <q-card-section class="missing-info-content">
-            <div class="alert-header">
-              <q-icon name="warning" size="24px" class="warning-icon" />
-              <div>
-                <div class="alert-title">Complete Your Profile</div>
-                <div class="alert-subtitle">
-                  Add missing information to proceed with your application
+                  <q-btn
+                    v-else
+                    unelevated
+                    color="black"
+                    label="Submit Application"
+                    class="submit-button"
+                    @click="sendApplication"
+                  />
                 </div>
               </div>
             </div>
-
-            <div class="missing-items">
-              <q-chip
-                v-for="(item, idx) in missingCriticalInfo"
-                :key="idx"
-                color="orange"
-                text-color="white"
-                icon="error_outline"
-                size="sm"
-              >
-                {{ item }}
-              </q-chip>
-            </div>
-
-            <div class="alert-actions">
-              <q-btn
-                unelevated
-                color="primary"
-                icon="person"
-                label="Update Profile"
-                size="md"
-                class="update-btn"
-                to="/profile"
-                @click="closeDialog"
-              />
-            </div>
-          </q-card-section>
-        </q-card>
-      </div>
-
-      <!-- Enhanced Footer -->
-      <div class="dialog-footer">
-        <div class="footer-info">
-          <q-icon name="info" size="16px" class="info-icon" />
-          <span class="info-text">
-            {{ canApply ? 'Ready to submit your application' : 'Complete profile to apply' }}
-          </span>
-        </div>
-        <div class="footer-actions">
-          <q-btn flat label="Cancel" class="cancel-btn" @click="closeDialog" />
-          <q-btn
-            unelevated
-            :label="canApply ? 'Send Application' : 'Complete Profile'"
-            :icon="canApply ? 'send' : 'person'"
-            class="apply-btn"
-            :color="canApply ? 'primary' : 'grey'"
-            :disable="!canApply"
-            @click="canApply ? sendApplication() : $router.push('/profile')"
-          />
+          </q-card>
         </div>
       </div>
 
-      <!-- Loading State -->
-      <div v-if="!normalizedJob" class="loading-state">
+      <div v-else class="q-pa-md loading-container">
         <q-spinner-hourglass size="40px" color="primary" />
-        <div class="loading-text">Loading job details...</div>
+        <div class="loading-text q-mt-md">Loading job details...</div>
       </div>
     </q-card>
   </q-dialog>
@@ -221,55 +164,48 @@ export default {
       if (!job) return null
 
       return {
-        name: job.company_name || job.custom_title || 'Unknown Company',
-        logo: job.logo || null,
-        size: job.companySize || 'N/A',
-        title: job.custom_title || job.job_roles || 'Job Title',
+        name: job.company_name || 'Unknown Company',
+        title: job.custom_title || job.job_roles || '',
         salary:
           job.salary_min && job.salary_max
-            ? `${(job.salary_min / 1000).toFixed(1)}K – ${(job.salary_max / 1000).toFixed(1)}K`
+            ? `${job.salary_min.toLocaleString()} - ${job.salary_max.toLocaleString()}`
             : 'Not specified',
-        location: job.locations || 'Not specified',
-        experience: job.experience_max
-          ? `${job.experience_min || 0} – ${job.experience_max} years`
-          : 'Not specified',
-        type: job.job_type || 'Not specified',
-        posted: job.posted ? new Date(job.posted).toLocaleDateString() : 'Unknown',
-        companyLocation: job.company_location || 'Not specified',
-        industry: job.markets || 'Not specified',
-        remotePolicy: job.mode_of_work || 'Not specified',
+        location: job.locations || 'N/A',
+        experience:
+          job.experience_min && job.experience_max
+            ? `${job.experience_min} - ${job.experience_max} yrs`
+            : 'N/A',
+        type: job.job_type || '',
+        remotePolicy: job.mode_of_work || 'N/A',
         openings: job.opening || 0,
-        education: job.qualification_name || 'Not specified',
+        education: job.qualification_name || 'N/A',
         skills: job.skills ? job.skills.split(',').map((s) => s.trim()) : [],
-        missingFields: job.missingFields || [],
-        hiringStatus: job.hiring_status || '',
       }
     },
     missingCriticalInfo() {
       const missing = []
-      const { skills, degree } = this.userStore
-
-      if (!skills || (Array.isArray(skills) ? skills.length === 0 : skills.trim() === ''))
-        missing.push('Skills')
-      if (!degree || degree.trim() === '') missing.push('Degree')
-
-      return missing
-    },
-    canApply() {
-      const job = this.normalizedJob
-      return (
-        (!job?.missingFields || job.missingFields.length === 0) &&
-        this.missingCriticalInfo.length === 0
+      if (!this.userStore.education_level || this.userStore.education_level.trim() === '')
+        missing.push('Education Level')
+      if (
+        !this.userStore.skills ||
+        (Array.isArray(this.userStore.skills)
+          ? this.userStore.skills.length === 0
+          : this.userStore.skills.trim() === '')
       )
+        missing.push('Skills')
+      if (!this.userStore.degree || this.userStore.degree.trim() === '') missing.push('Degree')
+      return missing
     },
   },
   methods: {
     closeDialog() {
       this.jobsStore.closeApplicationDialog()
     },
+    goToProfile() {
+      this.$router.push('/profile')
+      this.closeDialog()
+    },
     async sendApplication() {
-      if (!this.canApply) return
-
       const jobid = this.jobsStore.selectedJob?.jobid
       if (!jobid) {
         console.error('No job ID found to apply.')
@@ -293,293 +229,124 @@ export default {
 </script>
 
 <style scoped>
-.application-card {
-  max-width: 700px;
-  width: 700px;
-  background: #ffffff;
-  border-radius: 16px;
-  box-shadow:
-    0 20px 25px -5px rgba(0, 0, 0, 0.1),
-    0 10px 10px -5px rgba(0, 0, 0, 0.04);
-  overflow: hidden;
-  font-family:
-    'Inter',
-    -apple-system,
-    BlinkMacSystemFont,
-    'Segoe UI',
-    sans-serif;
-}
-
-.dialog-header {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
-  padding: 24px 32px;
+.dialog-card {
+  width: 80vw;
+  max-width: 900px;
+  height: auto;
+  max-height: 85vh;
+  border-radius: 20px;
   position: relative;
-  overflow: hidden;
-}
-
-.dialog-header::before {
-  content: '';
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%23ffffff' fill-opacity='0.05'%3E%3Ccircle cx='30' cy='30' r='2'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
-  opacity: 0.3;
-}
-
-.header-content {
   display: flex;
-  justify-content: space-between;
-  align-items: flex-start;
-  position: relative;
-  z-index: 1;
+  flex-direction: column;
 }
 
-.header-text {
-  flex: 1;
+.scroll {
+  max-height: 70vh;
+  overflow-y: auto;
 }
 
-.dialog-title {
-  font-size: 24px;
-  font-weight: 700;
-  margin: 0 0 4px 0;
-  letter-spacing: -0.025em;
-}
-
-.dialog-subtitle {
-  font-size: 14px;
-  margin: 0;
-  opacity: 0.9;
-  font-weight: 400;
-}
-
-.close-btn {
-  color: #ffffff;
-  background: rgba(255, 255, 255, 0.1);
-  border-radius: 8px;
-  backdrop-filter: blur(10px);
-  transition: all 0.2s ease;
-}
-
-.close-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
-  transform: scale(1.05);
-}
-
-.dialog-body {
-  padding: 32px;
-  background: #fafafa;
-}
-
-.job-info-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #f0f0f0;
-}
-
-.company-section {
-  display: flex;
-  align-items: center;
-  margin-bottom: 20px;
-  position: relative;
-}
-
-.company-avatar {
-  margin-right: 16px;
-}
-
-.company-logo {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-}
-
-.avatar-fallback {
+.centered-div {
   width: 100%;
-  height: 100%;
+  margin: 0 auto;
+  padding-top: 10px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 24px;
-  font-weight: 700;
-  color: #ffffff;
+  flex-direction: column;
+  gap: 16px;
 }
 
-.company-details {
-  flex: 1;
+.application-card {
+  border-radius: 16px;
+  background-color: white;
+  box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ccc;
+}
+
+.close-icon {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  z-index: 10;
+}
+
+.company-header {
+  margin-bottom: 20px;
 }
 
 .company-name {
+  font-size: 20px;
+  font-weight: 600;
+  color: #374151;
+  margin-bottom: 6px;
+}
+
+.job-title-large {
+  font-size: 30px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 6px;
+  line-height: 1.2;
+}
+
+.job-meta-info {
+  font-size: 15px;
+  color: #6b7280;
+  font-weight: 500;
+}
+
+.info-col {
+  width: calc(50% - 8px);
+}
+
+.custom-chip {
+  font-size: 14px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 6px 14px;
+  display: inline-block;
+}
+
+.custom-chip-blue {
+  border: 1px solid #2a6fdb;
+  background-color: #e6f0ff;
+  color: #1b3a8a;
+}
+
+.custom-chip-warning {
+  border: 1px solid #f59e0b;
+  background-color: #fef3c7;
+  color: #d97706;
+}
+
+.profile-status-section {
+  margin-bottom: 20px;
+}
+
+.status-title {
   font-size: 18px;
   font-weight: 700;
-  margin: 0 0 6px 0;
-  color: #1a1a1a;
+  color: #1f2937;
+  margin-bottom: 12px;
 }
 
-.company-meta {
-  font-size: 14px;
-  color: #6b7280;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-
-.meta-icon {
-  opacity: 0.7;
-}
-
-.separator {
-  margin: 0 4px;
-  opacity: 0.5;
-}
-
-.job-status-badge {
-  position: absolute;
-  top: 0;
-  right: 0;
-}
-
-.job-header {
-  border-top: 1px solid #f0f0f0;
-  padding-top: 20px;
-}
-
-.job-title {
-  font-size: 28px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0 0 12px 0;
-  line-height: 1.2;
-  letter-spacing: -0.025em;
-}
-
-.job-meta {
-  display: flex;
-  gap: 24px;
-  flex-wrap: wrap;
-}
-
-.meta-item {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  font-size: 14px;
-  color: #6b7280;
-  font-weight: 500;
-}
-
-.stats-grid {
-  display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-  gap: 16px;
-  margin-bottom: 24px;
-}
-
-.stat-card {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 20px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #f0f0f0;
-  transition: all 0.2s ease;
-}
-
-.stat-card:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-}
-
-.stat-icon {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  color: #ffffff;
-  width: 40px;
-  height: 40px;
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.stat-content {
-  flex: 1;
-}
-
-.stat-label {
-  font-size: 12px;
-  font-weight: 600;
-  text-transform: uppercase;
-  color: #9ca3af;
-  margin-bottom: 2px;
-  letter-spacing: 0.05em;
-}
-
-.stat-value {
-  font-size: 14px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.skills-section {
-  background: #ffffff;
-  border-radius: 12px;
-  padding: 24px;
-  margin-bottom: 24px;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
-  border: 1px solid #f0f0f0;
-}
-
-.section-header {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 16px;
-}
-
-.section-icon {
-  color: #667eea;
-}
-
-.section-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #1a1a1a;
-  margin: 0;
-}
-
-.skills-container {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
-.skill-chip {
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  border-radius: 20px;
-  font-weight: 500;
-}
-
-.missing-info-card {
-  background: linear-gradient(135deg, #fef3c7 0%, #fbbf24 100%);
-  border-radius: 12px;
-  margin-bottom: 24px;
+.status-warning {
+  background-color: #fef3c7;
   border: 1px solid #f59e0b;
+  border-radius: 12px;
+  padding: 14px;
 }
 
-.missing-info-content {
-  padding: 20px;
+.status-success {
+  background-color: #dcfce7;
+  border: 1px solid #16a34a;
+  border-radius: 12px;
+  padding: 14px;
 }
 
-.alert-header {
+.warning-content,
+.success-content {
   display: flex;
   align-items: flex-start;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 10px;
 }
 
 .warning-icon {
@@ -587,128 +354,117 @@ export default {
   margin-top: 2px;
 }
 
-.alert-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #92400e;
-  margin-bottom: 2px;
+.success-icon {
+  color: #16a34a;
+  margin-top: 2px;
 }
 
-.alert-subtitle {
-  font-size: 14px;
-  color: #a16207;
+.warning-title,
+.success-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 3px;
+}
+
+.warning-title {
+  color: #92400e;
+}
+.success-title {
+  color: #15803d;
+}
+
+.warning-subtitle,
+.success-subtitle {
+  font-size: 13px;
 }
 
 .missing-items {
+  margin-top: 12px;
+}
+
+.missing-label {
+  font-size: 13px;
+  font-weight: 600;
+  color: #92400e;
+  margin-bottom: 6px;
+}
+
+.missing-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 8px;
-  margin-bottom: 16px;
+  gap: 6px;
 }
 
-.alert-actions {
-  display: flex;
-  justify-content: flex-start;
+.action-section {
+  text-align: center;
+  margin-top: 10px;
+  margin-bottom: 0; /* ✅ removes big space below */
 }
 
-.update-btn {
-  font-weight: 600;
-  border-radius: 8px;
-}
-
-.dialog-footer {
-  padding: 20px 32px;
-  background: #ffffff;
-  border-top: 1px solid #f0f0f0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-
-.footer-info {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  color: #6b7280;
+.action-text {
   font-size: 14px;
-}
-
-.info-icon {
-  opacity: 0.7;
-}
-
-.footer-actions {
-  display: flex;
-  gap: 12px;
-}
-
-.cancel-btn {
-  font-weight: 600;
   color: #6b7280;
+  line-height: 1.4;
+}
+
+.profile-link {
+  color: #2563eb;
+  text-decoration: underline;
+  font-weight: 500;
+}
+
+.action-buttons {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-bottom: 0; /* ✅ ensures no big bottom gap */
+}
+
+.cancel-button,
+.primary-button,
+.submit-button {
+  font-weight: 600;
   border-radius: 8px;
   padding: 10px 20px;
 }
 
-.cancel-btn:hover {
-  background: #f9fafb;
-  color: #1a1a1a;
+.submit-button {
+  background-color: #000000;
+  color: white;
+}
+.submit-button:hover {
+  background-color: #333333;
 }
 
-.apply-btn {
-  font-weight: 700;
-  border-radius: 8px;
-  padding: 10px 24px;
-  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-  box-shadow: 0 2px 4px rgba(102, 126, 234, 0.2);
-  transition: all 0.2s ease;
-}
-
-.apply-btn:not(:disabled):hover {
-  transform: translateY(-1px);
-  box-shadow: 0 4px 8px rgba(102, 126, 234, 0.3);
-}
-
-.loading-state {
-  padding: 80px 32px;
+.loading-container {
   text-align: center;
-  color: #6b7280;
+  padding: 50px 20px;
 }
 
 .loading-text {
-  font-size: 16px;
-  margin-top: 16px;
+  font-size: 15px;
+  color: #6b7280;
   font-weight: 500;
 }
 
-/* Responsive Design */
+/* Responsive */
 @media (max-width: 768px) {
-  .application-card {
+  .dialog-card {
     width: 95vw;
-    max-width: none;
-    margin: 10px;
+    height: auto;
+    max-height: 90vh;
   }
-
-  .stats-grid {
-    grid-template-columns: repeat(2, 1fr);
+  .job-title-large {
+    font-size: 24px;
   }
-
-  .job-meta {
+  .action-buttons {
     flex-direction: column;
-    gap: 12px;
+    align-items: center;
   }
-
-  .dialog-body {
-    padding: 20px;
-  }
-
-  .dialog-footer {
-    flex-direction: column;
-    gap: 16px;
-    align-items: stretch;
-  }
-
-  .footer-actions {
-    justify-content: center;
+  .cancel-button,
+  .primary-button,
+  .submit-button {
+    width: 200px;
   }
 }
 </style>
