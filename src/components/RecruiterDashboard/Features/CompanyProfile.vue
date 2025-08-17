@@ -1,0 +1,477 @@
+<template>
+  <q-card flat bordered class="company-profile-card">
+    <div class="card-header">
+      <div class="card-title">Company Profile</div>
+      <div class="action-buttons">
+        <q-btn dense flat round icon="edit" v-if="!isEditable" @click="enableEdit" color="black" />
+        <q-btn dense flat round icon="check" v-if="isEditable" @click="save" color="positive" />
+        <q-btn
+          dense
+          flat
+          round
+          icon="close"
+          v-if="isEditable"
+          @click="cancelEdit"
+          color="negative"
+        />
+      </div>
+    </div>
+
+    <q-separator class="custom-separator" />
+
+    <q-form class="form-content">
+      <q-input
+        v-model="editData.name"
+        :disable="!isEditable"
+        filled
+        label="Company Name"
+        class="styled-input"
+      />
+      <q-input
+        v-model="editData.description"
+        :disable="!isEditable"
+        filled
+        type="textarea"
+        label="Description"
+        class="styled-input"
+      />
+      <q-select
+        v-model="editData.companySize"
+        :disable="!isEditable"
+        filled
+        label="Company Size"
+        :options="sizeOptions"
+        class="styled-input"
+      />
+      <q-select
+        v-model="editData.status"
+        :disable="!isEditable"
+        filled
+        label="Status"
+        :options="statusOptions"
+        class="styled-input"
+      />
+      <q-input
+        v-model="editData.CEO"
+        :disable="!isEditable"
+        filled
+        label="CEO"
+        class="styled-input"
+      />
+      <q-input
+        v-model="editData.companyEmail"
+        :disable="!isEditable"
+        filled
+        label="Company Email"
+        class="styled-input"
+      />
+
+      <!-- 🔹 Location Multi-Select -->
+      <q-select
+        v-model="editData.locationids"
+        :disable="!isEditable"
+        filled
+        label="Preferred Locations"
+        multiple
+        use-chips
+        emit-value
+        map-options
+        :options="locationOptions"
+        class="styled-input"
+      />
+
+      <!-- 🔹 Market Multi-Select -->
+      <q-select
+        v-model="editData.marketids"
+        :disable="!isEditable"
+        filled
+        label="Markets"
+        multiple
+        use-chips
+        emit-value
+        map-options
+        :options="marketOptions"
+        class="styled-input"
+      />
+
+      <!-- 🔹 Company Type Multi-Select -->
+      <q-select
+        v-model="editData.type"
+        :disable="!isEditable"
+        filled
+        label="Company Type"
+        multiple
+        use-chips
+        emit-value
+        map-options
+        :options="companyTypeOptions"
+        class="styled-input"
+      />
+
+      <!-- Tags -->
+      <div class="section-header">
+        <div class="section-title">Tags</div>
+        <q-btn v-if="isEditable" flat dense round icon="add" class="add-btn" @click="addTag" />
+      </div>
+      <div v-for="(tag, index) in editData.tags" :key="'tag-' + index" class="dynamic-item">
+        <q-input
+          v-model="editData.tags[index]"
+          :disable="!isEditable"
+          filled
+          placeholder="Innovative / Work-Life Balance"
+          class="styled-input dynamic-input"
+        />
+        <q-btn
+          v-if="isEditable"
+          flat
+          dense
+          round
+          icon="remove"
+          class="remove-btn"
+          @click="removeTag(index)"
+        />
+      </div>
+
+      <!-- Links -->
+      <div class="section-header">
+        <div class="section-title">Links</div>
+        <q-btn v-if="isEditable" flat dense round icon="add" class="add-btn" @click="addLink" />
+      </div>
+      <div v-for="(link, index) in editData.links" :key="'link-' + index" class="dynamic-item">
+        <q-input
+          v-model="editData.links[index]"
+          :disable="!isEditable"
+          filled
+          class="styled-input dynamic-input"
+        />
+        <q-btn
+          v-if="isEditable"
+          flat
+          dense
+          round
+          icon="remove"
+          class="remove-btn"
+          @click="removeLink(index)"
+        />
+      </div>
+    </q-form>
+  </q-card>
+</template>
+
+<script setup>
+import { onMounted, reactive, ref, computed } from 'vue'
+import { useQuasar } from 'quasar'
+import { useUserStore } from 'src/stores/user-store'
+import { useFilterStore } from 'src/stores/filter-store'
+
+const $q = useQuasar()
+const isEditable = ref(false)
+
+const userStore = useUserStore()
+const filterStore = useFilterStore()
+
+// Clone reactive company data
+const editData = reactive(JSON.parse(JSON.stringify(userStore.company)))
+
+// Ensure arrays exist
+editData.locationids = Array.isArray(editData.locationids) ? editData.locationids : []
+editData.marketids = Array.isArray(editData.marketids) ? editData.marketids : []
+editData.tags = Array.isArray(editData.tags) ? editData.tags : []
+editData.links = Array.isArray(editData.links) ? editData.links : []
+editData.type = Array.isArray(editData.type) ? editData.type : [] // 🔹 Company type
+
+// Options for selects (computed to update reactively after fetch)
+const locationOptions = computed(() =>
+  filterStore.locations.map((loc) => ({ label: loc.label, value: loc.value })),
+)
+const marketOptions = computed(() =>
+  filterStore.markets.map((m) => ({ label: m.label, value: m.value })),
+)
+
+const sizeOptions = [
+  '1-10',
+  '11-50',
+  '51-200',
+  '201-500',
+  '501-1000',
+  '1001-5000',
+  '5001-10000',
+  '10000+',
+]
+const statusOptions = ['Hiring', 'Not-Hiring']
+
+// 🔹 Company Type Options
+const companyTypeOptions = [
+  { label: 'Startup', value: 'Startup' },
+  { label: 'Small Business', value: 'Small Business' },
+  { label: 'Medium Enterprise', value: 'Medium Enterprise' },
+  { label: 'Large Enterprise', value: 'Large Enterprise' },
+  { label: 'MNC', value: 'MNC' },
+  { label: 'Non-Profit', value: 'Non-Profit' },
+  { label: 'Government', value: 'Government' },
+  { label: 'Public Sector', value: 'Public Sector' },
+  { label: 'Private', value: 'Private' },
+  { label: 'Joint Venture', value: 'Joint Venture' },
+  { label: 'Cooperative', value: 'Cooperative' },
+  { label: 'Other', value: 'Other' },
+  { label: 'Holding Company', value: 'Holding Company' },
+]
+
+onMounted(async () => {
+  // Fetch filter data so options are populated
+  await filterStore.fetchFilters()
+  console.log('Reactive Edit Data:', editData)
+})
+
+function enableEdit() {
+  isEditable.value = true
+}
+
+// Tags and Links
+function addTag() {
+  editData.tags.push('')
+}
+
+function addLink() {
+  editData.links.push('')
+}
+
+function removeTag(index) {
+  editData.tags.splice(index, 1)
+}
+
+function removeLink(index) {
+  editData.links.splice(index, 1)
+}
+
+function cancelEdit() {
+  Object.assign(editData, JSON.parse(JSON.stringify(userStore.company)))
+  isEditable.value = false
+}
+async function save() {
+  isEditable.value = false
+
+  // Clean arrays before sending
+  editData.tags = editData.tags.filter(Boolean)
+  editData.links = editData.links.filter(Boolean)
+  editData.marketids = editData.marketids.filter((id) =>
+    marketOptions.value.some((opt) => opt.value === id),
+  )
+  editData.locationids = editData.locationids.filter((id) =>
+    locationOptions.value.some((opt) => opt.value === id),
+  )
+  editData.type = editData.type.filter(Boolean)
+
+  try {
+    const response = await userStore.updateRecruiter(editData)
+    console.log('Update Recruiter Response:', response)
+
+    if (response?.message === 'success') {
+      $q.notify({ type: 'positive', message: 'Company updated.' })
+    } else {
+      const errorMsg = response?.error?.message || 'Company update failed.'
+      $q.notify({ type: 'negative', message: errorMsg })
+    }
+  } catch (err) {
+    $q.notify({ type: 'negative', message: 'Failed to save changes.' })
+    console.error(err)
+  }
+}
+</script>
+
+<style scoped>
+.company-profile-card {
+  background: white !important;
+  border: 1px solid #e5e5e5 !important;
+  border-radius: 0.375rem !important;
+  padding: 1.5rem !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
+  height: auto;
+}
+
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1rem;
+}
+
+.card-title {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: #000000;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 0.5rem;
+}
+
+.edit-btn {
+  background: #f5f5f5 !important;
+  color: #000000 !important;
+  border-radius: 0.375rem !important;
+}
+
+.edit-btn:hover {
+  background: #e5e5e5 !important;
+}
+
+.save-btn {
+  background: #10b981 !important;
+  color: white !important;
+  border-radius: 0.375rem !important;
+}
+
+.save-btn:hover {
+  background: #059669 !important;
+}
+
+.cancel-btn {
+  background: #ef4444 !important;
+  color: white !important;
+  border-radius: 0.375rem !important;
+}
+
+.cancel-btn:hover {
+  background: #dc2626 !important;
+}
+
+.custom-separator {
+  background-color: #e5e5e5 !important;
+  margin: 1rem 0 !important;
+}
+
+.form-content {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+.styled-input {
+  background: white;
+}
+
+.styled-input :deep(.q-field__control) {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  border-radius: 0.375rem !important;
+  color: #000000 !important;
+}
+
+.styled-input :deep(.q-field__control):before {
+  border: none !important;
+}
+
+.styled-input :deep(.q-field__control):after {
+  border: 2px solid #000000 !important;
+  border-radius: 0.375rem !important;
+}
+
+.styled-input :deep(.q-field__label) {
+  color: #374151 !important;
+  font-weight: 500 !important;
+}
+
+.styled-input :deep(.q-field__native) {
+  color: #000000 !important;
+}
+
+.styled-input :deep(.q-field--disabled) {
+  opacity: 0.7 !important;
+}
+
+.styled-input :deep(.q-field--disabled .q-field__control) {
+  background: #f9fafb !important;
+  color: #6b7280 !important;
+}
+
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-top: 1.5rem;
+  margin-bottom: 0.5rem;
+}
+
+.section-title {
+  font-size: 1rem;
+  font-weight: 500;
+  color: #000000;
+}
+
+.add-btn {
+  background: white !important;
+  border: 1px solid #d1d5db !important;
+  color: #000000 !important;
+  border-radius: 0.375rem !important;
+}
+
+.add-btn:hover {
+  background: #f9fafb !important;
+  border-color: #000000 !important;
+}
+
+.dynamic-item {
+  display: flex;
+  gap: 0.5rem;
+  align-items: center;
+  margin-bottom: 0.5rem;
+}
+
+.dynamic-input {
+  flex: 1;
+}
+
+.remove-btn {
+  background: white !important;
+  border: 1px solid #ef4444 !important;
+  color: #ef4444 !important;
+  border-radius: 0.375rem !important;
+}
+
+.remove-btn:hover {
+  background: #ef4444 !important;
+  color: white !important;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .company-profile-card {
+    padding: 1rem !important;
+    max-height: 80vh;
+  }
+
+  .card-header {
+    flex-direction: column;
+    gap: 0.75rem;
+    align-items: flex-start;
+  }
+
+  .action-buttons {
+    align-self: flex-end;
+  }
+
+  .dynamic-item {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 0.5rem;
+  }
+
+  .remove-btn {
+    align-self: flex-end;
+    width: 40px;
+  }
+}
+
+@media (max-width: 480px) {
+  .company-profile-card {
+    padding: 0.75rem !important;
+    border-radius: 0.25rem !important;
+  }
+
+  .section-header {
+    margin-top: 1rem;
+  }
+}
+</style>

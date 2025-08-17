@@ -1,0 +1,413 @@
+<template>
+  <q-card
+    class="company-job-card q-pa-md q-mb-md full-width"
+    flat
+    bordered
+    @click="openCompanyDialog"
+  >
+    <!-- Top Row: Logo, Name, Status -->
+    <div class="row items-start q-gutter-sm cursor-pointer">
+      <q-avatar size="64px">
+        <div style="height: 64px; width: 64px" :style="'background-color:' + getRandomColor()" />
+      </q-avatar>
+
+      <div class="col">
+        <div class="row items-center q-gutter-xs">
+          <div class="text-subtitle1 text-weight-bold">
+            {{ normalizedJob.company.name || 'Unknown Company' }}
+          </div>
+
+          <!-- Company Type -->
+          <div
+            v-for="(type, i) in normalizedJob.company.type || []"
+            :key="'type-' + i"
+            class="custom-chip custom-chip-blue"
+          >
+            {{ type }}
+          </div>
+        </div>
+
+        <!-- Company Size -->
+        <div class="text-caption text-grey-6">
+          Company Size:
+          {{
+            normalizedJob.company.size ? normalizedJob.company.size + ' employees' : 'Not specified'
+          }}
+        </div>
+
+        <!-- Company Tags -->
+        <div class="row q-gutter-sm q-mt-xs">
+          <div
+            v-for="(tag, i) in normalizedJob.company.tags || []"
+            :key="'tag-' + i"
+            class="custom-chip custom-chip-pink"
+          >
+            {{ tag }}
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Job Details Inner Card -->
+    <div class="q-mt-xs q-mx-none">
+      <q-card class="inner-job-card q-py-xs q-px-md q-mx-none" flat bordered @click.stop>
+        <div class="row q-col-gutter-sm items-center justify-between">
+          <!-- Job info (left) -->
+          <div class="col-8 col-md-8">
+            <div class="row items-center q-gutter-sm">
+              <div class="job-title text-body2 text-weight-bold text-black">
+                {{ normalizedJob.title }}
+              </div>
+
+              <!-- Job Type -->
+              <div
+                v-for="(job_type, i) in normalizedJob.job_type || []"
+                :key="'job-type-' + i"
+                class="custom-chip custom-chip-blue"
+              >
+                {{ job_type }}
+              </div>
+
+              <!-- Work Mode -->
+              <div
+                v-for="(mode, i) in normalizedJob.workMode || []"
+                :key="'work-mode-' + i"
+                class="custom-chip custom-chip-blue"
+              >
+                {{ mode }}
+              </div>
+            </div>
+
+            <!-- Job Meta: Location, Salary, Openings -->
+            <div class="job-meta text-body2 text-grey-8 q-mt-xs">
+              <div>{{ normalizedJob.location }}</div>
+              <div>{{ formattedSalary }}</div>
+              <div>Openings: {{ normalizedJob.opening || 'Not specified' }}</div>
+            </div>
+          </div>
+
+          <!-- Buttons (right) -->
+          <div class="col-4 col-md-4 text-right">
+            <div class="row items-center justify-end q-gutter-sm no-wrap">
+              <div v-if="userStore.token === null">
+                <!-- Single Login Button -->
+                <q-btn
+                  unelevated
+                  dense
+                  label="Login to Apply"
+                  class="btn-filled-black equal-button"
+                  type="button"
+                  @click.stop="redirectToLogin"
+                />
+              </div>
+              <div v-else>
+                <!-- Date info and buttons in a column layout -->
+                <div class="column items-end q-gutter-xs">
+                  <div class="row items-center q-gutter-sm no-wrap">
+                    <!-- Date info beside buttons -->
+                    <div class="column items-end">
+                      <div
+                        v-if="isRecentlyPosted"
+                        class="text-caption text-positive text-weight-medium text-uppercase"
+                      >
+                        Recruiter Recently Active
+                      </div>
+                      <div class="text-caption text-grey-6">Posted {{ formattedPosted }}</div>
+                    </div>
+
+                    <!-- Buttons -->
+                    <div class="row items-center q-gutter-xs no-wrap">
+                      <q-btn
+                        flat
+                        dense
+                        label="Apply"
+                        class="btn-outline-black equal-button"
+                        type="button"
+                        @click.stop="handleApply"
+                      />
+                      <q-btn
+                        unelevated
+                        dense
+                        label="Learn more"
+                        class="btn-filled-black equal-button"
+                        type="button"
+                        @click.stop="handleLearnMore"
+                      />
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </q-card>
+    </div>
+
+    <!-- Footer Options (closer to inner card) -->
+    <!-- ✅ Only show Save if logged in -->
+    <div
+      v-if="userStore.token"
+      class="row items-center justify-end q-mt-xs q-gutter-sm footer-actions"
+      @click.stop
+    >
+      <!-- Save / Unsave -->
+      <div
+        class="report-hide-item row items-center cursor-pointer text-caption"
+        :class="{ 'text-primary': isSaved }"
+        @click="toggleSave"
+      >
+        <q-icon :name="isSaved ? 'bookmark' : 'bookmark_outline'" size="16px" class="q-mr-xs" />
+        <span>{{ isSaved ? 'Saved' : 'Save' }}</span>
+      </div>
+    </div>
+
+    <div class="arrow-symbol">&gt;</div>
+  </q-card>
+</template>
+
+<script>
+import { useUserStore } from 'src/stores/user-store'
+import { useJobsStore } from 'src/stores/job-store'
+import { getRandomColor } from 'src/assets/BW'
+
+export default {
+  name: 'JobCard',
+  props: {
+    job: {
+      type: Object,
+      required: true,
+    },
+  },
+
+  computed: {
+    userStore() {
+      return useUserStore()
+    },
+    jobsStore() {
+      return useJobsStore()
+    },
+    normalizedJob() {
+      const raw = this.job
+      return {
+        company: {
+          name: raw.company_name || 'Unknown Company',
+          status: raw.company_status || '',
+          size: raw.companySize || '',
+          type: raw.company_type || [],
+          tags: raw.company_tags || [],
+        },
+        job_tags: raw.job_tags || [],
+        job_type: raw.job_type ? [raw.job_type] : [],
+        workMode: raw.mode_of_work ? [raw.mode_of_work] : [],
+        bigDescription: raw.bigDescription || '',
+        opening: raw.opening || 'Not specified',
+        title: raw.custom_title || raw.job_roles || 'Job Title',
+        location: raw.locations || 'Location Unknown',
+        salary: {
+          min: raw.salary_min || 0,
+          max: raw.salary_max || 0,
+          currency: 'INR',
+        },
+        posted: raw.posted || '',
+        cid: raw.company_id,
+        jobid: raw.jobid,
+        logo: raw.logo || null,
+      }
+    },
+    formattedSalary() {
+      if (!this.normalizedJob.salary) return 'N/A'
+      const { min, max, currency = 'INR' } = this.normalizedJob.salary
+      if (min >= 100000) {
+        return `${currency === 'INR' ? '₹' : currency} ${(min / 100000).toFixed(1)}L – ${(max / 100000).toFixed(1)}L`
+      }
+      if (min >= 1000) {
+        return `${currency === 'INR' ? '₹' : currency} ${(min / 1000).toFixed(1)}K – ${(max / 1000).toFixed(1)}K`
+      }
+      return `${currency === 'INR' ? '₹' : currency} ${min} – ${max}`
+    },
+    formattedPosted() {
+      if (!this.normalizedJob.posted) return 'Unknown'
+      const date = new Date(this.normalizedJob.posted)
+      return date.toLocaleDateString('en-IN', {
+        year: 'numeric',
+        month: 'short',
+        day: 'numeric',
+      })
+    },
+    isSaved() {
+      return Array.isArray(this.jobsStore.savedJobs)
+        ? this.jobsStore.savedJobs.some((j) => j.jobid === this.normalizedJob.jobid)
+        : false
+    },
+    isRecentlyPosted() {
+      if (!this.normalizedJob.posted) return false
+      const postedDate = new Date(this.normalizedJob.posted)
+      const today = new Date()
+      const diffInMs = today - postedDate
+      const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
+      return diffInDays <= 7
+    },
+  },
+
+  methods: {
+    handleApply() {
+      if (this.userStore.token == null) {
+        this.$q.notify({
+          type: 'warning',
+          message: 'Log in to apply for job!',
+          position: 'bottom',
+          timeout: 2000,
+        })
+      } else {
+        this.applyForJob()
+      }
+    },
+    handleLearnMore() {
+      if (this.userStore.token == null) {
+        this.$q.notify({
+          type: 'warning',
+          message: 'Log in to learn more about job!',
+          position: 'bottom',
+          timeout: 2000,
+        })
+      } else {
+        this.learnMoreForJob()
+      }
+    },
+    async applyForJob() {
+      if (!this.normalizedJob.jobid) return
+      await this.jobsStore.openApplicationDialog(this.normalizedJob.jobid)
+    },
+    async learnMoreForJob() {
+      if (!this.normalizedJob.jobid) return
+      await this.jobsStore.openLearnMoreDialog(this.normalizedJob.jobid)
+    },
+    async openCompanyDialog() {
+      if (!this.normalizedJob.cid) return
+      await this.jobsStore.openCompanyDialog(this.normalizedJob.cid)
+    },
+    toggleSave() {
+      if (!this.isSaved) this.jobsStore.saveJob(this.normalizedJob)
+      else this.jobsStore.unsaveJob(this.normalizedJob.jobid)
+    },
+    redirectToLogin() {
+      this.$router.push('/login')
+    },
+    getRandomColor,
+  },
+}
+</script>
+
+<style scoped>
+.company-job-card {
+  background-color: #f9f9f9;
+  border-radius: 0px; /* 🔥 sharp edges */
+  transition: box-shadow 0.3s;
+  position: relative;
+  width: 100%;
+}
+
+.inner-job-card {
+  background-color: #ffffff;
+  border-radius: 0px; /* 🔥 sharp edges */
+  cursor: pointer;
+  transition: background-color 0.2s;
+  overflow: hidden;
+  width: 100%;
+}
+.inner-job-card:hover {
+  background-color: #f9f9f9;
+}
+
+.job-meta {
+  display: flex;
+  gap: 24px; /* bigger horizontal spacing */
+  flex-wrap: wrap;
+}
+.equal-button {
+  min-width: 120px;
+  margin-left: 8px; /* 🔥 adds space between buttons */
+  padding: 6px 16px;
+  font-weight: 600;
+  font-size: 14px;
+  text-transform: none;
+  border-radius: 4px;
+}
+.equal-button:first-child {
+  margin-left: 0; /* so the first button doesn't shift */
+}
+
+/* Outlined style */
+.btn-outline-black {
+  border: 1px solid #000;
+  background-color: #fff;
+  color: #000;
+}
+.btn-outline-black:hover {
+  background-color: #f5f5f5;
+}
+
+/* Filled style */
+.btn-filled-black {
+  background-color: #000;
+  color: #fff;
+}
+.btn-filled-black:hover {
+  background-color: #333;
+}
+
+.custom-chip {
+  font-size: 12px;
+  font-weight: 500;
+  border-radius: 8px;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  cursor: default;
+}
+.custom-chip-pink {
+  border: 1px solid #ff4c61;
+  background-color: #fff1f3;
+  color: #1d1d1f;
+}
+.custom-chip-blue {
+  border: 1px solid #007aff;
+  background-color: #f0f7ff;
+  color: #1d1d1f;
+}
+.custom-chip-black {
+  border: 1px solid #28a745;
+  background-color: #e6f4ea;
+  color: #1d1d1f;
+}
+.chip-label {
+  padding: 0 6px;
+}
+
+.description-text {
+  font-family: 'Roboto', sans-serif;
+  font-size: 14px;
+  font-weight: 400;
+  color: #1d1d1f;
+  line-height: 1.4;
+}
+.arrow-symbol {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 24px;
+  color: #999999;
+}
+.text-primary {
+  color: #007aff;
+}
+.text-negative {
+  color: #ff4c61;
+}
+.footer-actions {
+  margin-top: 6px;
+  padding-bottom: 2px;
+  min-height: 24px; /* ensures consistent space even when Save is missing */
+}
+</style>
