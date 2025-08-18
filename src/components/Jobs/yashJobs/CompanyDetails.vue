@@ -15,7 +15,7 @@
         <div class="centered-div">
           <!-- Single Column Layout -->
           <div class="main-content-wrapper">
-            <!-- Company Details Card -->
+            <!-- Company Details Card - First Part -->
             <q-card class="company-details-card" flat bordered>
               <div class="q-pa-lg">
                 <!-- Company Header with Logo & Basic Info -->
@@ -82,63 +82,214 @@
                     <div class="text-caption text-grey-7">Founded</div>
                     <div class="text-body1">{{ company.founded }}</div>
                   </div>
-                  <div class="info-col markets-col" v-if="company.markets.length">
-                    <div class="text-caption text-grey-7">Markets/Industries</div>
-                    <div class="markets-container">
-                      <div
-                        v-for="(market, i) in company.markets"
-                        :key="i"
-                        class="custom-chip custom-chip-blue"
-                      >
-                        {{ market }}
-                      </div>
-                    </div>
-                  </div>
-                  <div class="info-col tags-col" v-if="company.companyTags.length">
-                    <div class="text-caption text-grey-7">Company Tags</div>
-                    <div class="tags-container">
-                      <div
-                        v-for="(tag, i) in company.companyTags"
-                        :key="i"
-                        class="custom-chip custom-chip-purple"
-                      >
-                        {{ tag }}
-                      </div>
-                    </div>
-                  </div>
                 </div>
               </div>
             </q-card>
 
-            <!-- About Company Card -->
-            <q-card class="about-company-card" flat bordered v-if="company.description">
-              <div class="q-pa-lg">
-                <div class="about-company-section">
-                  <div class="about-company-title">About {{ company.name }}</div>
-                  <div
-                    class="about-company-content"
-                    v-html="formatCompanyDescription(company.description)"
-                  ></div>
-                </div>
+            <!-- 3 Tabbed Sections Below -->
+            <q-card class="tabbed-sections-card" flat bordered>
+              <!-- Tab Headers -->
+              <q-tabs
+                v-model="activeTab"
+                dense
+                class="text-grey"
+                active-color="primary"
+                indicator-color="primary"
+                align="justify"
+                narrow-indicator
+              >
+                <q-tab name="description" icon="description" label="Description" />
+                <q-tab name="details" icon="info" label="Details" />
+                <q-tab name="jobs" icon="work" label="Jobs" />
+              </q-tabs>
 
-                <!-- Additional Links Section -->
-                <div v-if="company.otherLinks.length" class="links-section">
-                  <q-separator spaced class="q-my-lg" />
-                  <div class="links-title">Additional Resources</div>
-                  <div class="links-container">
-                    <a
-                      v-for="(link, i) in company.otherLinks"
-                      :key="i"
-                      :href="formatWebsiteUrl(link)"
-                      target="_blank"
-                      class="additional-link"
-                    >
-                      {{ formatUrl(link) }}
-                      <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
-                    </a>
+              <q-separator />
+
+              <!-- Tab Panels -->
+              <q-tab-panels v-model="activeTab" animated>
+                <!-- Description Tab -->
+                <q-tab-panel name="description" class="q-pa-lg">
+                  <div class="about-company-section">
+                    <div class="about-company-title">About {{ company.name }}</div>
+                    <div
+                      class="about-company-content"
+                      v-html="formatCompanyDescription(company.description)"
+                    ></div>
+
+                    <!-- Additional Links Section -->
+                    <div v-if="company.otherLinks.length" class="links-section">
+                      <q-separator spaced class="q-my-lg" />
+                      <div class="links-title">Additional Resources</div>
+                      <div class="links-container">
+                        <a
+                          v-for="(link, i) in company.otherLinks"
+                          :key="i"
+                          :href="formatWebsiteUrl(link)"
+                          target="_blank"
+                          class="additional-link"
+                        >
+                          {{ formatUrl(link) }}
+                          <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+                        </a>
+                      </div>
+                    </div>
                   </div>
-                </div>
-              </div>
+                </q-tab-panel>
+
+                <!-- Details Tab -->
+                <q-tab-panel name="details" class="q-pa-lg">
+                  <div class="details-section">
+                    <div class="section-title">Company Details</div>
+
+                    <!-- Markets/Industries -->
+                    <div class="detail-group" v-if="company.markets.length">
+                      <div class="detail-label">Markets/Industries</div>
+                      <div class="markets-container">
+                        <div
+                          v-for="(market, i) in company.markets"
+                          :key="i"
+                          class="custom-chip custom-chip-blue"
+                        >
+                          {{ market }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Company Tags -->
+                    <div class="detail-group" v-if="company.companyTags.length">
+                      <div class="detail-label">Company Tags</div>
+                      <div class="tags-container">
+                        <div
+                          v-for="(tag, i) in company.companyTags"
+                          :key="i"
+                          class="custom-chip custom-chip-purple"
+                        >
+                          {{ tag }}
+                        </div>
+                      </div>
+                    </div>
+
+                    <!-- Additional Company Info -->
+                    <div class="additional-info">
+                      <q-list bordered separator>
+                        <q-item v-if="company.ceo">
+                          <q-item-section avatar>
+                            <q-icon name="person" color="primary" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>Chief Executive Officer</q-item-label>
+                            <q-item-label caption>{{ company.ceo }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item v-if="company.founded">
+                          <q-item-section avatar>
+                            <q-icon name="event" color="primary" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>Founded</q-item-label>
+                            <q-item-label caption>{{ company.founded }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item v-if="company.size">
+                          <q-item-section avatar>
+                            <q-icon name="groups" color="primary" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>Company Size</q-item-label>
+                            <q-item-label caption>{{
+                              formatCompanySize(company.size)
+                            }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+
+                        <q-item v-if="company.locations.length">
+                          <q-item-section avatar>
+                            <q-icon name="location_on" color="primary" />
+                          </q-item-section>
+                          <q-item-section>
+                            <q-item-label>Locations</q-item-label>
+                            <q-item-label caption>{{ company.locations.join(', ') }}</q-item-label>
+                          </q-item-section>
+                        </q-item>
+                      </q-list>
+                    </div>
+                  </div>
+                </q-tab-panel>
+
+                <!-- Jobs Tab -->
+                <q-tab-panel name="jobs" class="q-pa-lg">
+                  <div class="jobs-section">
+                    <div class="section-title">Available Positions</div>
+
+                    <!-- Job Cards (Outer Cards) -->
+                    <div class="jobs-list">
+                      <q-card
+                        v-for="job in mockJobs"
+                        :key="job.id"
+                        class="company-job-card q-mb-md"
+                        flat
+                        bordered
+                        clickable
+                        @click="viewJobDetails(job)"
+                      >
+                        <q-card-section class="q-pa-md">
+                          <!-- Top Row: Logo, Name, Status -->
+                          <div class="row items-start q-gutter-sm">
+                            <q-avatar size="64px">
+                              <div
+                                style="height: 64px; width: 64px"
+                                :style="'background-color:' + getRandomColor()"
+                                class="logo-placeholder"
+                              >
+                                {{ getCompanyInitials(company.name) }}
+                              </div>
+                            </q-avatar>
+
+                            <div class="col">
+                              <div class="row items-center q-gutter-xs q-mb-xs">
+                                <div class="job-title">{{ job.title }}</div>
+                                <div class="custom-chip custom-chip-green">{{ job.type }}</div>
+                              </div>
+
+                              <div class="job-company">{{ company.name }}</div>
+
+                              <div class="job-meta">
+                                <span class="job-location">📍 {{ job.location }}</span>
+                                <span class="job-salary">💰 {{ job.salary }}</span>
+                                <span class="job-posted">⏰ {{ job.posted }}</span>
+                              </div>
+
+                              <!-- Job Tags -->
+                              <div class="row q-gutter-sm q-mt-sm">
+                                <div
+                                  v-for="(skill, i) in job.skills"
+                                  :key="'skill-' + i"
+                                  class="custom-chip custom-chip-blue"
+                                >
+                                  {{ skill }}
+                                </div>
+                              </div>
+                            </div>
+                          </div>
+
+                          <div class="arrow-symbol">&gt;</div>
+                        </q-card-section>
+                      </q-card>
+
+                      <!-- No jobs message -->
+                      <div v-if="!mockJobs.length" class="no-jobs-message">
+                        <q-icon name="work_off" size="48px" color="grey-5" />
+                        <div class="text-h6 q-mt-md text-grey-6">No open positions</div>
+                        <div class="text-body2 text-grey-5">
+                          Check back later for new opportunities
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </q-tab-panel>
+              </q-tab-panels>
             </q-card>
           </div>
         </div>
@@ -156,8 +307,10 @@ import { getRandomColor } from 'src/assets/BW'
 
 export default {
   name: 'CompanyDetailsCard',
+
   setup() {
     const jobsStore = useJobsStore()
+    const activeTab = ref('description')
 
     const showDialog = computed({
       get: () => jobsStore.companyDialogVisible,
@@ -165,6 +318,37 @@ export default {
         if (!val) jobsStore.closeCompanyDialog()
       },
     })
+
+    // Mock jobs data for the jobs tab
+    const mockJobs = ref([
+      {
+        id: 1,
+        title: 'Senior Frontend Developer',
+        location: 'San Francisco, CA',
+        type: 'Full-time',
+        salary: '$120k - $160k',
+        posted: '2 days ago',
+        skills: ['React', 'TypeScript', 'Vue.js', 'CSS'],
+      },
+      {
+        id: 2,
+        title: 'Backend Engineer',
+        location: 'Remote',
+        type: 'Full-time',
+        salary: '$130k - $170k',
+        posted: '1 week ago',
+        skills: ['Node.js', 'Python', 'PostgreSQL', 'AWS'],
+      },
+      {
+        id: 3,
+        title: 'UX Designer',
+        location: 'New York, NY',
+        type: 'Contract',
+        salary: '$80 - $100/hr',
+        posted: '3 days ago',
+        skills: ['Figma', 'Design Systems', 'User Research', 'Prototyping'],
+      },
+    ])
 
     function ensureArray(field) {
       if (!field) return []
@@ -181,18 +365,44 @@ export default {
 
       return {
         logo: raw.logo || null,
-        name: raw.name || 'Unknown Company',
-        hiringStatus: raw.status || null,
-        size: raw.companySize || 'Unknown size',
-        ceo: raw.CEO || null,
-        founded: raw.founded || null,
-        companyTags: Array.isArray(raw.tags) ? raw.tags : [],
-        description: raw.description || '',
-        locations: ensureArray(raw.locations),
-        markets: ensureArray(raw.markets),
-        companyType: ensureArray(raw.type),
-        website: raw.links && raw.links.length > 0 ? raw.links[0] : null,
-        otherLinks: raw.links && raw.links.length > 1 ? raw.links.slice(1) : [],
+        name: raw.name || 'TechCorp Innovation',
+        hiringStatus: raw.status || 'Actively Hiring',
+        size: raw.companySize || '500-1000',
+        ceo: raw.CEO || 'Sarah Johnson',
+        founded: raw.founded || '2018',
+        companyTags: Array.isArray(raw.tags)
+          ? raw.tags
+          : ['Innovation', 'Tech', 'AI/ML', 'Remote-First'],
+        description:
+          raw.description ||
+          `About TechCorp Innovation:
+        
+TechCorp Innovation is a leading technology company focused on developing cutting-edge AI solutions for businesses worldwide.
+
+Our Mission:
+To democratize artificial intelligence and make it accessible to businesses of all sizes.
+
+What We Do:
+• Develop enterprise AI solutions
+• Provide consulting services for digital transformation
+• Create innovative software products
+• Build custom automation tools`,
+        locations: ensureArray(raw.locations) || [
+          'San Francisco, CA',
+          'New York, NY',
+          'Austin, TX',
+        ],
+        markets: ensureArray(raw.markets) || [
+          'Technology',
+          'Artificial Intelligence',
+          'Enterprise Software',
+        ],
+        companyType: ensureArray(raw.type) || ['Private', 'B2B'],
+        website: raw.links && raw.links.length > 0 ? raw.links[0] : 'techcorp-innovation.com',
+        otherLinks:
+          raw.links && raw.links.length > 1
+            ? raw.links.slice(1)
+            : ['blog.techcorp.com', 'careers.techcorp.com'],
       }
     })
 
@@ -232,6 +442,11 @@ export default {
 
     function closeDialog() {
       jobsStore.closeCompanyDialog()
+    }
+
+    function viewJobDetails(job) {
+      // Handle job click - you can navigate to job details or open another dialog
+      console.log('View job details:', job)
     }
 
     function formatCompanyDescription(description) {
@@ -289,6 +504,8 @@ export default {
     return {
       showDialog,
       company,
+      activeTab,
+      mockJobs,
       closeDialog,
       formatCompanySize,
       formatUrl,
@@ -297,6 +514,7 @@ export default {
       onLogoError,
       getRandomColor,
       formatCompanyDescription,
+      viewJobDetails,
     }
   },
 }
@@ -331,7 +549,7 @@ export default {
   justify-content: center;
 }
 
-/* Company Details Card */
+/* Company Details Card - First Part Only */
 .company-details-card {
   width: 100%;
   border-radius: 16px;
@@ -340,13 +558,14 @@ export default {
   border: 1px solid #ccc;
 }
 
-/* About Company Card */
-.about-company-card {
+/* New Tabbed Sections Card */
+.tabbed-sections-card {
   width: 100%;
   border-radius: 16px;
   background-color: white;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
   border: 1px solid #ccc;
+  overflow: hidden;
 }
 
 .close-icon {
@@ -380,6 +599,7 @@ export default {
   font-size: 28px;
   font-weight: 700;
   color: white;
+  border-radius: 12px;
 }
 
 .company-title-section {
@@ -413,9 +633,28 @@ export default {
   align-items: start;
 }
 
-.markets-col,
-.tags-col {
-  grid-column: 1 / -1;
+.info-col {
+  min-width: 0;
+}
+
+/* Section Titles */
+.section-title {
+  font-size: 24px;
+  font-weight: 700;
+  margin-bottom: 20px;
+  color: #1a1a1a;
+}
+
+/* Details Section */
+.detail-group {
+  margin-bottom: 24px;
+}
+
+.detail-label {
+  font-size: 16px;
+  font-weight: 600;
+  color: #333;
+  margin-bottom: 12px;
 }
 
 .markets-container,
@@ -423,11 +662,58 @@ export default {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 8px;
 }
 
-.info-col {
-  min-width: 0;
+.additional-info {
+  margin-top: 24px;
+}
+
+/* Jobs Section */
+.jobs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.company-job-card {
+  background-color: #f9f9f9;
+  border-radius: 12px;
+  transition: all 0.3s ease;
+  position: relative;
+  cursor: pointer;
+}
+
+.company-job-card:hover {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transform: translateY(-2px);
+}
+
+.job-title {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1a1a1a;
+}
+
+.job-company {
+  font-size: 16px;
+  font-weight: 500;
+  color: #666;
+  margin-bottom: 8px;
+}
+
+.job-meta {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  font-size: 14px;
+  color: #666;
+  margin-bottom: 12px;
+}
+
+.no-jobs-message {
+  text-align: center;
+  padding: 48px 24px;
+  color: #666;
 }
 
 /* Custom Chips */
@@ -457,6 +743,12 @@ export default {
   color: #5b21b6;
 }
 
+.custom-chip-pink {
+  border: 1px solid #ff4c61;
+  background-color: #fff1f3;
+  color: #1d1d1f;
+}
+
 /* Links */
 .website-link {
   color: #1976d2;
@@ -471,10 +763,6 @@ export default {
 }
 
 /* About Company Section */
-.about-company-section {
-  margin-bottom: 0;
-}
-
 .about-company-title {
   font-size: 24px;
   font-weight: 700;
@@ -556,6 +844,15 @@ export default {
   border-color: #c7d2fe;
 }
 
+/* Arrow symbol for job cards */
+.arrow-symbol {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 24px;
+  color: #999999;
+}
+
 /* Responsive Design */
 @media (max-width: 768px) {
   .centered-div {
@@ -578,20 +875,13 @@ export default {
     font-size: 24px;
   }
 
-  .about-company-title {
+  .section-title {
     font-size: 20px;
   }
 
-  .about-company-content {
-    font-size: 15px;
-  }
-
-  .links-container {
+  .job-meta {
     flex-direction: column;
-  }
-
-  .additional-link {
-    justify-content: center;
+    gap: 8px;
   }
 }
 </style>

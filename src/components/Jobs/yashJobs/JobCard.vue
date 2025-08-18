@@ -143,8 +143,7 @@
       </q-card>
     </div>
 
-    <!-- Footer Options (closer to inner card) -->
-    <!-- ✅ Only show Save if logged in -->
+    <!-- Footer Options -->
     <div
       v-if="userStore.token"
       class="row items-center justify-end q-mt-xs q-gutter-sm footer-actions"
@@ -173,12 +172,8 @@ import { getRandomColor } from 'src/assets/BW'
 export default {
   name: 'JobCard',
   props: {
-    job: {
-      type: Object,
-      required: true,
-    },
+    job: { type: Object, required: true },
   },
-
   computed: {
     userStore() {
       return useUserStore()
@@ -191,15 +186,12 @@ export default {
       return {
         company: {
           name: raw.company_name || 'Unknown Company',
-          status: raw.company_status || '',
           size: raw.companySize || '',
           type: raw.company_type || [],
           tags: raw.company_tags || [],
         },
-        job_tags: raw.job_tags || [],
         job_type: raw.job_type ? [raw.job_type] : [],
         workMode: raw.mode_of_work ? [raw.mode_of_work] : [],
-        bigDescription: raw.bigDescription || '',
         opening: raw.opening || 'Not specified',
         title: raw.custom_title || raw.job_roles || 'Job Title',
         location: raw.locations || 'Location Unknown',
@@ -211,17 +203,20 @@ export default {
         posted: raw.posted || '',
         cid: raw.company_id,
         jobid: raw.jobid,
-        logo: raw.logo || null,
       }
     },
     formattedSalary() {
       if (!this.normalizedJob.salary) return 'N/A'
       const { min, max, currency = 'INR' } = this.normalizedJob.salary
       if (min >= 100000) {
-        return `${currency === 'INR' ? '₹' : currency} ${(min / 100000).toFixed(1)}L – ${(max / 100000).toFixed(1)}L`
+        return `${currency === 'INR' ? '₹' : currency} ${(min / 100000).toFixed(
+          1,
+        )}L – ${(max / 100000).toFixed(1)}L`
       }
       if (min >= 1000) {
-        return `${currency === 'INR' ? '₹' : currency} ${(min / 1000).toFixed(1)}K – ${(max / 1000).toFixed(1)}K`
+        return `${currency === 'INR' ? '₹' : currency} ${(min / 1000).toFixed(
+          1,
+        )}K – ${(max / 1000).toFixed(1)}K`
       }
       return `${currency === 'INR' ? '₹' : currency} ${min} – ${max}`
     },
@@ -235,23 +230,18 @@ export default {
       })
     },
     isSaved() {
-      return Array.isArray(this.jobsStore.savedJobs)
-        ? this.jobsStore.savedJobs.some((j) => j.jobid === this.normalizedJob.jobid)
-        : false
+      return this.jobsStore.savedJobIds.has(this.normalizedJob.jobid)
     },
     isRecentlyPosted() {
       if (!this.normalizedJob.posted) return false
       const postedDate = new Date(this.normalizedJob.posted)
-      const today = new Date()
-      const diffInMs = today - postedDate
-      const diffInDays = diffInMs / (1000 * 60 * 60 * 24)
+      const diffInDays = (new Date() - postedDate) / (1000 * 60 * 60 * 24)
       return diffInDays <= 7
     },
   },
-
   methods: {
     handleApply() {
-      if (this.userStore.token == null) {
+      if (!this.userStore.token) {
         this.$q.notify({
           type: 'warning',
           message: 'Log in to apply for job!',
@@ -259,36 +249,28 @@ export default {
           timeout: 2000,
         })
       } else {
-        this.applyForJob()
+        this.jobsStore.openApplicationDialog(this.normalizedJob.jobid)
       }
     },
     handleLearnMore() {
-      if (this.userStore.token == null) {
+      if (!this.userStore.token) {
         this.$q.notify({
           type: 'warning',
-          message: 'Log in to learn more about job!',
+          message: 'Log in to learn more!',
           position: 'bottom',
           timeout: 2000,
         })
       } else {
-        this.learnMoreForJob()
+        this.jobsStore.openLearnMoreDialog(this.normalizedJob.jobid)
       }
     },
-    async applyForJob() {
-      if (!this.normalizedJob.jobid) return
-      await this.jobsStore.openApplicationDialog(this.normalizedJob.jobid)
-    },
-    async learnMoreForJob() {
-      if (!this.normalizedJob.jobid) return
-      await this.jobsStore.openLearnMoreDialog(this.normalizedJob.jobid)
-    },
     async openCompanyDialog() {
-      if (!this.normalizedJob.cid) return
-      await this.jobsStore.openCompanyDialog(this.normalizedJob.cid)
+      if (this.normalizedJob.cid) {
+        await this.jobsStore.openCompanyDialog(this.normalizedJob.cid)
+      }
     },
     toggleSave() {
-      if (!this.isSaved) this.jobsStore.saveJob(this.normalizedJob)
-      else this.jobsStore.unsaveJob(this.normalizedJob.jobid)
+      this.jobsStore.toggleSave(this.normalizedJob.jobid)
     },
     redirectToLogin() {
       this.$router.push('/login')

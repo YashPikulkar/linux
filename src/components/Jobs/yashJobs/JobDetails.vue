@@ -125,7 +125,7 @@
 </template>
 
 <script>
-import { computed, ref } from 'vue'
+import { computed } from 'vue'
 import { useJobsStore } from 'src/stores/job-store'
 import { useUserStore } from 'src/stores/user-store'
 

@@ -15,15 +15,13 @@ export const useJobsStore = defineStore('jobs', {
     loading: false,
     error: null,
     selectedJobId: null,
+    jobLoading: false, // for job details
+    companyLoading: false, // for company details
 
     // Dialog visibility
     applicationDialogVisible: false,
     learnMoreDialogVisible: false,
     companyDialogVisible: false,
-
-    // Save / Hide arrays store full job objects
-    savedJobs: [],
-    hiddenJobs: [],
 
     // Recruiter-specific
     recruiterJobs: [],
@@ -36,6 +34,9 @@ export const useJobsStore = defineStore('jobs', {
 
     // Message for UI feedback
     message: '',
+
+    // ✅ Saved jobs (using Set for O(1) lookups)
+    savedJobIds: new Set(),
   }),
 
   actions: {
@@ -98,7 +99,7 @@ export const useJobsStore = defineStore('jobs', {
     },
 
     async fetchJobDetail(jobid) {
-      this.loading = true
+      this.jobLoading = true
       try {
         const response = await axios.get(`${baseUrl}/getJobDetail`, { params: { jobid } })
         this.selectedJob = response.data
@@ -108,12 +109,12 @@ export const useJobsStore = defineStore('jobs', {
         this.selectedJob = null
         return null
       } finally {
-        this.loading = false
+        this.jobLoading = false
       }
     },
 
     async fetchCompanyDetail(cid) {
-      this.loading = true
+      this.companyLoading = true
       try {
         const response = await axios.get(`http://localhost:3000/company/getCompanyDetail`, {
           params: { cid },
@@ -123,7 +124,7 @@ export const useJobsStore = defineStore('jobs', {
         this.error = err.response?.data?.error || err.message || 'Failed to fetch company detail'
         this.selectedCompany = null
       } finally {
-        this.loading = false
+        this.companyLoading = false
       }
     },
 
@@ -159,21 +160,13 @@ export const useJobsStore = defineStore('jobs', {
       this.selectedCompany = null
       this.error = null
     },
-
-    // ---------------- Save / Hide ----------------
-    async saveJob(job) {
-      if (!this.savedJobs.some((j) => j.jobid === job.jobid)) {
-        const fullJob = job.custom_title ? job : await this.fetchJobDetail(job.jobid)
-        if (fullJob) this.savedJobs.push(fullJob)
+    toggleSave(jobid) {
+      if (this.savedJobIds.has(jobid)) {
+        this.savedJobIds.delete(jobid)
+      } else {
+        this.savedJobIds.add(jobid)
       }
     },
-    unsaveJob(jobid) {
-      this.savedJobs = this.savedJobs.filter((j) => j.jobid !== jobid)
-    },
-    isJobSaved(jobid) {
-      return this.savedJobs.some((j) => j.jobid === jobid)
-    },
-
     // ---------------- Recruiter Actions ----------------
     async postJob(jobData) {
       this.loading = true
@@ -318,15 +311,11 @@ export const useJobsStore = defineStore('jobs', {
         throw error
       }
     },
-  },
 
+    // ---------------- Saved Jobs ----------------
+  },
   getters: {
-    filteredJobs:
-      (state) =>
-      (filterType = 'browse') => {
-        if (filterType === 'saved') return state.savedJobs
-        if (filterType === 'hidden') return state.hiddenJobs
-        return state.jobs.filter((job) => !state.hiddenJobs.some((h) => h.jobid === job.jobid))
-      },
+    filteredJobs: (state) => () => state.jobs,
+    getSavedJobs: (state) => state.jobs.filter((job) => state.savedJobIds.has(job.jobid)),
   },
 })

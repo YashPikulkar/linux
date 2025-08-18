@@ -3,9 +3,9 @@
     <div v-if="jobsStore.loading">Loading jobs...</div>
     <div v-else-if="jobsStore.error">Error loading jobs.</div>
     <div v-else>
-      <div v-if="filteredJobs.length === 0">No jobs found.</div>
+      <div v-if="jobsStore.jobs.length === 0">No jobs found.</div>
       <div v-else class="job-list">
-        <JobCard v-for="job in filteredJobs" :key="job.jobid" :job="job" />
+        <JobCard v-for="job in jobsStore.jobs" :key="job.jobid" :job="job" />
       </div>
     </div>
   </div>
@@ -22,10 +22,6 @@ export default {
   components: { JobCard },
 
   props: {
-    filterType: {
-      type: String,
-      default: 'browse', // 'browse' | 'saved' | 'hidden'
-    },
     similarJobs: {
       type: Boolean,
       default: false,
@@ -48,14 +44,6 @@ export default {
     },
     filterStore() {
       return useFilterStore()
-    },
-    filteredJobs() {
-      if (this.filterType === 'saved') return this.jobsStore.savedJobs
-      if (this.filterType === 'hidden') return this.jobsStore.hiddenJobs
-      // Browse: exclude hidden jobs
-      return this.jobsStore.jobs.filter(
-        (job) => !this.jobsStore.hiddenJobs.some((h) => h.jobid === job.jobid),
-      )
     },
   },
 
