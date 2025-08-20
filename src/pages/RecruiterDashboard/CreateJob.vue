@@ -238,7 +238,7 @@ import { ref, computed, onMounted } from 'vue'
 import { useQuasar } from 'quasar'
 import { useJobsStore } from 'src/stores/jobStore'
 import { useUserStore } from 'src/stores/user-store'
-import PreviewJob from './PreviewJob.vue'
+import PreviewJob from 'src/components/RecruiterDashboard/PreviewJob.vue'
 
 const $q = useQuasar()
 const jobsStore = useJobsStore()

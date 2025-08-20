@@ -2,5 +2,5 @@
   <JobDashboard />
 </template>
 <script setup>
-import JobDashboard from 'src/components/Jobs/JobDashboard.vue'
+import JobDashboard from './JobDashboard.vue'
 </script>

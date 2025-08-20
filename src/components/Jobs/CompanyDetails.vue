@@ -1,13 +1,14 @@
 <template>
   <q-dialog
     v-model="showDialog"
-    position="bottom"
-    transition-show="slide-up"
-    transition-hide="slide-down"
+    position="standard"
+    transition-show="scale"
+    transition-hide="scale"
     persistent
     @hide="closeDialog"
+    maximized
   >
-    <q-card flat bordered class="q-pa-lg dialog-card">
+    <q-card flat bordered class="q-pa-lg dialog-card centered-dialog">
       <!-- Close icon -->
       <q-btn icon="close" flat round dense color="grey-6" class="close-icon" @click="closeDialog" />
 
@@ -223,68 +224,77 @@
                   <div class="jobs-section">
                     <div class="section-title">Available Positions</div>
 
-                    <!-- Job Cards (Outer Cards) -->
-                    <div class="jobs-list">
-                      <q-card
-                        v-for="job in mockJobs"
-                        :key="job.id"
-                        class="company-job-card q-mb-md"
-                        flat
-                        bordered
-                        clickable
-                        @click="viewJobDetails(job)"
-                      >
-                        <q-card-section class="q-pa-md">
-                          <!-- Top Row: Logo, Name, Status -->
-                          <div class="row items-start q-gutter-sm">
-                            <q-avatar size="64px">
-                              <div
-                                style="height: 64px; width: 64px"
-                                :style="'background-color:' + getRandomColor()"
-                                class="logo-placeholder"
-                              >
-                                {{ getCompanyInitials(company.name) }}
-                              </div>
-                            </q-avatar>
+                    <!-- Company Outer Card -->
+                    <q-card class="company-outer-card q-pa-md q-mb-md full-width" flat bordered>
+                      <!-- Top Row: Logo, Name, Status -->
+                      <div class="row items-start q-gutter-sm">
+                        <q-avatar size="64px">
+                          <img
+                            v-if="company.logo && company.logo !== 'https://via.placeholder.com/64'"
+                            :src="company.logo"
+                            :alt="`${company.name} logo`"
+                            @error="onLogoError"
+                          />
+                          <div
+                            v-else
+                            style="height: 64px; width: 64px"
+                            :style="'background-color:' + getRandomColor()"
+                            class="logo-placeholder"
+                          >
+                            {{ getCompanyInitials(company.name) }}
+                          </div>
+                        </q-avatar>
 
-                            <div class="col">
-                              <div class="row items-center q-gutter-xs q-mb-xs">
-                                <div class="job-title">{{ job.title }}</div>
-                                <div class="custom-chip custom-chip-green">{{ job.type }}</div>
-                              </div>
+                        <div class="col">
+                          <div class="row items-center q-gutter-xs">
+                            <div class="text-subtitle1 text-weight-bold">
+                              {{ company.name }}
+                            </div>
 
-                              <div class="job-company">{{ company.name }}</div>
-
-                              <div class="job-meta">
-                                <span class="job-location">📍 {{ job.location }}</span>
-                                <span class="job-salary">💰 {{ job.salary }}</span>
-                                <span class="job-posted">⏰ {{ job.posted }}</span>
-                              </div>
-
-                              <!-- Job Tags -->
-                              <div class="row q-gutter-sm q-mt-sm">
-                                <div
-                                  v-for="(skill, i) in job.skills"
-                                  :key="'skill-' + i"
-                                  class="custom-chip custom-chip-blue"
-                                >
-                                  {{ skill }}
-                                </div>
-                              </div>
+                            <!-- Company Type -->
+                            <div
+                              v-for="(type, i) in company.companyType"
+                              :key="'type-' + i"
+                              class="custom-chip custom-chip-blue"
+                            >
+                              {{ type }}
                             </div>
                           </div>
 
-                          <div class="arrow-symbol">&gt;</div>
-                        </q-card-section>
-                      </q-card>
+                          <!-- Company Size -->
+                          <div class="text-caption text-grey-6">
+                            Company Size: {{ formatCompanySize(company.size) }}
+                          </div>
 
-                      <!-- No jobs message -->
-                      <div v-if="!mockJobs.length" class="no-jobs-message">
-                        <q-icon name="work_off" size="48px" color="grey-5" />
-                        <div class="text-h6 q-mt-md text-grey-6">No open positions</div>
-                        <div class="text-body2 text-grey-5">
-                          Check back later for new opportunities
+                          <!-- Company Tags -->
+                          <div class="row q-gutter-sm q-mt-xs">
+                            <div
+                              v-for="(tag, i) in company.companyTags"
+                              :key="'tag-' + i"
+                              class="custom-chip custom-chip-pink"
+                            >
+                              {{ tag }}
+                            </div>
+                          </div>
                         </div>
+                      </div>
+
+                      <!-- CompanyJobsList Component Area -->
+                      <div class="q-mt-md">
+                        <div class="q-mt-md">
+                          <CompanyJobsList :cid="company.id" />
+                        </div>
+                      </div>
+
+                      <div class="arrow-symbol">&gt;</div>
+                    </q-card>
+
+                    <!-- No jobs message -->
+                    <div v-if="!mockJobs.length" class="no-jobs-message">
+                      <q-icon name="work_off" size="48px" color="grey-5" />
+                      <div class="text-h6 q-mt-md text-grey-6">No open positions</div>
+                      <div class="text-body2 text-grey-5">
+                        Check back later for new opportunities
                       </div>
                     </div>
                   </div>
@@ -304,10 +314,11 @@
 import { computed, ref } from 'vue'
 import { useJobsStore } from 'src/stores/job-store'
 import { getRandomColor } from 'src/assets/BW'
+import CompanyJobsList from './CompanyJobsList.vue'
 
 export default {
   name: 'CompanyDetailsCard',
-
+  components: { CompanyJobsList },
   setup() {
     const jobsStore = useJobsStore()
     const activeTab = ref('description')
@@ -361,6 +372,7 @@ export default {
 
     const company = computed(() => {
       const raw = jobsStore.selectedCompany
+      console.log(raw)
       if (!raw) return null
 
       return {
@@ -376,7 +388,7 @@ export default {
         description:
           raw.description ||
           `About TechCorp Innovation:
-        
+ 
 TechCorp Innovation is a leading technology company focused on developing cutting-edge AI solutions for businesses worldwide.
 
 Our Mission:
@@ -521,19 +533,15 @@ What We Do:
 </script>
 
 <style scoped>
-.dialog-card {
-  width: 100vw;
+/* Main dialog styling - centered modal */
+.centered-dialog {
+  width: 90vw;
+  max-width: 1200px;
   height: 85vh;
-  max-width: 100vw;
-  border-radius: 20px;
+  max-height: 900px;
   position: relative;
-}
-
-.centered-div {
-  width: 100%;
-  max-width: 1000px;
-  margin: 0 auto;
-  padding-top: 20px;
+  border-radius: 16px;
+  background-color: white;
 }
 
 .scroll {
@@ -541,12 +549,20 @@ What We Do:
   overflow-y: auto;
 }
 
+.centered-div {
+  width: 100%;
+  max-width: 1100px;
+  margin: 0 auto;
+  padding: 20px;
+}
+
 .main-content-wrapper {
   display: flex;
   flex-direction: column;
   gap: 20px;
-  align-items: center;
   justify-content: center;
+  max-width: 100%;
+  margin: 0 auto;
 }
 
 /* Company Details Card - First Part Only */
@@ -555,7 +571,7 @@ What We Do:
   border-radius: 16px;
   background-color: white;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-  border: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
 }
 
 /* New Tabbed Sections Card */
@@ -564,15 +580,17 @@ What We Do:
   border-radius: 16px;
   background-color: white;
   box-shadow: 0 1px 6px rgba(0, 0, 0, 0.08);
-  border: 1px solid #ccc;
+  border: 1px solid #e0e0e0;
   overflow: hidden;
 }
 
 .close-icon {
   position: absolute;
-  top: 8px;
-  right: 8px;
+  top: 16px;
+  right: 16px;
   z-index: 10;
+  background: rgba(255, 255, 255, 0.9);
+  border-radius: 50%;
 }
 
 /* Company Header */
@@ -607,7 +625,7 @@ What We Do:
 }
 
 .company-title {
-  font-size: 30px;
+  font-size: 28px;
   font-weight: 700;
   line-height: 1.2;
   margin-bottom: 8px;
@@ -639,7 +657,7 @@ What We Do:
 
 /* Section Titles */
 .section-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   margin-bottom: 20px;
   color: #1a1a1a;
@@ -669,45 +687,37 @@ What We Do:
 }
 
 /* Jobs Section */
-.jobs-list {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
+.jobs-section {
+  margin-bottom: 0;
 }
 
-.company-job-card {
+/* Company Outer Card - matches JobCard styling */
+.company-outer-card {
   background-color: #f9f9f9;
-  border-radius: 12px;
-  transition: all 0.3s ease;
+  border-radius: 8px;
+  transition: box-shadow 0.3s;
   position: relative;
-  cursor: pointer;
+  width: 100%;
+  border: 1px solid #e0e0e0;
 }
 
-.company-job-card:hover {
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transform: translateY(-2px);
-}
-
-.job-title {
-  font-size: 18px;
-  font-weight: 600;
-  color: #1a1a1a;
-}
-
-.job-company {
-  font-size: 16px;
-  font-weight: 500;
-  color: #666;
-  margin-bottom: 8px;
-}
-
-.job-meta {
+.company-outer-card .logo-placeholder {
+  border-radius: 8px;
   display: flex;
-  flex-wrap: wrap;
-  gap: 16px;
-  font-size: 14px;
-  color: #666;
-  margin-bottom: 12px;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  font-weight: 700;
+  color: white;
+}
+
+/* Arrow symbol for company card */
+.company-outer-card .arrow-symbol {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  font-size: 24px;
+  color: #999999;
 }
 
 .no-jobs-message {
@@ -716,13 +726,16 @@ What We Do:
   color: #666;
 }
 
-/* Custom Chips */
+/* Custom Chips - Updated to match JobCard */
 .custom-chip {
-  font-size: 14px;
+  font-size: 12px;
   font-weight: 500;
   border-radius: 8px;
-  padding: 5px 14px;
-  display: inline-block;
+  padding: 4px 10px;
+  display: inline-flex;
+  align-items: center;
+  line-height: 1;
+  cursor: default;
 }
 
 .custom-chip-green {
@@ -732,9 +745,9 @@ What We Do:
 }
 
 .custom-chip-blue {
-  border: 1px solid #2a6fdb;
-  background-color: #e6f0ff;
-  color: #1b3a8a;
+  border: 1px solid #007aff;
+  background-color: #f0f7ff;
+  color: #1d1d1f;
 }
 
 .custom-chip-purple {
@@ -764,7 +777,7 @@ What We Do:
 
 /* About Company Section */
 .about-company-title {
-  font-size: 24px;
+  font-size: 22px;
   font-weight: 700;
   margin-bottom: 20px;
   color: #1a1a1a;
@@ -855,8 +868,14 @@ What We Do:
 
 /* Responsive Design */
 @media (max-width: 768px) {
+  .centered-dialog {
+    width: 95vw;
+    height: 90vh;
+    margin: 0;
+  }
+
   .centered-div {
-    width: 98%;
+    padding: 12px;
   }
 
   .company-header {
@@ -878,10 +897,13 @@ What We Do:
   .section-title {
     font-size: 20px;
   }
+}
 
-  .job-meta {
-    flex-direction: column;
-    gap: 8px;
+@media (max-width: 480px) {
+  .centered-dialog {
+    width: 100vw;
+    height: 100vh;
+    border-radius: 0;
   }
 }
 </style>

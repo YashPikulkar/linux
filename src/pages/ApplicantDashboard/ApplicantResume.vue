@@ -14,8 +14,8 @@
 </template>
 
 <script setup>
-import ResumeUploader from './ResumeUploader.vue'
-import ResumePreview from './ResumePreview.vue'
+import ResumeUploader from 'src/components/ApplicantDashboard/ResumeUploader.vue'
+import ResumePreview from 'src/components/ApplicantDashboard/ResumePreview.vue'
 import { ref } from 'vue'
 
 const reloadKey = ref(0)

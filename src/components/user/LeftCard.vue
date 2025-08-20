@@ -153,32 +153,44 @@ const copyToClipboard = (text, type) => {
 
 <style scoped>
 .modern-profile-card {
-  border-radius: 12px !important;
+  border-radius: 24px !important;
   overflow: hidden;
-  box-shadow: 0 2px 12px rgba(0, 0, 0, 0.08) !important;
-  transition: all 0.3s ease;
-  min-height: fit-content;
-}
-
-.modern-profile-card:hover {
-  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.12) !important;
-  transform: translateY(-1px);
-}
-
-.card-header {
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 50%, #1a1a1a 100%);
+  box-shadow:
+    0 8px 32px rgba(0, 0, 0, 0.04),
+    0 2px 8px rgba(0, 0, 0, 0.02) !important;
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  background: #ffffff;
+  border: 1px solid #e9ecef !important;
   position: relative;
+
+  /* Desktop: 85vh height, Mobile: fit-content */
+  height: fit-content;
 }
 
-.card-header::before {
+.modern-profile-card::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  bottom: 0;
-  background: linear-gradient(45deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
-  pointer-events: none;
+  height: 4px;
+  background: linear-gradient(90deg, #000000 0%, #333333 50%, #000000 100%);
+  z-index: 1;
+}
+
+.modern-profile-card:hover {
+  box-shadow:
+    0 16px 48px rgba(0, 0, 0, 0.08),
+    0 4px 16px rgba(0, 0, 0, 0.04) !important;
+  transform: translateY(-4px);
+  border-color: #dee2e6 !important;
+}
+
+.card-header {
+  background: #ffffff;
+  position: relative;
+  padding: 32px 24px 24px 24px !important;
+  margin-top: 4px; /* Account for the accent line */
 }
 
 .profile-header {
@@ -186,7 +198,7 @@ const copyToClipboard = (text, type) => {
   flex-direction: column;
   align-items: center;
   text-align: center;
-  gap: 8px;
+  gap: 16px;
 }
 
 .profile-avatar-container {
@@ -196,16 +208,17 @@ const copyToClipboard = (text, type) => {
 }
 
 .profile-avatar {
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
+  border: 3px solid #ffffff;
 }
 
 .status-badge {
   position: absolute;
-  bottom: 1px;
-  right: 1px;
-  width: 12px !important;
-  height: 12px !important;
-  border: 2px solid white;
+  bottom: 2px;
+  right: 2px;
+  width: 16px !important;
+  height: 16px !important;
+  border: 3px solid white;
 }
 
 .profile-info {
@@ -213,43 +226,58 @@ const copyToClipboard = (text, type) => {
 }
 
 .user-name {
-  font-size: clamp(0.9rem, 3.5vw, 1.1rem);
-  line-height: 1.2;
+  font-size: clamp(1.1rem, 3.5vw, 1.3rem);
+  line-height: 1.3;
   word-break: break-word;
+  color: #000000;
+  font-weight: 700;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  letter-spacing: -0.5px;
 }
 
 .plan-chip {
-  font-size: 0.65rem;
+  font-size: 0.75rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  border-radius: 12px;
+  padding: 8px 16px;
 }
 
 .contact-section {
-  padding: 12px;
+  padding: 24px;
 }
 
 .section-title {
-  font-size: 0.8rem;
-  color: #6b7280;
+  font-size: 14px;
+  color: #000000;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 16px;
 }
 
 .contact-list {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 12px;
 }
 
 .contact-item {
   display: flex;
   align-items: center;
-  padding: 8px;
-  border-radius: 8px;
+  padding: 16px;
+  border-radius: 16px;
   transition: all 0.2s ease;
   border: 1px solid transparent;
-  gap: 10px;
+  gap: 16px;
+  background: #f8f9fa;
 }
 
 .contact-item:hover {
-  background-color: rgba(0, 0, 0, 0.02);
-  border-color: rgba(0, 0, 0, 0.08);
+  background-color: #e9ecef;
+  border-color: #dee2e6;
+  transform: translateY(-1px);
 }
 
 .contact-icon-wrapper {
@@ -257,6 +285,11 @@ const copyToClipboard = (text, type) => {
   display: flex;
   align-items: center;
   justify-content: center;
+  width: 40px;
+  height: 40px;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
 }
 
 .contact-details {
@@ -265,87 +298,179 @@ const copyToClipboard = (text, type) => {
 }
 
 .contact-label {
-  font-size: 0.7rem;
-  color: #6b7280;
-  margin-bottom: 1px;
+  font-size: 12px;
+  color: #6c757d;
+  margin-bottom: 4px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
 }
 
 .contact-value {
-  font-size: 0.8rem;
-  color: #1f2937;
+  font-size: 14px;
+  color: #000000;
   word-break: break-all;
-  line-height: 1.3;
+  line-height: 1.4;
+  font-weight: 500;
 }
 
 .copy-btn {
   opacity: 0;
-  transition: opacity 0.2s ease;
+  transition: all 0.2s ease;
   flex-shrink: 0;
+  background: #ffffff;
+  border: 1px solid #e9ecef;
+}
+
+.copy-btn:hover {
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
 }
 
 .contact-item:hover .copy-btn {
   opacity: 1;
 }
 
-.edit-btn {
-  backdrop-filter: blur(10px);
-  background-color: rgba(255, 255, 255, 0.1);
-}
-
-.edit-btn:hover {
-  background-color: rgba(255, 255, 255, 0.2);
-}
-
 .footer-section {
-  padding: 6px 12px;
+  padding: 20px 24px;
+  background: #f8f9fa;
+  border-top: 1px solid #e9ecef;
 }
 
 .status-row {
   display: flex;
   align-items: center;
-  justify-content: space-between;
-  font-size: 0.7rem;
-  color: #6b7280;
+  justify-content: center;
+  font-size: 14px;
+  color: #6c757d;
 }
 
 .status-info {
   display: flex;
   align-items: center;
-  gap: 4px;
+  gap: 8px;
+  background: #ffffff;
+  padding: 8px 16px;
+  border-radius: 12px;
+  border: 1px solid #e9ecef;
 }
 
 .status-text {
-  font-size: 0.7rem;
+  font-size: 12px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  color: #000000;
 }
 
-.last-active {
-  font-size: 0.7rem;
-}
-
-/* Mobile specific adjustments */
-@media (max-width: 599px) {
-  .profile-header {
-    gap: 6px;
+/* Desktop and larger screens - 85vh height */
+@media (min-width: 1024px) {
+  .modern-profile-card {
+    height: 85vh;
+    display: flex;
+    flex-direction: column;
   }
 
   .contact-section {
-    padding: 10px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
   }
 
-  .contact-item {
-    padding: 6px;
-    gap: 8px;
-  }
-
-  .contact-value {
-    font-size: 0.75rem;
+  .contact-list {
+    flex: 1;
+    justify-content: flex-start;
   }
 }
 
-/* Small desktop adjustments for narrow column */
+/* Tablet adjustments */
 @media (min-width: 768px) and (max-width: 1023px) {
+  .modern-profile-card {
+    height: fit-content;
+  }
+
+  .contact-section {
+    padding: 20px;
+  }
+
+  .card-header {
+    padding: 24px 20px 20px 20px !important;
+  }
+
   .contact-value {
-    font-size: 0.75rem;
+    font-size: 13px;
+  }
+
+  .user-name {
+    font-size: 1.1rem;
+  }
+}
+
+/* Mobile specific adjustments - fit-content */
+@media (max-width: 767px) {
+  .modern-profile-card {
+    height: fit-content !important;
+    border-radius: 20px !important;
+  }
+
+  .profile-header {
+    gap: 12px;
+  }
+
+  .contact-section {
+    padding: 20px 16px;
+  }
+
+  .card-header {
+    padding: 24px 16px 20px 16px !important;
+  }
+
+  .contact-item {
+    padding: 12px;
+    gap: 12px;
+  }
+
+  .contact-icon-wrapper {
+    width: 36px;
+    height: 36px;
+  }
+
+  .contact-value {
+    font-size: 13px;
+  }
+
+  .footer-section {
+    padding: 16px;
+  }
+
+  .status-info {
+    padding: 6px 12px;
+  }
+}
+
+/* Extra small mobile devices */
+@media (max-width: 480px) {
+  .modern-profile-card {
+    border-radius: 16px !important;
+  }
+
+  .contact-section {
+    padding: 16px 12px;
+  }
+
+  .card-header {
+    padding: 20px 12px 16px 12px !important;
+  }
+
+  .contact-item {
+    padding: 10px;
+    gap: 10px;
+  }
+
+  .contact-icon-wrapper {
+    width: 32px;
+    height: 32px;
   }
 
   .user-name {

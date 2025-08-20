@@ -1,6 +1,5 @@
 <template>
   <div class="q-pa-md col items-center justify-between">
-    <TopSection />
     <RecruiterSkillStats />
 
     <div class="row items-center justify-between q-mb-md">
@@ -29,12 +28,12 @@
 import { onMounted } from 'vue'
 import { useRouter } from 'vue-router'
 import { useJobsStore } from 'src/stores/job-store'
-import JobCard from '../Jobs/JobCard.vue'
+import JobCard from 'src/components/Jobs/JobCard.vue'
 
-import RecruiterSkillStats from '../RecruiterDashboard/RecruiterSkillStats.vue'
-import CompanyDetails from '../Jobs/CompanyDetails.vue'
-import JobDetails from '../Jobs/JobDetails.vue'
-import JobApplication from '../Jobs/JobApplication.vue'
+import RecruiterSkillStats from 'src/components/RecruiterDashboard/RecruiterSkillStats.vue'
+import CompanyDetails from 'src/components/Jobs/CompanyDetails.vue'
+import JobDetails from 'src/components/Jobs/JobDetails.vue'
+import JobApplication from 'src/components/Jobs/JobApplication.vue'
 
 const jobsStore = useJobsStore()
 const router = useRouter()

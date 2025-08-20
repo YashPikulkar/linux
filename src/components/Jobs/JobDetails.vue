@@ -1,9 +1,9 @@
 <template>
   <q-dialog
     v-model="showDialog"
-    position="bottom"
-    transition-show="slide-up"
-    transition-hide="slide-down"
+    position="standard"
+    transition-show="scale"
+    transition-hide="scale"
     persistent
     @hide="closeDialog"
   >
@@ -13,12 +13,12 @@
 
       <div v-if="job" class="scroll">
         <div class="centered-div">
-          <!-- Main wrapper with left cards and right apply card -->
+          <!-- Main wrapper with full width content -->
           <div class="main-content-wrapper">
-            <!-- Left column with stacked cards -->
-            <div class="left-column">
+            <!-- Full width column -->
+            <div class="full-width-column">
               <!-- Top Card - Job Details -->
-              <q-card class="job-details-card" flat bordered>
+              <q-card class="job-details-card full-width-card" flat bordered>
                 <div class="q-pa-lg">
                   <!-- Title & Meta -->
                   <div>
@@ -73,7 +73,7 @@
               </q-card>
 
               <!-- Bottom Card - About the Job -->
-              <q-card class="about-job-card" flat bordered>
+              <q-card class="about-job-card full-width-card" flat bordered>
                 <div class="q-pa-lg">
                   <div class="about-job-section">
                     <div class="about-job-title">About the Job</div>
@@ -82,36 +82,6 @@
                       v-html="formatJobDescription(job.description)"
                     ></div>
                   </div>
-                </div>
-              </q-card>
-            </div>
-
-            <!-- Right Side Card - Apply -->
-            <div class="right-column">
-              <q-card flat bordered class="apply-card">
-                <div class="apply-header">Apply to {{ job.name }}</div>
-                <div class="apply-body">
-                  <p class="apply-text">
-                    Please make sure your profile is complete as this information
-                    <strong>will be sent to recruiters</strong>.
-                    <router-link to="/profile" class="apply-link">Go to your profile</router-link>
-                    to update it.
-                  </p>
-                  <div class="apply-warning" v-if="missingCriticalInfo.length">
-                    <strong
-                      >You cannot apply to this job because your profile is missing the following
-                      critical pieces of information {{ job.name }} uses to evaluate
-                      applicants.</strong
-                    >
-                    <ul>
-                      <li v-for="item in missingCriticalInfo" :key="item">
-                        {{ item }}
-                      </li>
-                    </ul>
-                  </div>
-                  <button class="apply-button" :disabled="applyDisabled" @click="applyForJob">
-                    Apply Now
-                  </button>
                 </div>
               </q-card>
             </div>
@@ -224,16 +194,12 @@ export default {
           const processedLines = lines.map((line) => {
             // Check if line is a heading (various patterns)
             const isHeading =
-              // Short line with colon at end
               (line.length < 100 && line.endsWith(':')) ||
-              // All caps short line
               (line.length < 80 && /^[A-Z\s\-_&]+:?$/.test(line)) ||
-              // Title case with specific keywords
               (/^(About|Role|Responsibilities|Requirements|Qualifications|Skills|Experience|Benefits|Company|Job|What|Key|Primary|Essential|Preferred|Nice|Must|Should)/i.test(
                 line,
               ) &&
                 line.length < 120) ||
-              // Numbered or bulleted headings
               (/^(\d+\.|•|\*|-)\s*[A-Z]/.test(line) && line.length < 80)
 
             if (isHeading) {
@@ -270,16 +236,18 @@ export default {
 
 <style scoped>
 .dialog-card {
-  width: 100vw;
+  width: 90vw;
   height: 85vh;
-  max-width: 100vw;
+  max-width: 1400px;
+  max-height: 900px;
   border-radius: 20px;
   position: relative;
 }
+
 .centered-div {
-  width: 100%; /* take full available width */
-  max-width: 2000px; /* was 1800px, increase cap */
-  margin: 0 auto; /* keep centered */
+  width: 100%;
+  max-width: 100%;
+  margin: 0 auto;
   padding-top: 20px;
 }
 
@@ -290,24 +258,22 @@ export default {
 
 .main-content-wrapper {
   display: flex;
-  gap: 30px;
   align-items: flex-start;
   justify-content: center;
-  max-width: 1600px;
+  width: 100%;
   margin: 0 auto;
 }
 
-.left-column {
-  flex: 1;
-  max-width: 1000px;
+.full-width-column {
+  width: 100%;
   display: flex;
   flex-direction: column;
   gap: 20px;
 }
 
-.right-column {
-  width: 420px;
-  flex-shrink: 0;
+/* Make both cards take full width */
+.full-width-card {
+  width: 100%;
 }
 
 /* Job Details Card (Top) */
@@ -328,7 +294,7 @@ export default {
 
 .info-grid {
   display: grid;
-  grid-template-columns: 1fr 1fr;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
   gap: 20px 24px;
   align-items: start;
 }
@@ -387,86 +353,6 @@ export default {
   z-index: 10;
 }
 
-/* Apply Card */
-.apply-card {
-  background: white;
-  border-radius: 16px;
-  border: 1px solid #ccc;
-  display: flex;
-  flex-direction: column;
-  position: sticky;
-  top: 20px;
-  max-height: calc(85vh - 40px);
-}
-
-.apply-header {
-  background-color: black;
-  color: white;
-  font-size: 18px;
-  font-weight: bold;
-  padding: 16px 20px;
-  border-radius: 16px 16px 0 0;
-}
-
-.apply-body {
-  padding: 20px;
-  flex: 1;
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.apply-text {
-  font-size: 14px;
-  line-height: 1.5;
-  margin: 0;
-  color: #555;
-}
-
-.apply-link {
-  color: #1976d2;
-  text-decoration: underline;
-  cursor: pointer;
-}
-
-.apply-warning {
-  background-color: #fff3f3;
-  border: 1px solid #ffcccc;
-  border-radius: 8px;
-  padding: 16px;
-  font-size: 14px;
-  color: #d60000;
-  line-height: 1.4;
-}
-
-.apply-warning ul {
-  margin: 8px 0 0 16px;
-  padding: 0;
-}
-
-.apply-button {
-  width: 100%;
-  background-color: black;
-  color: white;
-  border: none;
-  padding: 14px;
-  font-size: 16px;
-  font-weight: 600;
-  border-radius: 8px;
-  cursor: pointer;
-  margin-top: auto;
-  transition: background-color 0.2s ease;
-}
-
-.apply-button:hover:not(:disabled) {
-  background-color: #333;
-}
-
-.apply-button:disabled {
-  background-color: #bbb;
-  cursor: not-allowed;
-}
-
 /* About Job Section Styling */
 .about-job-section {
   margin-bottom: 0;
@@ -517,24 +403,6 @@ export default {
 }
 
 /* Responsive Design */
-@media (max-width: 1200px) {
-  .main-content-wrapper {
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .right-column {
-    width: 100%;
-    max-width: 1000px;
-    margin: 0 auto;
-  }
-
-  .apply-card {
-    position: static;
-    max-height: none;
-  }
-}
-
 @media (max-width: 768px) {
   .centered-div {
     width: 98%;

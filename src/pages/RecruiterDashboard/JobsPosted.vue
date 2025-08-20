@@ -108,8 +108,8 @@
 <script setup>
 import { onMounted, ref } from 'vue'
 import { useJobsStore } from 'src/stores/jobStore'
-import ViewJob from './ViewJob.vue'
-import JobApplicants from './JobApplicants.vue'
+import ViewJob from 'src/components/RecruiterDashboard/ViewJob.vue'
+import JobApplicants from 'src/components/RecruiterDashboard/JobApplicants.vue'
 
 const jobsStore = useJobsStore()
 const jobs = ref([])

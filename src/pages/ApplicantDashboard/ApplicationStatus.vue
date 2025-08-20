@@ -74,8 +74,8 @@
 <script setup>
 import { ref, computed, onMounted } from 'vue'
 import { useApplicantStore } from 'src/stores/applicant-store'
-import AppliedJobs from './AppliedJobs.vue'
-import JobDetails from 'src/components/Jobs/yashJobs/JobDetails.vue'
+import AppliedJobs from 'src/components/ApplicantDashboard/AppliedJobs.vue'
+import JobDetails from 'src/components/Jobs/JobDetails.vue'
 
 const store = useApplicantStore()
 const selectedFilter = ref('all')

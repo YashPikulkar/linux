@@ -17,7 +17,7 @@ export const useJobsStore = defineStore('jobs', {
     selectedJobId: null,
     jobLoading: false, // for job details
     companyLoading: false, // for company details
-
+    companyJobs: [],
     // Dialog visibility
     applicationDialogVisible: false,
     learnMoreDialogVisible: false,
@@ -40,6 +40,24 @@ export const useJobsStore = defineStore('jobs', {
   }),
 
   actions: {
+    async fetchCompanyJobs(companyId) {
+      this.loading = true
+      this.error = null
+      console.log('Fetching jobs for companyId:', companyId) // log the companyId
+      try {
+        const response = await axios.get(`${baseUrl}/getCompanyJobs`, {
+          params: { companyId },
+        })
+        console.log('Response from backend:', response.data) // log the backend response
+        this.companyJobs = response.data.jobs || []
+      } catch (err) {
+        this.error = err.message
+        console.error('Error fetching company jobs:', err) // log error
+      } finally {
+        this.loading = false
+      }
+    },
+
     // ---------------- User Job Fetching ----------------
     async fetchRecommendedJobs() {
       this.loading = true

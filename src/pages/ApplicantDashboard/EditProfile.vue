@@ -5,16 +5,16 @@
     </div>
 
     <div class="right-side column q-ml-sm">
-      <Education class="widget" />
-      <Skills class="widget" />
+      <ApplicantEducation class="widget" />
+      <ApplicantSkills class="widget" />
     </div>
   </div>
 </template>
 
 <script setup>
-import Education from './ApplicantEducation.vue'
-import Skills from './ApplicantSkills.vue'
-import AdditionalDetails from './AdditionalDetails.vue'
+import ApplicantEducation from 'src/components/ApplicantDashboard/ApplicantEducation.vue'
+import ApplicantSkills from 'src/components/ApplicantDashboard/ApplicantSkills.vue'
+import AdditionalDetails from 'src/components/ApplicantDashboard/AdditionalDetails.vue'
 </script>
 
 <style scoped>

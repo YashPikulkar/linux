@@ -22,11 +22,11 @@
 </template>
 
 <script>
-import JobFilterCard from './yashJobs/JobFilterCard.vue'
-import JobsPage from './yashJobs/JobsPage.vue'
-import JobApplication from './yashJobs/JobApplication.vue'
-import JobDetails from './yashJobs/JobDetails.vue'
-import CompanyDetails from './yashJobs/CompanyDetails.vue'
+import JobFilterCard from 'src/components/Jobs/JobFilterCard.vue'
+import JobsPage from 'src/components/Jobs/JobsPage.vue'
+import JobApplication from 'src/components/Jobs/JobApplication.vue'
+import JobDetails from 'src/components/Jobs/JobDetails.vue'
+import CompanyDetails from 'src/components/Jobs/CompanyDetails.vue'
 
 export default {
   name: 'JobDashboard',

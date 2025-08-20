@@ -20,78 +20,68 @@
       @new-value="handleNewValue"
     >
       <template v-slot:append>
-        <q-icon
-          v-if="preferredLocations.length === 1"
-          name="place"
-          class="q-ml-xs"
-        />
-        <q-icon
-          v-else-if="preferredLocations.length > 1"
-          name="location_city"
-          class="q-ml-xs"
-        />
+        <q-icon v-if="preferredLocations.length === 1" name="place" class="q-ml-xs" />
+        <q-icon v-else-if="preferredLocations.length > 1" name="location_city" class="q-ml-xs" />
       </template>
     </q-select>
   </div>
 </template>
 
 <script>
-import { useFilterStore } from "src/stores/filter-store";
+import { useFilterStore } from 'src/stores/filter-store'
 
 export default {
-  name: "LocationRegionFilter",
+  name: 'LocationRegionFilter',
 
   data() {
     return {
       store: useFilterStore(),
       filteredOptions: [],
-    };
+    }
   },
 
   computed: {
     preferredLocations: {
       get() {
-        return this.store.preferredLocations || [];
+        return this.store.preferredLocations || []
       },
       set(val) {
-        this.store.preferredLocations = val;
+        this.store.preferredLocations = val
       },
     },
 
     locations() {
       // locations array from store: [{ label, value }, ...]
-      return this.store.locations || [];
+      return this.store.locations || []
     },
   },
 
   methods: {
     onFilter(val, update) {
-      if (!val || val.trim() === "") {
-        this.filteredOptions = [];
-        update();
-        return;
+      if (!val || val.trim() === '') {
+        this.filteredOptions = []
+        update()
+        return
       }
 
-      const search = val.toLowerCase();
+      const search = val.toLowerCase()
 
       this.filteredOptions = this.locations
         .filter((opt) => !this.preferredLocations.includes(opt.value))
-        .filter((opt) => opt.label.toLowerCase().includes(search));
+        .filter((opt) => opt.label.toLowerCase().includes(search))
 
-      update();
+      update()
     },
 
     handleNewValue(inputValue) {
-      const normalized = inputValue.trim().toLowerCase();
+      const normalized = inputValue.trim().toLowerCase()
 
-      const match = this.locations.find(
-        (loc) => loc.label.toLowerCase() === normalized
-      );
+      const match = this.locations.find((loc) => loc.label.toLowerCase() === normalized)
 
       if (match && !this.preferredLocations.includes(match.value)) {
-        this.preferredLocations = [...this.preferredLocations, match.value];
+        this.preferredLocations = [...this.preferredLocations, match.value]
 
-        this.$refs.qSelect.updateInputValue("");
+        this.$refs.qSelect.updateInputValue('')
       }
     },
   },
@@ -99,10 +89,10 @@ export default {
   mounted() {
     // fetch filters if not already fetched
     if (this.locations.length === 0) {
-      this.store.location;
+      this.store.location
     }
   },
-};
+}
 </script>
 
 <style scoped>
