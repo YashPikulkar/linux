@@ -232,6 +232,8 @@
 </template>
 
 <script setup>
+// Replace the existing script section with this fixed version
+
 import { ref, computed, watch, onMounted, onBeforeUnmount, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
@@ -256,6 +258,9 @@ const isLoadingJobs = ref(false)
 // Loading states - separate for different sections
 const isLoadingStats = ref(false)
 const isLoadingPieChart = ref(false)
+
+// Add flag to prevent duplicate chart creation
+const isChartBeingCreated = ref(false)
 
 // Table columns
 const jobPostColumns = [
@@ -303,11 +308,10 @@ const jobPostColumns = [
   },
 ]
 
-// API Integration for Job Posts
+// API Integration for Job Posts (unchanged)
 const fetchMockJobData = async () => {
   isLoadingJobs.value = true
   try {
-    // Get user data for company names
     const response = await fetch('https://jsonplaceholder.typicode.com/users')
     const users = await response.json()
 
@@ -347,7 +351,6 @@ const fetchMockJobData = async () => {
       .sort((a, b) => b.applicants - a.applicants)
   } catch (error) {
     console.error('Error fetching mock data:', error)
-    // Fallback to static data
     topJobPosts.value = generateFallbackData()
   } finally {
     isLoadingJobs.value = false
@@ -422,7 +425,6 @@ const fetchPie = async () => {
       console.log('Updated pie stats:', piestats.value)
     } else {
       console.error('Failed to fetch pie chart data:', response.status)
-      // Use fallback data
       piestats.value = {
         pending: 5,
         accepted: 8,
@@ -431,7 +433,6 @@ const fetchPie = async () => {
     }
   } catch (error) {
     console.error('Error fetching pie chart data:', error)
-    // Use fallback data
     piestats.value = {
       pending: 5,
       accepted: 8,
@@ -491,7 +492,6 @@ const fetchJobStats = async () => {
       console.log('Updated stats:', apiStats.value)
     } else {
       console.error('Failed to fetch job stats:', response.status)
-      // Use fallback data
       apiStats.value = {
         total_jobs: 15,
         jobs_this_month: 5,
@@ -505,7 +505,6 @@ const fetchJobStats = async () => {
     }
   } catch (error) {
     console.error('Error fetching job stats:', error)
-    // Use fallback data
     apiStats.value = {
       total_jobs: 15,
       jobs_this_month: 5,
@@ -598,11 +597,17 @@ function destroyChart(instance) {
   return null
 }
 
-// Improved Chart.js Pie Chart creation function
+// FIXED: Improved Chart.js Pie Chart creation function with duplicate prevention
 function createPieChart() {
   if (!pieChartCanvas.value) {
     console.log('Canvas not available for pie chart')
     return null
+  }
+
+  // Prevent duplicate creation
+  if (isChartBeingCreated.value) {
+    console.log('Chart creation already in progress, skipping...')
+    return pieChartInstance
   }
 
   const data = pieChartData.value
@@ -611,7 +616,6 @@ function createPieChart() {
   console.log('Creating pie chart with data:', data, 'Total:', total)
 
   if (total === 0) {
-    // Create empty state chart
     return new Chart(pieChartCanvas.value, {
       type: 'doughnut',
       data: {
@@ -660,7 +664,7 @@ function createPieChart() {
       maintainAspectRatio: false,
       plugins: {
         legend: {
-          display: false, // Hide Chart.js legend to use custom legend
+          display: false,
         },
         tooltip: {
           enabled: true,
@@ -696,42 +700,76 @@ function createPieChart() {
   })
 }
 
-// Safely destroy and recreate pie chart
+// FIXED: Safely destroy and recreate pie chart with duplicate prevention
 const recreatePieChart = async () => {
   console.log('Recreating pie chart...')
   
-  // Safely destroy previous instance
-  pieChartInstance = destroyChart(pieChartInstance)
-
-  // Wait for DOM updates
-  await nextTick()
-  
-  // Ensure canvas is ready
-  if (!pieChartCanvas.value) {
-    console.warn('Pie chart canvas not available')
+  // Prevent duplicate creation
+  if (isChartBeingCreated.value) {
+    console.log('Chart recreation already in progress, skipping...')
     return
   }
 
-  // Set chart size
-  setChartSize()
+  isChartBeingCreated.value = true
+  
+  try {
+    // Safely destroy previous instance
+    pieChartInstance = destroyChart(pieChartInstance)
 
-  // Small delay to ensure canvas is fully ready
-  setTimeout(() => {
-    try {
-      pieChartInstance = createPieChart()
-      console.log('Pie chart recreated successfully')
-    } catch (error) {
-      console.error('Error creating pie chart:', error)
+    // Wait for DOM updates
+    await nextTick()
+    
+    // Ensure canvas is ready
+    if (!pieChartCanvas.value) {
+      console.warn('Pie chart canvas not available')
+      return
     }
-  }, 100)
+
+    // Set chart size
+    setChartSize()
+
+    // Small delay to ensure canvas is fully ready
+    setTimeout(() => {
+      try {
+        pieChartInstance = createPieChart()
+        console.log('Pie chart recreated successfully')
+      } catch (error) {
+        console.error('Error creating pie chart:', error)
+      } finally {
+        isChartBeingCreated.value = false
+      }
+    }, 100)
+  } catch (error) {
+    console.error('Error in recreatePieChart:', error)
+    isChartBeingCreated.value = false
+  }
 }
 
-// Fetch pie data and recreate chart
+// ENHANCED: Fetch pie data and recreate chart with smart data change handling
 const fetchAndRecreatePieChart = async () => {
+  if (isLoadingPieChart.value || isChartBeingCreated.value) {
+    console.log('Pie chart operation already in progress, skipping...')
+    return
+  }
+
   isLoadingPieChart.value = true
   try {
+    // Store old data to compare
+    const oldData = { ...piestats.value }
+    
+    // Fetch new data
     await fetchPie()
-    await recreatePieChart()
+    
+    // Check if data actually changed
+    const dataChanged = JSON.stringify(oldData) !== JSON.stringify(piestats.value)
+    
+    // Always recreate on explicit fetch (like refresh button)
+    // Or recreate if data changed
+    if (dataChanged || !pieChartInstance) {
+      await recreatePieChart()
+    } else {
+      console.log('Pie chart data unchanged, skipping recreation')
+    }
   } catch (error) {
     console.error('Error in fetchAndRecreatePieChart:', error)
   } finally {
@@ -739,20 +777,27 @@ const fetchAndRecreatePieChart = async () => {
   }
 }
 
-// Main refresh function exposed to parent component
+// FIXED: Main refresh function with better state management
 const refreshData = async () => {
   console.log('AnalyticsRecords: Starting data refresh...')
   
+  // Prevent multiple simultaneous refreshes
+  if (isLoadingStats.value) {
+    console.log('Refresh already in progress, skipping...')
+    return Promise.resolve()
+  }
+  
   try {
-    // Set loading states
     isLoadingStats.value = true
     
-    // Run all refresh functions in parallel
+    // Run stats and job data refresh in parallel, but handle pie chart separately
     await Promise.all([
       fetchJobStats(),
-      fetchAndRecreatePieChart(),
       fetchMockJobData()
     ])
+    
+    // Handle pie chart refresh separately to avoid conflicts
+    await fetchAndRecreatePieChart()
     
     console.log('AnalyticsRecords: All data refreshed successfully')
     return Promise.resolve()
@@ -767,26 +812,42 @@ const refreshData = async () => {
 // Expose refresh method to parent component
 defineExpose({
   refreshData,
-  // Also expose individual refresh functions for granular control
   refreshStats: fetchJobStats,
   refreshPieChart: fetchAndRecreatePieChart,
   refreshJobData: refreshJobData
 })
 
-// Initialize charts function
+// ENHANCED: Initialize charts function with better control
 const initializeCharts = async () => {
   console.log('Initializing pie chart...')
+  
+  if (isChartBeingCreated.value) {
+    console.log('Chart initialization already in progress, skipping...')
+    return
+  }
+
   await nextTick()
   
-  // Initial pie chart creation
+  // For initial load, we want to fetch data AND create chart
+  // This won't trigger the watcher since oldData will be undefined
   await fetchAndRecreatePieChart()
 }
 
-// Watchers - recreate chart when data changes
+// FIXED: Smart watcher that recreates chart on data changes but prevents duplicates
 watch(
   pieChartData,
-  async () => {
-    if (!isLoadingPieChart.value) {
+  async (newData, oldData) => {
+    // Only recreate if:
+    // 1. Not currently loading pie chart data
+    // 2. Not currently creating a chart
+    // 3. Data has actually changed (not just initialization)
+    // 4. Canvas is available
+    if (!isLoadingPieChart.value && 
+        !isChartBeingCreated.value && 
+        pieChartCanvas.value &&
+        oldData && // Ensure this isn't the initial data load
+        JSON.stringify(newData) !== JSON.stringify(oldData)) {
+      
       console.log('Pie chart data changed, recreating chart...')
       await recreatePieChart()
     }
@@ -794,11 +855,37 @@ watch(
   { deep: true }
 )
 
-// Lifecycle hooks
+// FIXED: Lifecycle hooks with better initialization
 onMounted(async () => {
   console.log('AnalyticsRecords mounted, initializing...')
-  
-  // Initial data fetch
+
+  if (!token) {
+    $q.notify({
+      type: 'warning',
+      message: 'Please log in to view analytics',
+      position: 'top-right',
+      actions: [
+        {
+          label: 'Login',
+          color: 'white',
+          handler: () => {
+            console.log('Redirect to login')
+          }
+        }
+      ]
+    })
+    return
+  }
+
+  $q.notify({
+    color: 'info',
+    message: 'Loading analytics data...',
+    icon: 'hourglass_empty',
+    position: 'top-right',
+    timeout: 1000
+  })
+
+  // Fetch initial stats and mock job data first
   isLoadingStats.value = true
   try {
     await Promise.all([
@@ -807,19 +894,38 @@ onMounted(async () => {
     ])
   } catch (error) {
     console.error('Error during initial data fetch:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Failed to load analytics data',
+      icon: 'error',
+      position: 'top-right',
+      timeout: 5000
+    })
   } finally {
     isLoadingStats.value = false
   }
 
-  // Initialize charts after data is loaded
-  await initializeCharts()
+  // Initialize charts separately after data is loaded
+  try {
+    await initializeCharts()
+    console.log('Analytics component initialized successfully')
+  } catch (chartError) {
+    console.error('Error initializing charts:', chartError)
+    $q.notify({
+      color: 'negative',
+      message: 'Failed to initialize charts',
+      icon: 'error',
+      position: 'top-right',
+      timeout: 5000
+    })
+  }
 
-  // Auto-refresh job data every 60 seconds
+  // Auto-refresh job data every 5 minutes (reduced frequency)
   setInterval(() => {
     if (!isLoadingJobs.value) {
       fetchMockJobData()
     }
-  }, 60000)
+  }, 300000)
 })
 
 onBeforeUnmount(() => {
@@ -827,6 +933,7 @@ onBeforeUnmount(() => {
   
   // Clean up chart instance
   pieChartInstance = destroyChart(pieChartInstance)
+  isChartBeingCreated.value = false
 })
 </script>
 

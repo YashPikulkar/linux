@@ -1,17 +1,12 @@
+<script setup>
+import HeroSection from 'src/components/index/HeroSection.vue'
+import LandingHero from 'src/components/index/LandingHero.vue'
+import CompanyShowcase from 'src/components/index/CompanyShowcase.vue'
+</script>
 <template>
-  <q-page class="flex flex-center">
-    <img
-      alt="Quasar logo"
-      src="~assets/quasar-logo-vertical.svg"
-      style="width: 200px; height: 200px"
-    >
+  <q-page>
+    <HeroSection />
+    <LandingHero />
+    <CompanyShowcase />
   </q-page>
 </template>
-
-<script>
-import { defineComponent } from 'vue';
-
-export default defineComponent({
-  name: 'IndexPage'
-});
-</script>

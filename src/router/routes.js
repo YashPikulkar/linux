@@ -1,71 +1,41 @@
 // src/router/routes.js
 
-import jobsRoutes from "./jobsRoutes";
-
-export default [
+const routes = [
   {
-    path: "/",
-    component: () => import("layouts/MainLayout.vue"),
+    path: '/',
+    component: () => import('layouts/RootLayout.vue'),
     children: [
-      {
-        path: "",
-        component: () => import("pages/HomePage.vue"),
-      },
-      ...jobsRoutes, // 👈 Inject job routes here
-
-      {
-        path: "register",
-        component: () => import("src/components/Register/RegisterForm.vue"),
-      },
-      {
-        path: "login",
-        component: () => import("src/pages/LoginPage.vue"),
-      },
-      {
-        path: "applicant",
-        component: () => import("pages/UserDashboard.vue"),
-        children: [
-          {
-            path: "",
-            component: () =>
-              import("src/components/UserDashboard/RecommJobs.vue/Jobs.vue"),
-          },
-          {
-            path: "profile",
-            component: () =>
-              import("src/components/UserDashboard/Profile/Profile.vue"),
-          },
-        ],
-      },
-      {
-        path: "recruiter",
-        component: () => import("src/pages/RecruiterDashboard.vue"),
-        children: [
-          {
-            path: "",
-            component: () =>
-              import("src/components/RecruiterDashboard/Profile.vue"),
-          },
-          {
-            path: "profile",
-            component: () =>
-              import("src/components/RecruiterDashboard/Profile.vue"),
-          },
-          {
-            path: "feature2",
-            component: () =>
-              import("src/components/RecruiterDashboard/Feature1/Feature1.vue"),
-          },
-
-           {
-            path: "applications/:jobId",
-            name: "job-applications",
-            component: () =>
-              import("src/components/RecruiterDashboard/Features/JobApplicants.vue"),
-            props: true
-          },
-        ],
-      },
+      { path: '', name: 'index', component: () => import('pages/IndexPage.vue') },
+      { path: 'login', name: 'login', component: () => import('pages/LoginPage.vue') },
+      { path: 'register', name: 'register', component: () => import('pages/RegisterPage.vue') },
     ],
   },
-];
+  {
+    path: '/applicant',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [
+      { path: '', name: 'applicant', component: () => import('pages/ApplicantPage.vue') },
+      { path: 'jobs', name: 'jobs', component: () => import('pages/JobsPage.vue') },
+    ],
+  },
+  {
+    path: '/recruiter',
+    component: () => import('layouts/MainLayout.vue'),
+    children: [{ path: '', name: 'recruiter', component: () => import('pages/RecruiterPage.vue') }],
+  },
+  {
+    path: '/all-jobs',
+    component: () => import('layouts/RootLayout.vue'),
+    children: [{ path: '', name: 'all-jobs', component: () => import('pages/AllJobsPage.vue') }],
+  },
+
+  // Fallback for 404
+  {
+    path: '/:catchAll(.*)*',
+    component: () => import('pages/ErrorNotFound.vue'),
+  },
+]
+
+
+
+export default routes

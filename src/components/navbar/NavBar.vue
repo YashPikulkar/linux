@@ -69,7 +69,7 @@
       <q-card class="logout-card q-pa-lg">
         <!-- Header -->
         <q-card-section class="row items-center q-pb-md">
-          <q-icon name="logout" color="negative" size="48px" class="q-mr-md" />
+          <q-icon name="logout" color="primary" size="48px" class="q-mr-md" />
           <div class="text-h6 text-weight-medium">Confirm Logout</div>
         </q-card-section>
 
@@ -81,7 +81,7 @@
         <!-- Actions -->
         <q-card-actions align="right" class="q-pt-md">
           <q-btn flat label="Cancel" color="primary" @click="handleLogoutCancel" />
-          <q-btn unelevated label="Log out" color="negative" @click="handleLogoutConfirm" />
+          <q-btn unelevated label="Log out" color="primary" @click="handleLogoutConfirm" />
         </q-card-actions>
       </q-card>
     </q-dialog>

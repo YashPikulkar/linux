@@ -15,15 +15,15 @@
           <div class="text-h5 text-weight-bold">
             {{ jobDetails?.title || 'Job Applications' }}
           </div>
-          <div class="text-subtitle2 text-grey-7">
-            {{ jobDetails?.company }} • {{ jobDetails?.location }} •
+         <div class="text-subtitle2 text-grey-7">
+             <!--{{ jobDetails?.company }} • {{ jobDetails?.location }} •
             {{ jobDetails?.jobtype }}
-            <span v-if="jobId" class="q-ml-sm">• Job ID: {{ jobId }}</span>
+            <span v-if="jobId" class="q-ml-sm">• Job ID: {{ jobId }}</span>-->
           </div>
         </div>
         <div class="col-auto">
           <div class="row q-gutter-md items-center">
-            <q-toggle
+            <!--<q-toggle
               v-model="sendEmails"
               label="Email notifications"
               color="primary"
@@ -37,7 +37,7 @@
                 { label: 'Table', value: 'table' },
               ]"
               class="modern-toggle"
-            />
+            />-->
             <q-btn
               icon="download"
               label="Export"
@@ -232,7 +232,7 @@
                 :loading="updatingStatus"
                 class="action-btn"
               />
-              <q-btn
+             <q-btn
                 color="orange"
                 icon="schedule"
                 label="Pending"
@@ -307,7 +307,7 @@
                     </q-card-section>
                   </q-card>
                 </div>
-                <div class="col-12 col-md-6">
+                <!--<div class="grid grid-cols-2 gap-4">-->
                   <q-card class="info-card">
                     <q-card-section class="card-header">Links & Documents</q-card-section>
                     <q-card-section class="info-content">
@@ -350,7 +350,7 @@
                     </q-card-section>
                   </q-card>
                 </div>
-              </div>
+             <!-- </div>-->
             </q-tab-panel>
 
             <!-- Resume Tab -->
@@ -594,7 +594,7 @@ const props = defineProps({
 const jobId = computed(() => props.jobDetails?.jobid)
 
 // UI State
-const sendEmails = ref(false)
+//const sendEmails = ref(false)
 const viewMode = ref('cards')
 const searchQuery = ref('')
 const statusFilter = ref(null)
@@ -719,6 +719,7 @@ async function updateStatus(status) {
     if (index !== -1) {
       applicants.value[index].status = status
     }
+  
 
     $q.notify({
       type: 'positive',
@@ -1121,7 +1122,7 @@ onMounted(() => {
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  overflow:hidden;
 }
 .card-header {
   background: #f8f9fa;
