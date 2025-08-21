@@ -1,4 +1,3 @@
-// stores/jobs-store.js
 import axios from 'axios'
 import qs from 'qs'
 import { defineStore } from 'pinia'
@@ -12,18 +11,17 @@ export const useJobsStore = defineStore('jobs', {
     jobs: [],
     selectedJob: null,
     selectedCompany: null,
-    loading: false,
+    loading: false, // initial loader
     error: null,
     selectedJobId: null,
-    jobLoading: false, // for job details
-    companyLoading: false, // for company details
+    jobLoading: false,
+    companyLoading: false,
     companyJobs: [],
-    // Dialog visibility
+
     applicationDialogVisible: false,
     learnMoreDialogVisible: false,
     companyDialogVisible: false,
 
-    // Recruiter-specific
     recruiterJobs: [],
     jobStats: {
       total: 0,
@@ -32,33 +30,34 @@ export const useJobsStore = defineStore('jobs', {
       drafts: 0,
     },
 
-    // Message for UI feedback
     message: '',
-
-    // ✅ Saved jobs (using Set for O(1) lookups)
     savedJobIds: new Set(),
+
+    // Pagination
+    page: 1,
+    limit: 4,
+    lastCount: 0,
+    totalCount: 0,
+    fetchingMore: false, // loader for infinite scroll
   }),
 
   actions: {
     async fetchCompanyJobs(companyId) {
       this.loading = true
       this.error = null
-      console.log('Fetching jobs for companyId:', companyId) // log the companyId
       try {
         const response = await axios.get(`${baseUrl}/getCompanyJobs`, {
           params: { companyId },
         })
-        console.log('Response from backend:', response.data) // log the backend response
         this.companyJobs = response.data.jobs || []
       } catch (err) {
         this.error = err.message
-        console.error('Error fetching company jobs:', err) // log error
+        console.error('Error fetching company jobs:', err)
       } finally {
         this.loading = false
       }
     },
 
-    // ---------------- User Job Fetching ----------------
     async fetchRecommendedJobs() {
       this.loading = true
       this.message = ''
@@ -66,7 +65,6 @@ export const useJobsStore = defineStore('jobs', {
 
       try {
         const token = useUserStore().token
-
         const response = await fetch(`${baseUrl}/recommended`, {
           method: 'GET',
           headers: { Authorization: `Bearer ${token}` },
@@ -88,34 +86,69 @@ export const useJobsStore = defineStore('jobs', {
       }
     },
 
-    async fetchJobs({ similarJobs = false, referenceJobId = null } = {}) {
-      this.loading = true
+    async fetchJobs({
+      similarJobs = false,
+      referenceJobId = null,
+      append = false,
+      page = 1,
+      limit = 4,
+    } = {}) {
+      if (!append) this.loading = true
       this.error = null
+
       try {
         let response
         if (similarJobs && referenceJobId) {
           response = await axios.get(`${baseUrl}/getSimilarJobs`, {
             params: { jobid: referenceJobId },
           })
+          this.jobs = response.data.jobs || []
         } else {
           const filterStore = useFilterStore()
           const filters = filterStore.filtersForApi
 
-          console.log('👉 Filters about to be sent to backend:', filters)
-
           response = await axios.get(`${baseUrl}/getAllJobs`, {
-            params: filters,
+            params: { ...filters, page, limit },
             paramsSerializer: (params) => qs.stringify(params, { arrayFormat: 'repeat' }),
           })
+
+          const fetchedJobs = response.data.jobs || []
+          const pagination = response.data.pagination || {}
+
+          if (append) {
+            this.jobs = [...this.jobs, ...fetchedJobs]
+            this.page = page // ✅ keep the incremented page for next fetch
+          } else {
+            this.jobs = fetchedJobs
+            this.page = pagination.page || page
+          }
+
+          this.limit = pagination.limit || limit
+          this.lastCount = pagination.count || fetchedJobs.length
+          this.totalCount = pagination.total || this.jobs.length
         }
-        this.jobs = response.data.jobs || []
       } catch (err) {
         this.error = err.message
+        console.error('Error fetching jobs:', err)
       } finally {
-        this.loading = false
+        if (!append) this.loading = false
       }
     },
+    async fetchMoreJobs() {
+      if (this.fetchingMore) return
+      if (this.jobs.length >= this.totalCount) return
 
+      this.fetchingMore = true
+      const nextPage = this.page + 1
+
+      try {
+        await this.fetchJobs({ append: true, page: nextPage, limit: this.limit })
+      } catch (err) {
+        console.error('Error fetching more jobs:', err)
+      } finally {
+        this.fetchingMore = false
+      }
+    },
     async fetchJobDetail(jobid) {
       this.jobLoading = true
       try {
@@ -168,15 +201,16 @@ export const useJobsStore = defineStore('jobs', {
       this.selectedJob = null
       this.error = null
     },
-
-    async openCompanyDialog(cid) {
-      await this.fetchCompanyDetail(cid)
-      this.companyDialogVisible = true
+    async openCompanyDialog() {
+      if (this.normalizedJob.cid) {
+        this.$router.push({
+          name: 'CompanyDetails',
+          params: { id: this.normalizedJob.cid },
+        })
+      }
     },
-    closeCompanyDialog() {
-      this.companyDialogVisible = false
-      this.selectedCompany = null
-      this.error = null
+    closeCompanyDetails() {
+      this.$router.push('/all-jobs')
     },
     toggleSave(jobid) {
       if (this.savedJobIds.has(jobid)) {

@@ -7,8 +7,16 @@
   >
     <!-- Top Row: Logo, Name, Status -->
     <div class="row items-start q-gutter-sm cursor-pointer">
-      <q-avatar size="64px">
-        <div style="height: 64px; width: 64px" :style="'background-color:' + getRandomColor()" />
+      <!-- Company Avatar -->
+      <q-avatar size="64px" rounded>
+        <template v-if="normalizedJob.company.logo">
+          <img :src="normalizedJob.company.logo" alt="Company Logo" class="company-logo" />
+        </template>
+        <template v-else>
+          <div class="company-avatar">
+            {{ getCompanyInitials(normalizedJob.company.name) }}
+          </div>
+        </template>
       </q-avatar>
 
       <div class="col">
@@ -21,7 +29,7 @@
           <div
             v-for="(type, i) in normalizedJob.company.type || []"
             :key="'type-' + i"
-            class="custom-chip custom-chip-blue"
+            class="custom-chip custom-chip-blue company-type-chip"
           >
             {{ type }}
           </div>
@@ -106,12 +114,6 @@
                   <div class="row items-center q-gutter-sm no-wrap">
                     <!-- Date info beside buttons -->
                     <div class="column items-end">
-                      <div
-                        v-if="isRecentlyPosted"
-                        class="text-caption text-positive text-weight-medium text-uppercase"
-                      >
-                        Recruiter Recently Active
-                      </div>
                       <div class="text-caption text-grey-6">Posted {{ formattedPosted }}</div>
                     </div>
 
@@ -167,7 +169,6 @@
 <script>
 import { useUserStore } from 'src/stores/user-store'
 import { useJobsStore } from 'src/stores/job-store'
-import { getRandomColor } from 'src/assets/BW'
 
 export default {
   name: 'JobCard',
@@ -186,6 +187,7 @@ export default {
       return {
         company: {
           name: raw.company_name || 'Unknown Company',
+          logo: raw.company_logo || null,
           size: raw.companySize || '',
           type: raw.company_type || [],
           tags: raw.company_tags || [],
@@ -275,7 +277,15 @@ export default {
     redirectToLogin() {
       this.$router.push('/login')
     },
-    getRandomColor,
+    getCompanyInitials(name) {
+      if (!name) return 'NA'
+      return name
+        .split(' ')
+        .map((word) => word[0])
+        .join('')
+        .toUpperCase()
+        .slice(0, 3)
+    },
   },
 }
 </script>
@@ -283,7 +293,7 @@ export default {
 <style scoped>
 .company-job-card {
   background-color: #f9f9f9;
-  border-radius: 0px; /* 🔥 sharp edges */
+  border-radius: 0px;
   transition: box-shadow 0.3s;
   position: relative;
   width: 100%;
@@ -291,7 +301,7 @@ export default {
 
 .inner-job-card {
   background-color: #ffffff;
-  border-radius: 0px; /* 🔥 sharp edges */
+  border-radius: 0px;
   cursor: pointer;
   transition: background-color 0.2s;
   overflow: hidden;
@@ -303,12 +313,12 @@ export default {
 
 .job-meta {
   display: flex;
-  gap: 24px; /* bigger horizontal spacing */
+  gap: 24px;
   flex-wrap: wrap;
 }
 .equal-button {
   min-width: 120px;
-  margin-left: 8px; /* 🔥 adds space between buttons */
+  margin-left: 8px;
   padding: 6px 16px;
   font-weight: 600;
   font-size: 14px;
@@ -316,10 +326,9 @@ export default {
   border-radius: 4px;
 }
 .equal-button:first-child {
-  margin-left: 0; /* so the first button doesn't shift */
+  margin-left: 0;
 }
 
-/* Outlined style */
 .btn-outline-black {
   border: 1px solid #000;
   background-color: #fff;
@@ -329,7 +338,6 @@ export default {
   background-color: #f5f5f5;
 }
 
-/* Filled style */
 .btn-filled-black {
   background-color: #000;
   color: #fff;
@@ -358,22 +366,12 @@ export default {
   background-color: #f0f7ff;
   color: #1d1d1f;
 }
-.custom-chip-black {
-  border: 1px solid #28a745;
-  background-color: #e6f4ea;
-  color: #1d1d1f;
-}
-.chip-label {
-  padding: 0 6px;
+
+/* 🔥 extra space only between name and first chip */
+.company-type-chip:first-of-type {
+  margin-left: 12px;
 }
 
-.description-text {
-  font-family: 'Roboto', sans-serif;
-  font-size: 14px;
-  font-weight: 400;
-  color: #1d1d1f;
-  line-height: 1.4;
-}
 .arrow-symbol {
   position: absolute;
   top: 16px;
@@ -384,12 +382,28 @@ export default {
 .text-primary {
   color: #007aff;
 }
-.text-negative {
-  color: #ff4c61;
-}
 .footer-actions {
   margin-top: 6px;
   padding-bottom: 2px;
-  min-height: 24px; /* ensures consistent space even when Save is missing */
+  min-height: 24px;
+}
+
+.company-avatar {
+  height: 64px;
+  width: 64px;
+  background-color: #e0e0e0;
+  color: #000;
+  font-weight: bold;
+  font-size: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 12px;
+}
+.company-logo {
+  height: 64px;
+  width: 64px;
+  object-fit: contain;
+  border-radius: 12px;
 }
 </style>

@@ -282,7 +282,7 @@
                       <!-- CompanyJobsList Component Area -->
                       <div class="q-mt-md">
                         <div class="q-mt-md">
-                          <CompanyJobsList :cid="company.id" />
+                          <CompanyJobsList />
                         </div>
                       </div>
 
