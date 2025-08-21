@@ -266,11 +266,21 @@ export default {
         this.jobsStore.openLearnMoreDialog(this.normalizedJob.jobid)
       }
     },
+
     async openCompanyDialog() {
+      const jobsStore = useJobsStore()
       if (this.normalizedJob.cid) {
-        await this.jobsStore.openCompanyDialog(this.normalizedJob.cid)
+        // 🔹 set selected company from job data
+        jobsStore.selectedCompany = this.normalizedJob.company
+
+        // 🔹 then navigate
+        this.$router.push({
+          name: 'company-details',
+          params: { cid: this.normalizedJob.cid },
+        })
       }
     },
+
     toggleSave() {
       this.jobsStore.toggleSave(this.normalizedJob.jobid)
     },

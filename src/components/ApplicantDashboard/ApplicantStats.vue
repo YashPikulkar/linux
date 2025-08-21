@@ -45,7 +45,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue'
+import { ref, computed, onMounted, onBeforeUnmount } from 'vue'
 import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
 
@@ -53,7 +53,7 @@ import { useUserStore } from 'src/stores/user-store'
 const userStore = useUserStore()
 const $q = useQuasar()
 
-// Get user token - consistent with first code pattern
+// Get user token
 const token = userStore.token || sessionStorage.getItem('token')
 
 const isLoadingStats = ref(false)
@@ -74,7 +74,6 @@ const applicationStats = ref({
 const fetchApplicationStats = async () => {
   isLoadingStats.value = true
   try {
-    // ✅ Proper log outside headers
     console.log(
       'Fetching application stats with token:',
       token ? `Token available: ${token}` : 'No token',
@@ -83,7 +82,7 @@ const fetchApplicationStats = async () => {
     const response = await fetch('http://localhost:3000/application/getUserStats', {
       method: 'GET',
       headers: {
-        Authorization: `Bearer ${token}`, // ✅ correct header
+        Authorization: `Bearer ${token}`,
         'Content-Type': 'application/json',
       },
     })
@@ -97,7 +96,6 @@ const fetchApplicationStats = async () => {
     const data = await response.json()
     console.log('Application stats API raw response:', data)
 
-    // ✅ handle nested payloads like { data: {...} }
     const stats = data.data || data
 
     applicationStats.value = {
@@ -111,12 +109,11 @@ const fetchApplicationStats = async () => {
       offersReceivedChange: stats.offersReceivedChange || 0,
     }
 
-    // ✅ snapshot log so you see real values (not Vue Proxy)
     console.log('Application stats updated:', JSON.parse(JSON.stringify(applicationStats.value)))
   } catch (error) {
     console.error('Error fetching application stats:', error)
 
-    // ✅ Fallback/mock data
+    // Fallback/mock data
     applicationStats.value = {
       totalApplications: 25,
       applicationsThisMonth: 8,
@@ -140,7 +137,7 @@ const fetchApplicationStats = async () => {
   }
 }
 
-// Computed property for stats display - With change tracking
+// Computed property for stats display
 const statsDisplay = computed(() => {
   return [
     {
@@ -246,13 +243,10 @@ onMounted(async () => {
 })
 
 onBeforeUnmount(() => {
-  console.log('AnalyticsRecords unmounting, cleaning up...')
-
-  // Clean up chart instance
-  pieChartInstance = destroyChart(pieChartInstance)
-  isChartBeingCreated.value = false
+  console.log('AnalyticsRecords unmounting, nothing to clean up here (no charts)')
 })
-// Expose methods to parent component
+
+// Expose methods to parent
 defineExpose({
   refreshData,
   fetchApplicationStats,

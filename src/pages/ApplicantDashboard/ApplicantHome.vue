@@ -29,7 +29,6 @@
         />
         <JobApplication />
         <JobDetails />
-        <CompanyDetails />
       </div>
     </div>
   </div>
@@ -41,7 +40,6 @@ import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useJobsStore } from 'src/stores/job-store'
 import JobCard from 'src/components/Jobs/JobCard.vue'
-import CompanyDetails from 'src/components/Jobs/CompanyDetails.vue'
 import JobDetails from 'src/components/Jobs/JobDetails.vue'
 import JobApplication from 'src/components/Jobs/JobApplication.vue'
 import ApplicantStats from 'src/components/ApplicantDashboard/ApplicantStats.vue'

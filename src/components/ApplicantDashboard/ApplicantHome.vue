@@ -20,7 +20,6 @@
       <JobCard v-for="job in jobsStore.jobs" :key="job.jobid" :job="job" />
       <JobApplication />
       <JobDetails />
-      <CompanyDetails />
     </div>
   </div>
 </template>
@@ -32,7 +31,7 @@ import { useJobsStore } from 'src/stores/job-store'
 import JobCard from '../Jobs/JobCard.vue'
 
 import RecruiterSkillStats from '../RecruiterDashboard/RecruiterSkillStats.vue'
-import CompanyDetails from '../Jobs/CompanyDetails.vue'
+
 import JobDetails from '../Jobs/JobDetails.vue'
 import JobApplication from '../Jobs/JobApplication.vue'
 

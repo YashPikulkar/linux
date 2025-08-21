@@ -17,7 +17,6 @@
     <!-- Dialogs -->
     <JobApplication />
     <JobDetails />
-    <CompanyDetails />
   </div>
 </template>
 
@@ -26,7 +25,6 @@ import JobFilterCard from 'src/components/Jobs/JobFilterCard.vue'
 import JobsPage from 'src/components/Jobs/JobsPage.vue'
 import JobApplication from 'src/components/Jobs/JobApplication.vue'
 import JobDetails from 'src/components/Jobs/JobDetails.vue'
-import CompanyDetails from 'src/components/Jobs/CompanyDetails.vue'
 
 export default {
   name: 'JobDashboard',
@@ -35,7 +33,6 @@ export default {
     JobFilterCard,
     JobApplication,
     JobDetails,
-    CompanyDetails,
   },
   data() {
     return {

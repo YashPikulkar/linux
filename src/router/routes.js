@@ -69,12 +69,21 @@ const routes = [
       },
     ],
   },
-
   {
     path: '/all-jobs',
     component: () => import('layouts/RootLayout.vue'),
     children: [
-      { path: '', name: 'jobsdashboard', component: () => import('pages/JobDashboard.vue') },
+      {
+        path: '',
+        name: 'jobsdashboard',
+        component: () => import('pages/JobDashboard.vue'),
+      },
+      {
+        path: 'company/:cid',
+        name: 'company-details',
+        component: () => import('components/Jobs/CompanyDetails.vue'),
+        props: true,
+      },
     ],
   },
 

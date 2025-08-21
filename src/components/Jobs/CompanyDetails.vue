@@ -1,313 +1,296 @@
 <template>
-  <q-dialog
-    v-model="showDialog"
-    position="standard"
-    transition-show="scale"
-    transition-hide="scale"
-    persistent
-    @hide="closeDialog"
-    maximized
-  >
-    <q-card flat bordered class="q-pa-lg dialog-card centered-dialog">
-      <!-- Close icon -->
-      <q-btn icon="close" flat round dense color="grey-6" class="close-icon" @click="closeDialog" />
-
-      <div v-if="company" class="scroll">
-        <div class="centered-div">
-          <!-- Single Column Layout -->
-          <div class="main-content-wrapper">
-            <!-- Company Details Card - First Part -->
-            <q-card class="company-details-card" flat bordered>
-              <div class="q-pa-lg">
-                <!-- Company Header with Logo & Basic Info -->
-                <div class="company-header">
-                  <div class="company-logo-section">
-                    <q-avatar size="80px" class="company-logo">
-                      <img
-                        v-if="company.logo && company.logo !== 'https://via.placeholder.com/64'"
-                        :src="company.logo"
-                        :alt="`${company.name} logo`"
-                        @error="onLogoError"
-                      />
-                      <div
-                        v-else
-                        :style="{ backgroundColor: getRandomColor() }"
-                        class="logo-placeholder"
-                      >
-                        {{ getCompanyInitials(company.name) }}
-                      </div>
-                    </q-avatar>
-                  </div>
-                  <div class="company-title-section">
-                    <div class="company-title">{{ company.name }}</div>
-                    <div class="company-meta">
-                      {{ formatCompanySize(company.size) }}
-                      <span v-if="company.companyType.length">
-                        &nbsp;•&nbsp; {{ company.companyType.join(', ') }}</span
-                      >
+  <q-page class="q-pa-lg">
+    <div v-if="company" class="scroll">
+      <div class="centered-div">
+        <!-- Single Column Layout -->
+        <div class="main-content-wrapper">
+          <!-- Company Details Card - First Part -->
+          <q-card class="company-details-card" flat bordered>
+            <div class="q-pa-lg">
+              <!-- Company Header with Logo & Basic Info -->
+              <div class="company-header">
+                <div class="company-logo-section">
+                  <q-avatar size="80px" class="company-logo">
+                    <img
+                      v-if="company.logo && company.logo !== 'https://via.placeholder.com/64'"
+                      :src="company.logo"
+                      :alt="`${company.name} logo`"
+                      @error="onLogoError"
+                    />
+                    <div
+                      v-else
+                      :style="{ backgroundColor: getRandomColor() }"
+                      class="logo-placeholder"
+                    >
+                      {{ getCompanyInitials(company.name) }}
                     </div>
-                    <div class="company-status" v-if="company.hiringStatus">
-                      <div class="custom-chip custom-chip-green">
-                        {{ company.hiringStatus }}
-                      </div>
+                  </q-avatar>
+                </div>
+                <div class="company-title-section">
+                  <div class="company-title">{{ company.name }}</div>
+                  <div class="company-meta">
+                    {{ formatCompanySize(company.size) }}
+                    <span v-if="company.companyType.length">
+                      &nbsp;•&nbsp; {{ company.companyType.join(', ') }}</span
+                    >
+                  </div>
+                  <div class="company-status" v-if="company.hiringStatus">
+                    <div class="custom-chip custom-chip-green">
+                      {{ company.hiringStatus }}
                     </div>
                   </div>
                 </div>
+              </div>
 
-                <q-separator spaced class="q-my-lg" />
+              <q-separator spaced class="q-my-lg" />
 
-                <!-- Company Info Grid -->
-                <div class="info-grid">
-                  <div class="info-col" v-if="company.locations.length">
-                    <div class="text-caption text-grey-7">Locations</div>
-                    <div class="text-body1">{{ company.locations.join(', ') }}</div>
+              <!-- Company Info Grid -->
+              <div class="info-grid">
+                <div class="info-col" v-if="company.locations.length">
+                  <div class="text-caption text-grey-7">Locations</div>
+                  <div class="text-body1">{{ company.locations.join(', ') }}</div>
+                </div>
+                <div class="info-col" v-if="company.ceo">
+                  <div class="text-caption text-grey-7">CEO</div>
+                  <div class="text-body1">{{ company.ceo }}</div>
+                </div>
+                <div class="info-col" v-if="company.website">
+                  <div class="text-caption text-grey-7">Website</div>
+                  <div class="text-body1">
+                    <a
+                      :href="formatWebsiteUrl(company.website)"
+                      target="_blank"
+                      class="website-link"
+                    >
+                      {{ formatUrl(company.website) }}
+                      <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
+                    </a>
                   </div>
-                  <div class="info-col" v-if="company.ceo">
-                    <div class="text-caption text-grey-7">CEO</div>
-                    <div class="text-body1">{{ company.ceo }}</div>
-                  </div>
-                  <div class="info-col" v-if="company.website">
-                    <div class="text-caption text-grey-7">Website</div>
-                    <div class="text-body1">
+                </div>
+                <div class="info-col" v-if="company.founded">
+                  <div class="text-caption text-grey-7">Founded</div>
+                  <div class="text-body1">{{ company.founded }}</div>
+                </div>
+              </div>
+            </div>
+          </q-card>
+
+          <!-- 3 Tabbed Sections Below -->
+          <q-card class="tabbed-sections-card" flat bordered>
+            <!-- Tab Headers -->
+            <q-tabs
+              v-model="activeTab"
+              dense
+              class="text-grey"
+              active-color="primary"
+              indicator-color="primary"
+              align="justify"
+              narrow-indicator
+            >
+              <q-tab name="description" icon="description" label="Description" />
+              <q-tab name="details" icon="info" label="Details" />
+              <q-tab name="jobs" icon="work" label="Jobs" />
+            </q-tabs>
+
+            <q-separator />
+
+            <!-- Tab Panels -->
+            <q-tab-panels v-model="activeTab" animated>
+              <!-- Description Tab -->
+              <q-tab-panel name="description" class="q-pa-lg">
+                <div class="about-company-section">
+                  <div class="about-company-title">About {{ company.name }}</div>
+                  <div
+                    class="about-company-content"
+                    v-html="formatCompanyDescription(company.description)"
+                  ></div>
+
+                  <!-- Additional Links Section -->
+                  <div v-if="company.otherLinks.length" class="links-section">
+                    <q-separator spaced class="q-my-lg" />
+                    <div class="links-title">Additional Resources</div>
+                    <div class="links-container">
                       <a
-                        :href="formatWebsiteUrl(company.website)"
+                        v-for="(link, i) in company.otherLinks"
+                        :key="i"
+                        :href="formatWebsiteUrl(link)"
                         target="_blank"
-                        class="website-link"
+                        class="additional-link"
                       >
-                        {{ formatUrl(company.website) }}
+                        {{ formatUrl(link) }}
                         <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
                       </a>
                     </div>
                   </div>
-                  <div class="info-col" v-if="company.founded">
-                    <div class="text-caption text-grey-7">Founded</div>
-                    <div class="text-body1">{{ company.founded }}</div>
+                </div>
+              </q-tab-panel>
+
+              <!-- Details Tab -->
+              <q-tab-panel name="details" class="q-pa-lg">
+                <div class="details-section">
+                  <div class="section-title">Company Details</div>
+
+                  <!-- Markets/Industries -->
+                  <div class="detail-group" v-if="company.markets.length">
+                    <div class="detail-label">Markets/Industries</div>
+                    <div class="markets-container">
+                      <div
+                        v-for="(market, i) in company.markets"
+                        :key="i"
+                        class="custom-chip custom-chip-blue"
+                      >
+                        {{ market }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Company Tags -->
+                  <div class="detail-group" v-if="company.companyTags.length">
+                    <div class="detail-label">Company Tags</div>
+                    <div class="tags-container">
+                      <div
+                        v-for="(tag, i) in company.companyTags"
+                        :key="i"
+                        class="custom-chip custom-chip-purple"
+                      >
+                        {{ tag }}
+                      </div>
+                    </div>
+                  </div>
+
+                  <!-- Additional Company Info -->
+                  <div class="additional-info">
+                    <q-list bordered separator>
+                      <q-item v-if="company.ceo">
+                        <q-item-section avatar>
+                          <q-icon name="person" color="primary" />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>Chief Executive Officer</q-item-label>
+                          <q-item-label caption>{{ company.ceo }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item v-if="company.founded">
+                        <q-item-section avatar>
+                          <q-icon name="event" color="primary" />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>Founded</q-item-label>
+                          <q-item-label caption>{{ company.founded }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item v-if="company.size">
+                        <q-item-section avatar>
+                          <q-icon name="groups" color="primary" />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>Company Size</q-item-label>
+                          <q-item-label caption>{{ formatCompanySize(company.size) }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
+
+                      <q-item v-if="company.locations.length">
+                        <q-item-section avatar>
+                          <q-icon name="location_on" color="primary" />
+                        </q-item-section>
+                        <q-item-section>
+                          <q-item-label>Locations</q-item-label>
+                          <q-item-label caption>{{ company.locations.join(', ') }}</q-item-label>
+                        </q-item-section>
+                      </q-item>
+                    </q-list>
                   </div>
                 </div>
-              </div>
-            </q-card>
+              </q-tab-panel>
 
-            <!-- 3 Tabbed Sections Below -->
-            <q-card class="tabbed-sections-card" flat bordered>
-              <!-- Tab Headers -->
-              <q-tabs
-                v-model="activeTab"
-                dense
-                class="text-grey"
-                active-color="primary"
-                indicator-color="primary"
-                align="justify"
-                narrow-indicator
-              >
-                <q-tab name="description" icon="description" label="Description" />
-                <q-tab name="details" icon="info" label="Details" />
-                <q-tab name="jobs" icon="work" label="Jobs" />
-              </q-tabs>
+              <!-- Jobs Tab -->
+              <q-tab-panel name="jobs" class="q-pa-lg">
+                <div class="jobs-section">
+                  <div class="section-title">Available Positions</div>
 
-              <q-separator />
-
-              <!-- Tab Panels -->
-              <q-tab-panels v-model="activeTab" animated>
-                <!-- Description Tab -->
-                <q-tab-panel name="description" class="q-pa-lg">
-                  <div class="about-company-section">
-                    <div class="about-company-title">About {{ company.name }}</div>
-                    <div
-                      class="about-company-content"
-                      v-html="formatCompanyDescription(company.description)"
-                    ></div>
-
-                    <!-- Additional Links Section -->
-                    <div v-if="company.otherLinks.length" class="links-section">
-                      <q-separator spaced class="q-my-lg" />
-                      <div class="links-title">Additional Resources</div>
-                      <div class="links-container">
-                        <a
-                          v-for="(link, i) in company.otherLinks"
-                          :key="i"
-                          :href="formatWebsiteUrl(link)"
-                          target="_blank"
-                          class="additional-link"
-                        >
-                          {{ formatUrl(link) }}
-                          <q-icon name="open_in_new" size="14px" class="q-ml-xs" />
-                        </a>
-                      </div>
-                    </div>
-                  </div>
-                </q-tab-panel>
-
-                <!-- Details Tab -->
-                <q-tab-panel name="details" class="q-pa-lg">
-                  <div class="details-section">
-                    <div class="section-title">Company Details</div>
-
-                    <!-- Markets/Industries -->
-                    <div class="detail-group" v-if="company.markets.length">
-                      <div class="detail-label">Markets/Industries</div>
-                      <div class="markets-container">
+                  <!-- Company Outer Card -->
+                  <q-card class="company-outer-card q-pa-md q-mb-md full-width" flat bordered>
+                    <!-- Top Row: Logo, Name, Status -->
+                    <div class="row items-start q-gutter-sm">
+                      <q-avatar size="64px">
+                        <img
+                          v-if="company.logo && company.logo !== 'https://via.placeholder.com/64'"
+                          :src="company.logo"
+                          :alt="`${company.name} logo`"
+                          @error="onLogoError"
+                        />
                         <div
-                          v-for="(market, i) in company.markets"
-                          :key="i"
-                          class="custom-chip custom-chip-blue"
+                          v-else
+                          style="height: 64px; width: 64px"
+                          :style="'background-color:' + getRandomColor()"
+                          class="logo-placeholder"
                         >
-                          {{ market }}
+                          {{ getCompanyInitials(company.name) }}
                         </div>
-                      </div>
-                    </div>
+                      </q-avatar>
 
-                    <!-- Company Tags -->
-                    <div class="detail-group" v-if="company.companyTags.length">
-                      <div class="detail-label">Company Tags</div>
-                      <div class="tags-container">
-                        <div
-                          v-for="(tag, i) in company.companyTags"
-                          :key="i"
-                          class="custom-chip custom-chip-purple"
-                        >
-                          {{ tag }}
-                        </div>
-                      </div>
-                    </div>
+                      <div class="col">
+                        <div class="row items-center q-gutter-xs">
+                          <div class="text-subtitle1 text-weight-bold">
+                            {{ company.name }}
+                          </div>
 
-                    <!-- Additional Company Info -->
-                    <div class="additional-info">
-                      <q-list bordered separator>
-                        <q-item v-if="company.ceo">
-                          <q-item-section avatar>
-                            <q-icon name="person" color="primary" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>Chief Executive Officer</q-item-label>
-                            <q-item-label caption>{{ company.ceo }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item v-if="company.founded">
-                          <q-item-section avatar>
-                            <q-icon name="event" color="primary" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>Founded</q-item-label>
-                            <q-item-label caption>{{ company.founded }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item v-if="company.size">
-                          <q-item-section avatar>
-                            <q-icon name="groups" color="primary" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>Company Size</q-item-label>
-                            <q-item-label caption>{{
-                              formatCompanySize(company.size)
-                            }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-
-                        <q-item v-if="company.locations.length">
-                          <q-item-section avatar>
-                            <q-icon name="location_on" color="primary" />
-                          </q-item-section>
-                          <q-item-section>
-                            <q-item-label>Locations</q-item-label>
-                            <q-item-label caption>{{ company.locations.join(', ') }}</q-item-label>
-                          </q-item-section>
-                        </q-item>
-                      </q-list>
-                    </div>
-                  </div>
-                </q-tab-panel>
-
-                <!-- Jobs Tab -->
-                <q-tab-panel name="jobs" class="q-pa-lg">
-                  <div class="jobs-section">
-                    <div class="section-title">Available Positions</div>
-
-                    <!-- Company Outer Card -->
-                    <q-card class="company-outer-card q-pa-md q-mb-md full-width" flat bordered>
-                      <!-- Top Row: Logo, Name, Status -->
-                      <div class="row items-start q-gutter-sm">
-                        <q-avatar size="64px">
-                          <img
-                            v-if="company.logo && company.logo !== 'https://via.placeholder.com/64'"
-                            :src="company.logo"
-                            :alt="`${company.name} logo`"
-                            @error="onLogoError"
-                          />
+                          <!-- Company Type -->
                           <div
-                            v-else
-                            style="height: 64px; width: 64px"
-                            :style="'background-color:' + getRandomColor()"
-                            class="logo-placeholder"
+                            v-for="(type, i) in company.companyType"
+                            :key="'type-' + i"
+                            class="custom-chip custom-chip-blue"
                           >
-                            {{ getCompanyInitials(company.name) }}
-                          </div>
-                        </q-avatar>
-
-                        <div class="col">
-                          <div class="row items-center q-gutter-xs">
-                            <div class="text-subtitle1 text-weight-bold">
-                              {{ company.name }}
-                            </div>
-
-                            <!-- Company Type -->
-                            <div
-                              v-for="(type, i) in company.companyType"
-                              :key="'type-' + i"
-                              class="custom-chip custom-chip-blue"
-                            >
-                              {{ type }}
-                            </div>
-                          </div>
-
-                          <!-- Company Size -->
-                          <div class="text-caption text-grey-6">
-                            Company Size: {{ formatCompanySize(company.size) }}
-                          </div>
-
-                          <!-- Company Tags -->
-                          <div class="row q-gutter-sm q-mt-xs">
-                            <div
-                              v-for="(tag, i) in company.companyTags"
-                              :key="'tag-' + i"
-                              class="custom-chip custom-chip-pink"
-                            >
-                              {{ tag }}
-                            </div>
+                            {{ type }}
                           </div>
                         </div>
-                      </div>
 
-                      <!-- CompanyJobsList Component Area -->
-                      <div class="q-mt-md">
-                        <div class="q-mt-md">
-                          <CompanyJobsList />
+                        <!-- Company Size -->
+                        <div class="text-caption text-grey-6">
+                          Company Size: {{ formatCompanySize(company.size) }}
                         </div>
-                      </div>
 
-                      <div class="arrow-symbol">&gt;</div>
-                    </q-card>
-
-                    <!-- No jobs message -->
-                    <div v-if="!mockJobs.length" class="no-jobs-message">
-                      <q-icon name="work_off" size="48px" color="grey-5" />
-                      <div class="text-h6 q-mt-md text-grey-6">No open positions</div>
-                      <div class="text-body2 text-grey-5">
-                        Check back later for new opportunities
+                        <!-- Company Tags -->
+                        <div class="row q-gutter-sm q-mt-xs">
+                          <div
+                            v-for="(tag, i) in company.companyTags"
+                            :key="'tag-' + i"
+                            class="custom-chip custom-chip-pink"
+                          >
+                            {{ tag }}
+                          </div>
+                        </div>
                       </div>
                     </div>
+
+                    <!-- CompanyJobsList Component Area -->
+                    <div class="q-mt-md">
+                      <div class="q-mt-md">
+                        <CompanyJobsList />
+                      </div>
+                    </div>
+
+                    <div class="arrow-symbol">&gt;</div>
+                  </q-card>
+
+                  <!-- No jobs message -->
+                  <div v-if="!mockJobs.length" class="no-jobs-message">
+                    <q-icon name="work_off" size="48px" color="grey-5" />
+                    <div class="text-h6 q-mt-md text-grey-6">No open positions</div>
+                    <div class="text-body2 text-grey-5">Check back later for new opportunities</div>
                   </div>
-                </q-tab-panel>
-              </q-tab-panels>
-            </q-card>
-          </div>
+                </div>
+              </q-tab-panel>
+            </q-tab-panels>
+          </q-card>
         </div>
       </div>
+    </div>
 
-      <div v-else class="q-pa-md">Loading company details...</div>
-    </q-card>
-  </q-dialog>
+    <div v-else class="q-pa-md">Loading company details...</div>
+  </q-page>
 </template>
 
 <script>
@@ -317,18 +300,11 @@ import { getRandomColor } from 'src/assets/BW'
 import CompanyJobsList from './CompanyJobsList.vue'
 
 export default {
-  name: 'CompanyDetailsCard',
+  name: 'CompanyDetailsPage',
   components: { CompanyJobsList },
   setup() {
     const jobsStore = useJobsStore()
     const activeTab = ref('description')
-
-    const showDialog = computed({
-      get: () => jobsStore.companyDialogVisible,
-      set: (val) => {
-        if (!val) jobsStore.closeCompanyDialog()
-      },
-    })
 
     // Mock jobs data for the jobs tab
     const mockJobs = ref([
@@ -452,10 +428,6 @@ What We Do:
       event.target.style.display = 'none'
     }
 
-    function closeDialog() {
-      jobsStore.closeCompanyDialog()
-    }
-
     function viewJobDetails(job) {
       // Handle job click - you can navigate to job details or open another dialog
       console.log('View job details:', job)
@@ -514,11 +486,9 @@ What We Do:
     }
 
     return {
-      showDialog,
       company,
       activeTab,
       mockJobs,
-      closeDialog,
       formatCompanySize,
       formatUrl,
       formatWebsiteUrl,
@@ -531,18 +501,8 @@ What We Do:
   },
 }
 </script>
-
 <style scoped>
 /* Main dialog styling - centered modal */
-.centered-dialog {
-  width: 90vw;
-  max-width: 1200px;
-  height: 85vh;
-  max-height: 900px;
-  position: relative;
-  border-radius: 16px;
-  background-color: white;
-}
 
 .scroll {
   height: 100%;

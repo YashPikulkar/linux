@@ -7,19 +7,12 @@
           <q-icon name="work" size="28px" />
           <h4>My Job Applications</h4>
         </div>
-
-        <div v-if="store.applications.length" class="quick-stats">
-          <span class="stat-item total">{{ store.applications.length }} Total</span>
-          <span class="stat-item pending">{{ getPendingCount() }} Pending</span>
-          <span class="stat-item accepted">{{ getAcceptedCount() }} Accepted</span>
-          <span class="stat-item rejected">{{ getRejectedCount() }} Rejected</span>
-        </div>
       </div>
 
       <!-- Filter Tabs -->
       <div v-if="store.applications.length" class="filter-tabs">
         <button
-          class="filter-tab"
+          class="filter-tab total"
           :class="{ active: selectedFilter === 'all' }"
           @click="selectedFilter = 'all'"
         >
@@ -118,7 +111,7 @@ function getRejectedCount() {
   background: #f9f9f9;
   padding: 24px;
   box-sizing: border-box;
-  overflow: hidden; /* prevent outer scroll */
+  overflow: hidden;
 }
 
 /* ✅ Fixed header inside right card */
@@ -144,7 +137,6 @@ function getRejectedCount() {
 }
 
 /* ✅ Fixed list header */
-/* ✅ Fixed list header */
 .list-header {
   flex-shrink: 0;
   display: grid;
@@ -158,11 +150,9 @@ function getRejectedCount() {
   color: #666;
   text-transform: uppercase;
   letter-spacing: 0.5px;
-
-  /* FIX */
   position: sticky;
-  top: 0; /* instead of 120px */
-  z-index: 5; /* ensure it sits above job cards */
+  top: 0;
+  z-index: 5;
 }
 
 /* Scrollable AppliedJobs wrapper */
@@ -206,8 +196,6 @@ function getRejectedCount() {
   border-radius: 20px;
   font-size: 0.85rem;
   font-weight: 600;
-  background: #f5f5f5;
-  color: #666;
 }
 
 .stat-item.total {
@@ -238,41 +226,55 @@ function getRejectedCount() {
 }
 
 .filter-tab {
-  padding: 12px 20px;
-  border: 2px solid #e0e0e0;
-  background: white;
-  border-radius: 25px;
-  font-size: 0.9rem;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-size: 0.85rem;
   font-weight: 600;
-  color: #666;
   cursor: pointer;
+  border: none;
   transition: all 0.3s ease;
 }
 
-.filter-tab:hover {
-  border-color: #ccc;
-  background: #f9f9f9;
+/* Match stat-item colors */
+.filter-tab.total {
+  background: #e3f2fd;
+  color: #1565c0;
 }
 
-.filter-tab.active {
-  background: #1a1a1a;
+.filter-tab.pending {
+  background: #fff3e0;
+  color: #ef6c00;
+}
+
+.filter-tab.accepted {
+  background: #e8f5e8;
+  color: #2e7d32;
+}
+
+.filter-tab.rejected {
+  background: #ffebee;
+  color: #c62828;
+}
+
+/* Active state = stronger solid color */
+.filter-tab.active.total {
+  background: #1565c0;
   color: white;
-  border-color: #1a1a1a;
 }
 
-.filter-tab.pending.active {
-  background: #ff9800;
-  border-color: #ff9800;
+.filter-tab.active.pending {
+  background: #ef6c00;
+  color: white;
 }
 
-.filter-tab.accepted.active {
-  background: #4caf50;
-  border-color: #4caf50;
+.filter-tab.active.accepted {
+  background: #2e7d32;
+  color: white;
 }
 
-.filter-tab.rejected.active {
-  background: #f44336;
-  border-color: #f44336;
+.filter-tab.active.rejected {
+  background: #c62828;
+  color: white;
 }
 
 /* Responsive Design */
@@ -281,12 +283,10 @@ function getRejectedCount() {
     flex-direction: column;
     align-items: flex-start;
   }
-
   .quick-stats {
     width: 100%;
     justify-content: space-between;
   }
-
   .stat-item {
     flex: 1;
     text-align: center;
@@ -294,9 +294,8 @@ function getRejectedCount() {
     font-size: 0.8rem;
     padding: 6px 8px;
   }
-
   .list-header {
-    display: none; /* Hide on mobile */
+    display: none;
   }
 }
 
@@ -304,22 +303,18 @@ function getRejectedCount() {
   .applications-container {
     padding: 16px;
   }
-
   .filter-tabs {
     overflow-x: auto;
     padding-bottom: 4px;
   }
-
   .filter-tab {
     white-space: nowrap;
     flex-shrink: 0;
   }
-
   .quick-stats {
     flex-direction: column;
     gap: 8px;
   }
-
   .stat-item {
     text-align: left;
   }
