@@ -71,7 +71,7 @@
         v-model="editData.locationids"
         :disable="!isEditable"
         filled
-        label="Preferred Locations"
+        label="Company Locations"
         multiple
         use-chips
         emit-value
@@ -172,6 +172,7 @@ const filterStore = useFilterStore()
 
 // Clone reactive company data
 const editData = reactive(JSON.parse(JSON.stringify(userStore.company)))
+console.log('Cloned editData:', editData)
 
 // Ensure arrays exist
 editData.locationids = Array.isArray(editData.locationids) ? editData.locationids : []

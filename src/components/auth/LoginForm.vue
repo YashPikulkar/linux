@@ -26,7 +26,6 @@ const passwordRules = [
   (val) => !!val || 'Password is required',
   (val) => val.length >= 6 || 'Password must be at least 6 characters',
 ]
-
 const onSubmit = async () => {
   emailRef.value.validate()
   passwordRef.value.validate()
@@ -61,7 +60,13 @@ const onSubmit = async () => {
       // Small delay to show success message before redirect
       setTimeout(() => {
         const role = userStore?.role
-        if (role === 'applicant') {
+
+        // ✅ Check for redirect query
+        const redirect = router.currentRoute.value.query.redirect
+
+        if (redirect) {
+          router.push(redirect)
+        } else if (role === 'applicant') {
           router.push('/applicant')
         } else if (role === 'recruiter') {
           router.push('/recruiter')
@@ -175,7 +180,7 @@ const onSubmit = async () => {
             no-caps
             color="dark"
             class="q-pa-none text-weight-medium"
-            @click="router.push('/register')"
+            @click="router.push({ name: 'register', query: $route.query })"
           >
             register here
           </q-btn>

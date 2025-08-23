@@ -107,7 +107,7 @@ function handleTagClick(tag) {
   }
 
   // Navigate
-  router.push({ name: 'jobsdashboard' })
+  router.push({ name: 'Jobs' })
 }
 // Resize handler
 function updateScreenSize() {

@@ -34,6 +34,7 @@ export default {
       immediate: true,
       handler(newId, oldId) {
         console.log('Watcher triggered - old:', oldId, 'new:', newId)
+        console.log('📦 selectedCompany object:', this.jobsStore.selectedCompany) // 👈 log the full object
 
         if (newId === null) {
           console.warn('⚠️ No company selected (newId is null)')
@@ -49,6 +50,10 @@ export default {
         this.jobsStore.fetchCompanyJobs(newId)
       },
     },
+  },
+
+  mounted() {
+    console.log('🔍 Mounted — selectedCompany is:', this.jobsStore.selectedCompany)
   },
 }
 </script>

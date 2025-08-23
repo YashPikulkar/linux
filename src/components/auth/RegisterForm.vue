@@ -306,7 +306,12 @@ const StepSevenUpdate = async (data) => {
         actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }],
       })
 
-      router.push('/applicant')
+      const redirect = router.currentRoute.value.query.redirect
+      if (redirect) {
+        router.push(redirect)
+      } else {
+        router.push('/applicant')
+      }
     } else {
       $q.notify({
         type: 'negative',

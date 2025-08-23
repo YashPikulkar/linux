@@ -1,7 +1,7 @@
 const routes = [
   {
     path: '/',
-    component: () => import('layouts/RootLayout.vue'),
+    component: () => import('layouts/MainLayout.vue'),
     children: [
       { path: '', name: 'index', component: () => import('pages/IndexPage.vue') },
       { path: 'login', name: 'login', component: () => import('pages/LoginPage.vue') },
@@ -12,13 +12,14 @@ const routes = [
   // 👇 Applicant Dashboard
   {
     path: '/applicant',
-    component: () => import('src/layouts/ApplicantDashboardLayout.vue'),
+    component: () => import('src/layouts/DashboardLayout.vue'),
     children: [
       {
         path: '',
         name: 'ApplicantHome',
         component: () => import('src/pages/ApplicantDashboard/ApplicantHome.vue'),
       },
+
       {
         path: 'application-status',
         name: 'ApplicationStatus',
@@ -34,24 +35,20 @@ const routes = [
         name: 'EditApplicant',
         component: () => import('pages/ApplicantDashboard/EditProfile.vue'),
       },
-      {
-        path: 'special-feature',
-        name: 'SpecialFeature',
-        component: () => import('pages/ApplicantDashboard/SpecialFeature.vue'),
-      },
     ],
   },
 
   // 👇 Recruiter Dashboard
   {
     path: '/recruiter',
-    component: () => import('src/layouts/RecruiterDashboardLayout.vue'),
+    component: () => import('src/layouts/DashboardLayout.vue'),
     children: [
       {
         path: '',
         name: 'RecruiterHome',
         component: () => import('pages/RecruiterDashboard/RecruiterHome.vue'),
       },
+
       {
         path: 'jobs-posted',
         name: 'JobsPosted',
@@ -69,13 +66,15 @@ const routes = [
       },
     ],
   },
+
+  // 👇 Guest/Public Jobs
   {
     path: '/all-jobs',
-    component: () => import('layouts/RootLayout.vue'),
+    component: () => import('src/layouts/LayoutResolver.vue'),
     children: [
       {
         path: '',
-        name: 'jobsdashboard',
+        name: 'Jobs',
         component: () => import('pages/JobDashboard.vue'),
       },
       {
@@ -86,8 +85,19 @@ const routes = [
       },
     ],
   },
+  {
+    path: '/special-feature',
+    component: () => import('src/layouts/LayoutResolver.vue'),
+    children: [
+      {
+        path: '',
+        name: 'SpecialFeature',
+        component: () => import('src/components/SpecialFeature/SpecialFeature.vue'),
+      },
+    ],
+  },
 
-  // Fallback for 404
+  // Fallback 404
   {
     path: '/:catchAll(.*)*',
     component: () => import('pages/ErrorNotFound.vue'),

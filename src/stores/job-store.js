@@ -11,7 +11,7 @@ export const useJobsStore = defineStore('jobs', {
     jobs: [],
     selectedJob: null,
     selectedCompany: null,
-    loading: false, // initial loader
+    loading: false,
     error: null,
     selectedJobId: null,
     jobLoading: false,
@@ -31,14 +31,16 @@ export const useJobsStore = defineStore('jobs', {
     },
 
     message: '',
-    savedJobIds: new Set(),
+
+    // Load savedJobIds from localStorage or initialize as empty set
+    savedJobIds: new Set(JSON.parse(localStorage.getItem('savedJobIds') || '[]')),
 
     // Pagination
     page: 1,
     limit: 4,
     lastCount: 0,
     totalCount: 0,
-    fetchingMore: false, // loader for infinite scroll
+    fetchingMore: false,
   }),
 
   actions: {
@@ -117,7 +119,7 @@ export const useJobsStore = defineStore('jobs', {
 
           if (append) {
             this.jobs = [...this.jobs, ...fetchedJobs]
-            this.page = page // ✅ keep the incremented page for next fetch
+            this.page = page
           } else {
             this.jobs = fetchedJobs
             this.page = pagination.page || page
@@ -134,6 +136,7 @@ export const useJobsStore = defineStore('jobs', {
         if (!append) this.loading = false
       }
     },
+
     async fetchMoreJobs() {
       if (this.fetchingMore) return
       if (this.jobs.length >= this.totalCount) return
@@ -149,6 +152,7 @@ export const useJobsStore = defineStore('jobs', {
         this.fetchingMore = false
       }
     },
+
     async fetchJobDetail(jobid) {
       this.jobLoading = true
       try {
@@ -170,10 +174,15 @@ export const useJobsStore = defineStore('jobs', {
         const response = await axios.get(`http://localhost:3000/company/getCompanyDetail`, {
           params: { cid },
         })
+
+        console.log('🔍 Full Response from backend:', response)
+        console.log('📦 Data from backend:', response.data)
+
         this.selectedCompany = response.data
       } catch (err) {
         this.error = err.response?.data?.error || err.message || 'Failed to fetch company detail'
         this.selectedCompany = null
+        console.error('❌ Error fetching company detail:', err)
       } finally {
         this.companyLoading = false
       }
@@ -201,24 +210,18 @@ export const useJobsStore = defineStore('jobs', {
       this.selectedJob = null
       this.error = null
     },
-    async openCompanyDialog() {
-      if (this.normalizedJob.cid) {
-        this.$router.push({
-          name: 'CompanyDetails',
-          params: { id: this.normalizedJob.cid },
-        })
-      }
-    },
-    closeCompanyDetails() {
-      this.$router.push('/all-jobs')
-    },
+
     toggleSave(jobid) {
       if (this.savedJobIds.has(jobid)) {
         this.savedJobIds.delete(jobid)
       } else {
         this.savedJobIds.add(jobid)
       }
+
+      // Persist saved jobs to localStorage
+      localStorage.setItem('savedJobIds', JSON.stringify(Array.from(this.savedJobIds)))
     },
+
     // ---------------- Recruiter Actions ----------------
     async postJob(jobData) {
       this.loading = true
@@ -363,9 +366,8 @@ export const useJobsStore = defineStore('jobs', {
         throw error
       }
     },
-
-    // ---------------- Saved Jobs ----------------
   },
+
   getters: {
     filteredJobs: (state) => () => state.jobs,
     getSavedJobs: (state) => state.jobs.filter((job) => state.savedJobIds.has(job.jobid)),

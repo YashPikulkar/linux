@@ -40,60 +40,35 @@ export const useUserStore = defineStore('user', {
   }),
 
   actions: {
-    setEverythingToNull() {
-      this.uid = null
-      this.name = null
-      this.phone = null
-      this.email = null
-      this.role = null
-
-      this.gender = null
-      this.dob = null
-      this.employmentStatus = null
-      this.jobType = null
-      this.preferredLocation = null
-      this.availability = null
-      this.linkedin = null
-      this.portfolioWebsite = null
-
-      this.token = null
-
-      this.degree = null
-      this.institution = null
-      this.field_of_study = null
-      this.start_date_degree = null
-      this.end_date_degree = null
-      this.gradeValue = null
-      this.gradeType = null
-      this.education_level = null
-
-      this.expName = null
-      this.expRole = null
-      this.expStart = null
-      this.expEnd = null
-
-      this.skills = []
-
-      this.companyName = null
+    // Save store to localStorage
+    persistUser() {
+      localStorage.setItem('user', JSON.stringify(this.$state))
     },
 
+    // Load store from localStorage
+    loadUser() {
+      const storedUser = localStorage.getItem('user')
+      if (storedUser) {
+        this.$patch(JSON.parse(storedUser))
+      }
+    },
+
+    setEverythingToNull() {
+      this.$reset()
+      localStorage.removeItem('user')
+      sessionStorage.removeItem('token') // optional
+    },
     async login({ email, password }) {
       try {
         const res = await fetch(`${baseUrl}/auth/login`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ email, password }),
         })
 
         const responseJson = await res.json()
-
         if (!res.ok) {
-          return {
-            success: false,
-            message: responseJson.message || 'Login failed',
-          }
+          return { success: false, message: responseJson.message || 'Login failed' }
         }
 
         this.uid = responseJson.user?.uid
@@ -149,16 +124,11 @@ export const useUserStore = defineStore('user', {
           }
         }
 
-        return {
-          success: true,
-          message: responseJson.message || 'Login successful',
-        }
+        this.persistUser() // ✅ Save after login
+        return { success: true, message: responseJson.message || 'Login successful' }
       } catch (error) {
         console.warn('Login error:', error)
-        return {
-          success: false,
-          message: 'Network error or server unavailable',
-        }
+        return { success: false, message: 'Network error or server unavailable' }
       }
     },
 
@@ -166,31 +136,19 @@ export const useUserStore = defineStore('user', {
       try {
         const res = await fetch(`${baseUrl}/auth/send-otp`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email: email }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email }),
         })
 
         const responseJson = await res.json()
-
         if (!res.ok) {
-          return {
-            success: false,
-            message: responseJson.message || 'Failed to send OTP',
-          }
+          return { success: false, message: responseJson.message || 'Failed to send OTP' }
         }
 
-        return {
-          success: true,
-          message: responseJson.message || 'OTP sent successfully',
-        }
+        return { success: true, message: responseJson.message || 'OTP sent successfully' }
       } catch (error) {
         console.error('Error sending OTP:', error)
-        return {
-          success: false,
-          message: 'Something went wrong while sending OTP',
-        }
+        return { success: false, message: 'Something went wrong while sending OTP' }
       }
     },
 
@@ -198,38 +156,19 @@ export const useUserStore = defineStore('user', {
       try {
         const res = await fetch(`${baseUrl}/auth/verify-otp`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({ email: email, otp: otp }),
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ email, otp }),
         })
 
         const responseData = await res.json()
-
-        if (!res.ok) {
-          return {
-            success: false,
-            message: responseData.message || 'OTP verification failed',
-          }
+        if (!res.ok || !responseData.success) {
+          return { success: false, message: responseData.message || 'OTP verification failed' }
         }
 
-        if (!responseData.success) {
-          return {
-            success: false,
-            message: responseData.message || 'OTP verification failed',
-          }
-        }
-
-        return {
-          success: true,
-          message: responseData.message || 'OTP verified successfully',
-        }
+        return { success: true, message: responseData.message || 'OTP verified successfully' }
       } catch (error) {
         console.error('Error verifying OTP:', error)
-        return {
-          success: false,
-          message: error.message || 'Network error during OTP verification',
-        }
+        return { success: false, message: error.message || 'Network error during OTP verification' }
       }
     },
 
@@ -238,13 +177,11 @@ export const useUserStore = defineStore('user', {
       try {
         const response = await fetch(`${baseUrl}/auth/register`, {
           method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
+          headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(data),
         })
-        const res = await response.json()
 
+        const res = await response.json()
         if (!response.ok) {
           if (res.message && res.message.includes('Duplicate entry')) {
             return {
@@ -252,10 +189,7 @@ export const useUserStore = defineStore('user', {
               message: 'Email already exists. Please use a different email.',
             }
           }
-          return {
-            success: false,
-            message: res.message || 'Registration failed',
-          }
+          return { success: false, message: res.message || 'Registration failed' }
         }
 
         if (res.success) {
@@ -282,7 +216,6 @@ export const useUserStore = defineStore('user', {
             this.expEnd = res.user?.experience.end
 
             const skillids = res.user?.skillids || []
-
             for (const skillid of skillids) {
               const response = await fetch(`${baseUrl}/skills/${skillid}`)
               const skillName = await response.json()
@@ -292,22 +225,14 @@ export const useUserStore = defineStore('user', {
             this.company = res.user?.company
           }
 
-          return {
-            success: true,
-            message: res.message || 'Registration successful',
-          }
+          this.persistUser() // ✅ Save after registration
+          return { success: true, message: res.message || 'Registration successful' }
         }
 
-        return {
-          success: false,
-          message: res.message || 'Registration failed',
-        }
+        return { success: false, message: res.message || 'Registration failed' }
       } catch (error) {
         console.error('Error during registration:', error)
-        return {
-          success: false,
-          message: error.message || 'Network error during registration',
-        }
+        return { success: false, message: error.message || 'Network error during registration' }
       }
     },
 
@@ -463,22 +388,23 @@ export const useUserStore = defineStore('user', {
       }
     },
     async applyForJob(jobid) {
-      console.log('[UserStore] applyForJob called with jobid:', jobid) // <-- Log here
-
-      const payload = {
-        uid: this.uid,
-        jobid,
-      }
+      console.log('[UserStore] applyForJob called with jobid:', jobid)
 
       try {
+        const token = this.token || sessionStorage.getItem('token')
+        if (!token) throw new Error('Authorization token is missing')
+
         const response = await fetch(`${baseUrl}/application/apply`, {
           method: 'PATCH',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ applicationData: payload }),
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`, // ✅ send token
+          },
+          body: JSON.stringify({ jobid }), // ✅ only send jobid, NOT uid
         })
 
+        const resJson = await response.json()
         if (!response.ok) {
-          const resJson = await response.json()
           return {
             success: false,
             message: resJson.message || 'Failed to apply for job',
@@ -487,7 +413,7 @@ export const useUserStore = defineStore('user', {
 
         return {
           success: true,
-          message: 'Applied for job successfully',
+          message: resJson.message || 'Applied for job successfully',
         }
       } catch (error) {
         console.error('Error applying for job:', error)
@@ -497,5 +423,9 @@ export const useUserStore = defineStore('user', {
         }
       }
     },
+  },
+
+  getters: {
+    isLoggedIn: (state) => !!state.uid && !!state.token,
   },
 })

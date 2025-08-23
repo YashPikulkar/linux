@@ -130,10 +130,11 @@ const refreshAllData = async () => {
 }
 
 // Router nav
+// Router nav
 const goToJobs = () => {
   try {
-    router.push('/all-jobs')
-    console.log('➡️ Navigated to jobs page')
+    router.push({ name: 'Jobs' }) // <--- use the route name under applicant dashboard
+    console.log('➡️ Navigated to Applicant Jobs page')
   } catch (error) {
     console.error('❌ Error navigating to jobs:', error)
     $q.notify({

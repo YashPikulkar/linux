@@ -126,7 +126,13 @@
                         class="btn-outline-black equal-button"
                         type="button"
                         @click.stop="handleApply"
-                      />
+                        :disable="userStore.role === 'recruiter'"
+                      >
+                        <q-tooltip v-if="userStore.role === 'recruiter'">
+                          Recruiters cannot apply for jobs
+                        </q-tooltip>
+                      </q-btn>
+
                       <q-btn
                         unelevated
                         dense
@@ -269,23 +275,26 @@ export default {
 
     async openCompanyDialog() {
       const jobsStore = useJobsStore()
-      if (this.normalizedJob.cid) {
-        // 🔹 set selected company from job data
-        jobsStore.selectedCompany = this.normalizedJob.company
 
-        // 🔹 then navigate
+      if (this.normalizedJob.cid) {
+        // Fetch company details and update selectedCompany in store
+        await jobsStore.fetchCompanyDetail(this.normalizedJob.cid)
+
+        // Navigate to full page
         this.$router.push({
           name: 'company-details',
           params: { cid: this.normalizedJob.cid },
         })
       }
     },
-
     toggleSave() {
       this.jobsStore.toggleSave(this.normalizedJob.jobid)
     },
     redirectToLogin() {
-      this.$router.push('/login')
+      this.$router.push({
+        name: 'login',
+        query: { redirect: '/all-jobs' }, // 👈 force into applicant dashboard
+      })
     },
     getCompanyInitials(name) {
       if (!name) return 'NA'
