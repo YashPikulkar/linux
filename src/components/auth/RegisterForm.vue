@@ -231,7 +231,12 @@ const StepFourUpdate = async (data) => {
         actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }],
       })
 
-      router.push('/recruiter')
+      const redirect = router.currentRoute.value.query.redirect
+      if (redirect) {
+        router.replace(redirect)
+      } else {
+        router.replace('/applicant')
+      }
     } else {
       $q.notify({
         type: 'negative',
@@ -240,7 +245,7 @@ const StepFourUpdate = async (data) => {
         timeout: 4000,
         actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }],
       })
-      router.push('/')
+      router.replace('/')
     }
   } catch (error) {
     $q.notify({
@@ -251,7 +256,7 @@ const StepFourUpdate = async (data) => {
       actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }],
     })
     console.error('Recruiter registration error:', error)
-    router.push('/')
+    router.replace('/')
   }
 
   StepData.stepFour = true
@@ -308,9 +313,9 @@ const StepSevenUpdate = async (data) => {
 
       const redirect = router.currentRoute.value.query.redirect
       if (redirect) {
-        router.push(redirect)
+        router.replace(redirect)
       } else {
-        router.push('/applicant')
+        router.replace('/applicant')
       }
     } else {
       $q.notify({
@@ -320,7 +325,7 @@ const StepSevenUpdate = async (data) => {
         timeout: 4000,
         actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }],
       })
-      router.push('/')
+      router.replace('/')
     }
   } catch (error) {
     $q.notify({
@@ -331,7 +336,7 @@ const StepSevenUpdate = async (data) => {
       actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }],
     })
     console.error('Applicant registration error:', error)
-    router.push('/')
+    router.replace('/')
   }
 
   StepData.stepSeven = true
@@ -473,7 +478,7 @@ const StepSevenUpdate = async (data) => {
 
     <!-- Navigation -->
     <div class="register-navigation">
-      <q-btn flat no-caps color="dark" class="nav-btn" @click="router.push('/')">
+      <q-btn flat no-caps color="dark" class="nav-btn" @click="router.replace('/')">
         <q-icon name="arrow_back" class="q-mr-sm" />
         Back
       </q-btn>

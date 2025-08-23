@@ -1,3 +1,4 @@
+// routes.js
 const routes = [
   {
     path: '/',
@@ -12,14 +13,14 @@ const routes = [
   // 👇 Applicant Dashboard
   {
     path: '/applicant',
-    component: () => import('src/layouts/DashboardLayout.vue'),
+    component: () => import('layouts/DashboardLayout.vue'),
+    meta: { role: 'applicant' },
     children: [
       {
         path: '',
         name: 'ApplicantHome',
-        component: () => import('src/pages/ApplicantDashboard/ApplicantHome.vue'),
+        component: () => import('pages/ApplicantDashboard/ApplicantHome.vue'),
       },
-
       {
         path: 'application-status',
         name: 'ApplicationStatus',
@@ -28,7 +29,7 @@ const routes = [
       {
         path: 'resumes',
         name: 'Resumes',
-        component: () => import('src/pages/ApplicantDashboard/ApplicantResume.vue'),
+        component: () => import('pages/ApplicantDashboard/ApplicantResume.vue'),
       },
       {
         path: 'edit-applicant',
@@ -41,14 +42,14 @@ const routes = [
   // 👇 Recruiter Dashboard
   {
     path: '/recruiter',
-    component: () => import('src/layouts/DashboardLayout.vue'),
+    component: () => import('layouts/DashboardLayout.vue'),
+    meta: { role: 'recruiter' },
     children: [
       {
         path: '',
         name: 'RecruiterHome',
         component: () => import('pages/RecruiterDashboard/RecruiterHome.vue'),
       },
-
       {
         path: 'jobs-posted',
         name: 'JobsPosted',
@@ -70,13 +71,9 @@ const routes = [
   // 👇 Guest/Public Jobs
   {
     path: '/all-jobs',
-    component: () => import('src/layouts/LayoutResolver.vue'),
+    component: () => import('layouts/LayoutResolver.vue'),
     children: [
-      {
-        path: '',
-        name: 'Jobs',
-        component: () => import('pages/JobDashboard.vue'),
-      },
+      { path: '', name: 'Jobs', component: () => import('pages/JobDashboard.vue') },
       {
         path: 'company/:cid',
         name: 'company-details',
@@ -85,23 +82,22 @@ const routes = [
       },
     ],
   },
+
+  // 👇 Special Feature
   {
     path: '/special-feature',
-    component: () => import('src/layouts/LayoutResolver.vue'),
+    component: () => import('layouts/LayoutResolver.vue'),
     children: [
       {
         path: '',
         name: 'SpecialFeature',
-        component: () => import('src/components/SpecialFeature/SpecialFeature.vue'),
+        component: () => import('components/SpecialFeature/SpecialFeature.vue'),
       },
     ],
   },
 
   // Fallback 404
-  {
-    path: '/:catchAll(.*)*',
-    component: () => import('pages/ErrorNotFound.vue'),
-  },
+  { path: '/:catchAll(.*)*', component: () => import('pages/ErrorNotFound.vue') },
 ]
 
 export default routes

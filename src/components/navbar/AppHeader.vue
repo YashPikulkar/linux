@@ -1,34 +1,34 @@
 <template>
   <q-header class="bg-white text-dark navbar-custom">
     <q-toolbar class="q-gutter-md">
-      <!-- 🔹 Centered Navigation -->
+      <!-- 🔹 Centered Navigation (hidden on mobile and tablet) -->
       <q-space />
-      <div class="row items-center q-gutter-lg nav-center">
+      <div class="row items-center q-gutter-lg nav-center gt-sm">
         <q-btn
           flat
           no-caps
           dense
           icon="home"
           label="Home"
-          @click="$router.push('/recruiter')"
+          @click="$router.push('/applicant')"
           class="nav-btn"
         />
         <q-btn
           flat
           no-caps
           dense
-          icon="work"
-          label="Jobs Posted"
-          @click="$router.push('/recruiter/jobs-posted')"
+          icon="dashboard"
+          label="Application Status"
+          @click="$router.push('/applicant/application-status')"
           class="nav-btn"
         />
         <q-btn
           flat
           no-caps
           dense
-          icon="add_box"
-          label="Create Job"
-          @click="$router.push('/recruiter/create-job')"
+          icon="description"
+          label="Resumes"
+          @click="$router.push('/applicant/resumes')"
           class="nav-btn"
         />
         <q-btn
@@ -37,14 +37,16 @@
           dense
           icon="person"
           label="Edit Profile"
-          @click="$router.push('/recruiter/edit')"
+          @click="$router.push('/applicant/edit-applicant')"
           class="nav-btn"
         />
       </div>
       <q-space />
 
-      <!-- 🔹 Avatar + Dropdown Menu -->
+      <!-- 🔹 Mobile: Show name and avatar -->
       <div class="row items-center q-gutter-sm">
+        <!-- Name (only on mobile and tablet) -->
+
         <q-avatar
           size="48px"
           square
@@ -257,49 +259,81 @@ const getInitials = (name) => {
   return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase()
 }
 
+// 🔹 Applicant-specific Navigation
+const goToEditProfile = () => router.push('/applicant/edit-applicant')
+const goToApplicationStatus = () => router.push('/applicant/application-status')
+const goToUpdateResume = () => router.push('/applicant/resumes')
+
 // Note: Add analytics route if you create them
 const goToAnalytics = () => {
   if (userStore.role === 'applicant') router.push('/applicant')
   else if (userStore.role === 'recruiter') router.push('/recruiter')
 }
 
-// 🔹 Recruiter-specific Navigation
-const goToEditCompanyProfile = () => router.push('/recruiter/edit')
-const goToJobsPosted = () => router.push('/recruiter/jobs-posted')
-const goToPostJob = () => router.push('/recruiter/create-job')
-
 // 🔹 Logout
 const handleLogout = () => {
   userStore.setEverythingToNull() // clear all user info including role
-  router.push('/login')
+  router.push('/')
 }
 </script>
 
 <style scoped>
 /* 🔹 Navbar */
 .navbar-custom {
-  height: 80px; /* ⬆️ slightly taller */
-  border-bottom: none; /* removed line */
+  height: 70px;
+  border-bottom: none;
   display: flex;
   align-items: center;
   padding-top: 5px;
-  box-shadow: none; /* removed shadow */
+  box-shadow: none;
 }
 
+/* 🔹 Navigation Buttons */
 .nav-btn {
   font-size: 16px;
   font-weight: 500;
-  color: #374151;
-  transition: all 0.2s ease-in-out;
-  padding: 10px 18px;
+  color: #111827;
+  background-color: #ffffff;
+  border: none;
+  border-radius: 12px;
+  padding: 8px 18px;
+  transition:
+    background 0.25s ease,
+    color 0.25s ease,
+    border 0.25s ease,
+    box-shadow 0.25s ease;
 }
 
 .nav-btn .q-icon {
-  font-size: 22px;
+  font-size: 20px;
 }
 
-.nav-btn:hover {
-  color: #1d4ed8;
+/* Hover + Active (same effect as your other header) */
+.nav-btn:hover,
+.nav-btn:focus,
+.nav-btn.active {
+  background-color: #fdecea;
+  border: 2px solid #ef4444;
+  color: #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
+}
+
+/* 🔹 Dropdown trigger (the avatar container) */
+.row.items-center.q-gutter-sm {
+  padding: 6px 10px;
+  border-radius: 12px;
+  transition:
+    background 0.25s ease,
+    border 0.25s ease,
+    box-shadow 0.25s ease;
+}
+
+/* Same hover/active effect for dropdown container */
+.row.items-center.q-gutter-sm:hover,
+.row.items-center.q-gutter-sm:focus {
+  background-color: #fdecea;
+  border: 2px solid #ef4444;
+  box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.15);
 }
 
 .nav-center {
@@ -308,6 +342,14 @@ const handleLogout = () => {
 
 .q-btn__content {
   gap: 6px;
+}
+
+/* 🔹 Mobile name styling */
+.mobile-name {
+  max-width: 120px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .profile-dropdown {
@@ -417,7 +459,7 @@ const handleLogout = () => {
   font-size: 14px;
   color: #3b82f6;
   border-radius: 8px;
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segue UI', Roboto, sans-serif;
   padding: 14px;
 }
 </style>

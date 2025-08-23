@@ -6,8 +6,14 @@
     <!-- 🔹 Main Content -->
     <q-page-container>
       <q-page class="q-pa-md">
-        <!-- Full-width page (All Jobs) -->
-        <div v-if="$route.name === 'Jobs' || $route.name === 'company-details'">
+        <!-- Full-width page (company-details or special-feature) -->
+        <div
+          v-if="
+            $route.name === 'Jobs' ||
+            $route.name === 'company-details' ||
+            $route.name === 'SpecialFeature'
+          "
+        >
           <router-view />
         </div>
 
@@ -36,8 +42,8 @@
 
 <script setup>
 import LeftCard from 'src/components/user/LeftCard.vue'
-import AppHeader from 'src/components/Layout/AppHeader.vue'
-import RecHeader from 'src/components/Layout/RecHeader.vue'
+import AppHeader from 'src/components/navbar/AppHeader.vue'
+import RecHeader from 'src/components/navbar/RecHeader.vue'
 import { useUserStore } from 'src/stores/user-store'
 import { useRouter } from 'vue-router'
 

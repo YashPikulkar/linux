@@ -1,3 +1,4 @@
+// router/index.js
 import { defineRouter } from '#q-app/wrappers'
 import {
   createRouter,
@@ -7,49 +8,69 @@ import {
 } from 'vue-router'
 import routes from './routes'
 import { useUserStore } from 'src/stores/user-store'
+import { jwtDecode } from 'jwt-decode' // ✅ named import for v4+
 
 export default defineRouter(function () {
-  const createHistory = process.env.SERVER
-    ? createMemoryHistory
-    : process.env.VUE_ROUTER_MODE === 'history'
-      ? createWebHistory
-      : createWebHashHistory
+  // Determine history type
+  const createHistory =
+    process.env.SERVER === 'true'
+      ? createMemoryHistory
+      : process.env.VUE_ROUTER_MODE === 'history'
+        ? createWebHistory
+        : createWebHashHistory
 
   const Router = createRouter({
     scrollBehavior: () => ({ left: 0, top: 0 }),
     routes,
-    history: createHistory(process.env.VUE_ROUTER_BASE),
+    history: createHistory(process.env.VUE_ROUTER_BASE || '/'),
   })
 
-  // 🔹 Global Navigation Guard
   Router.beforeEach((to, from, next) => {
     const userStore = useUserStore()
+    const token = userStore?.token || null
 
-    if (!userStore.uid) {
-      userStore.loadUser?.()
+    let userRole = null
+
+    if (token) {
+      try {
+        const decoded = jwtDecode(token)
+        userRole = decoded.role
+      } catch (err) {
+        console.error('Invalid token:', err)
+        return next({ name: 'login' })
+      }
     }
 
-    // Protect applicant/recruiter routes
-    if (to.path.startsWith('/applicant') && userStore.role !== 'applicant') {
-      return next({ name: 'login' })
-    }
-    if (to.path.startsWith('/recruiter') && userStore.role !== 'recruiter') {
-      return next({ name: 'login' })
-    }
-
-    // Auto-redirect "all-jobs"
-    if (to.name === 'GuestJobs') {
-      if (userStore.role === 'applicant') return next({ name: 'ApplicantJobs' })
-      if (userStore.role === 'recruiter') return next({ name: 'RecruiterJobs' })
+    // Prevent logged-in users from accessing login/register
+    if (token && (to.name === 'login' || to.name === 'register')) {
+      const redirectTo =
+        to.query.redirect ||
+        (userRole === 'applicant' ? 'ApplicantHome' : 'RecruiterHome') ||
+        'index'
+      return next({ name: redirectTo })
     }
 
-    // Auto-redirect "special-feature"
-    if (to.name === 'GuestSpecial') {
-      if (userStore.role === 'applicant') return next({ name: 'ApplicantSpecial' })
-      if (userStore.role === 'recruiter') return next({ name: 'RecruiterSpecial' })
+    // Find required role from matched routes (including parent)
+    const matchedRoute = to.matched.find((r) => r.meta?.role)
+    const requiredRole = matchedRoute?.meta?.role
+
+    // Public route
+    if (!requiredRole) return next()
+
+    // Not logged in → redirect to login with redirect
+    if (!token) {
+      return next({ name: 'login', query: { redirect: to.fullPath } })
     }
 
-    next()
+    // Role mismatch → redirect to previous page or dashboard
+    if (requiredRole !== userRole) {
+      const redirectTo =
+        from.name || (userRole === 'applicant' ? 'ApplicantHome' : 'RecruiterHome') || 'index'
+      return next({ name: redirectTo })
+    }
+
+    // Role matches → allow
+    return next()
   })
 
   return Router

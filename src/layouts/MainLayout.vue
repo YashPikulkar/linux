@@ -279,7 +279,7 @@ const goToRecruiterFeature = () => {
 
 // 🔹 Jobs Navigation (role-specific)
 const goToJobs = () => {
-  if (userStore.role === 'applicant') router.push('/applicant/all-jobs')
+  if (userStore.role === 'applicant') router.push('/all-jobs')
   else router.push('/all-jobs') // global jobs page
 }
 const getInitials = (name) => {
@@ -310,7 +310,7 @@ const isActiveRoute = (path) => route.path.startsWith(path)
 // 🔹 Logout
 const handleLogout = () => {
   userStore.setEverythingToNull() // clear all user info including role
-  router.push('/login')
+  router.push('/')
 }
 
 // 🔹 Optional: Route Guard Logic (for role-based protection)
@@ -451,7 +451,7 @@ router.beforeEach((to, from, next) => {
 
 .header-toolbar {
   padding: 0 24px;
-  min-height: 80px;
+  min-height: 70px;
   display: flex;
   align-items: center;
 }

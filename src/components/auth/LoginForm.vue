@@ -1,11 +1,12 @@
 <script setup>
 import { ref } from 'vue'
-import { useRouter } from 'vue-router'
+import { useRouter, useRoute } from 'vue-router'
 import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
 
 const userStore = useUserStore()
 const router = useRouter()
+const route = useRoute()
 const $q = useQuasar()
 const email = ref('')
 const password = ref('')
@@ -26,6 +27,7 @@ const passwordRules = [
   (val) => !!val || 'Password is required',
   (val) => val.length >= 6 || 'Password must be at least 6 characters',
 ]
+
 const onSubmit = async () => {
   emailRef.value.validate()
   passwordRef.value.validate()
@@ -48,7 +50,7 @@ const onSubmit = async () => {
       showSuccess.value = true
       showError.value = false
 
-      // Show success toast
+      // ✅ Success toast
       $q.notify({
         type: 'positive',
         message: result.message || 'Login successful! Redirecting...',
@@ -60,23 +62,21 @@ const onSubmit = async () => {
       // Small delay to show success message before redirect
       setTimeout(() => {
         const role = userStore?.role
-
-        // ✅ Check for redirect query
-        const redirect = router.currentRoute.value.query.redirect
+        const redirect = route.query.redirect
 
         if (redirect) {
-          router.push(redirect)
+          router.replace(redirect) // ✅ replace used here
         } else if (role === 'applicant') {
-          router.push('/applicant')
+          router.replace('/applicant') // ✅ replace
         } else if (role === 'recruiter') {
-          router.push('/recruiter')
+          router.replace('/recruiter') // ✅ replace
         }
       }, 1000)
     } else {
       showError.value = true
       showSuccess.value = false
 
-      // Show error toast
+      // ❌ Error toast
       $q.notify({
         type: 'negative',
         message: result.message || 'Login failed. Please check your credentials and try again.',
@@ -84,14 +84,12 @@ const onSubmit = async () => {
         timeout: 4000,
         actions: [{ icon: 'close', color: 'white', round: true, handler: () => {} }],
       })
-
-      console.warn('Login failed:', result.message)
     }
   } catch (error) {
     showError.value = true
     showSuccess.value = false
 
-    // Show error toast for network/unexpected errors
+    // ❌ Unexpected error toast
     $q.notify({
       type: 'negative',
       message: 'An unexpected error occurred. Please try again.',
@@ -180,15 +178,16 @@ const onSubmit = async () => {
             no-caps
             color="dark"
             class="q-pa-none text-weight-medium"
-            @click="router.push({ name: 'register', query: $route.query })"
+            @click="router.replace({ name: 'register', query: $route.query })"
           >
             register here
           </q-btn>
         </div>
       </q-card-section>
     </q-card>
+
     <div class="register-navigation">
-      <q-btn flat no-caps color="dark" class="nav-btn" @click="router.push('/')">
+      <q-btn flat no-caps color="dark" class="nav-btn" @click="router.replace('/')">
         <q-icon name="arrow_back" class="q-mr-sm" />
         Back
       </q-btn>
