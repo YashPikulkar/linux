@@ -15,15 +15,15 @@
           <div class="text-h5 text-weight-bold">
             {{ jobDetails?.title || 'Job Applications' }}
           </div>
-          <div class="text-subtitle2 text-grey-7">
-            {{ jobDetails?.company }} • {{ jobDetails?.location }} •
+         <div class="text-subtitle2 text-grey-7">
+             <!--{{ jobDetails?.company }} • {{ jobDetails?.location }} •
             {{ jobDetails?.jobtype }}
-            <span v-if="jobId" class="q-ml-sm">• Job ID: {{ jobId }}</span>
+            <span v-if="jobId" class="q-ml-sm">• Job ID: {{ jobId }}</span>-->
           </div>
         </div>
         <div class="col-auto">
           <div class="row q-gutter-md items-center">
-            <q-toggle
+            <!--<q-toggle
               v-model="sendEmails"
               label="Email notifications"
               color="primary"
@@ -37,7 +37,7 @@
                 { label: 'Table', value: 'table' },
               ]"
               class="modern-toggle"
-            />
+            />-->
             <q-btn
               icon="download"
               label="Export"
@@ -227,16 +227,16 @@
                 color="positive"
                 icon="check_circle"
                 label="Accept"
-                @click="updateStatus('accepted')"
+                @click="showStatusDialog('accepted')"
                 :disable="selectedApplicant.status === 'accepted'"
                 :loading="updatingStatus"
                 class="action-btn"
               />
-              <q-btn
+             <q-btn
                 color="orange"
                 icon="schedule"
                 label="Pending"
-                @click="updateStatus('pending')"
+                @click="showStatusDialog('pending')"
                 :disable="selectedApplicant.status === 'pending'"
                 :loading="updatingStatus"
                 outline
@@ -246,7 +246,7 @@
                 color="negative"
                 icon="cancel"
                 label="Reject"
-                @click="updateStatus('rejected')"
+                @click="showStatusDialog('rejected')"
                 :disable="selectedApplicant.status === 'rejected'"
                 :loading="updatingStatus"
                 outline
@@ -280,7 +280,7 @@
             <!-- Overview Tab -->
             <q-tab-panel name="overview" class="tab-panel">
               <div class="row q-gutter-lg">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                   <q-card class="info-card">
                     <q-card-section class="card-header">Application Details</q-card-section>
                     <q-card-section class="info-content">
@@ -307,7 +307,7 @@
                     </q-card-section>
                   </q-card>
                 </div>
-                <div class="col-6">
+                <!--<div class="grid grid-cols-2 gap-4">-->
                   <q-card class="info-card">
                     <q-card-section class="card-header">Links & Documents</q-card-section>
                     <q-card-section class="info-content">
@@ -350,7 +350,7 @@
                     </q-card-section>
                   </q-card>
                 </div>
-              </div>
+             <!-- </div>-->
             </q-tab-panel>
 
             <!-- Resume Tab -->
@@ -568,6 +568,58 @@
         </div>
       </div>
     </div>
+
+    <!-- Status Change Confirmation Dialog -->
+    <q-dialog
+      v-model="showConfirmDialog"
+      persistent
+      @hide="resetDialog"
+    >
+      <q-card style="min-width: 400px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Confirm Status Change</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md">
+          <div class="text-body1 q-mb-md">
+            Are you sure you want to change the status of 
+            <strong>{{ selectedApplicant?.name || 'this applicant' }}</strong>
+            to <strong class="text-capitalize">{{ pendingStatus }}</strong>?
+          </div>
+
+          <q-checkbox
+            v-model="sendEmailNotification"
+            label="Send email notification to applicant"
+            color="primary"
+            class="q-mb-sm"
+          />
+
+          <div v-if="sendEmailNotification" class="text-caption text-grey-6">
+            An email notification will be sent to {{ selectedApplicant?.email || 'the applicant' }} 
+            informing them about the status change.
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn
+            flat
+            label="Cancel"
+            color="grey-7"
+            v-close-popup
+            @click="resetDialog"
+          />
+          <q-btn
+            label="Confirm"
+            color="primary"
+            @click="confirmStatusUpdate"
+            :loading="updatingStatus"
+            :disable="updatingStatus"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -594,8 +646,8 @@ const props = defineProps({
 const jobId = computed(() => props.jobDetails?.jobid)
 
 // UI State
-const sendEmails = ref(false)
-const viewMode = ref('cards')
+//const sendEmails = ref(false)
+//const viewMode = ref('cards')
 const searchQuery = ref('')
 const statusFilter = ref(null)
 const statusOptions = [
@@ -612,6 +664,11 @@ const activeTab = ref('overview')
 const selectedApplicant = ref(null)
 const updatingStatus = ref(false)
 const jobDetails = ref(props.jobDetails || {})
+
+// Confirmation Dialog State
+const showConfirmDialog = ref(false)
+const pendingStatus = ref('')
+const sendEmailNotification = ref(true) // Default to true (checked by default)
 
 // Local applicants state
 const applicants = ref([])
@@ -693,39 +750,67 @@ function formatDate(dateStr) {
   return d.toLocaleDateString()
 }
 
-// Status update// Status update
-async function updateStatus(status) {
-  if (!selectedApplicant.value || !selectedApplicant.value.uid || !selectedApplicant.value.jobid) {
+// Show status confirmation dialog
+function showStatusDialog(status) {
+  if (!selectedApplicant.value || !selectedApplicant.value.uid) {
     $q.notify({
       type: 'warning',
-      message: 'Cannot update status: Applicant UID or JobID not available',
+      message: 'Cannot update status: Applicant UID not available',
+    })
+    return
+  }
+
+  pendingStatus.value = status
+  sendEmailNotification.value = true // Reset to default (checked)
+  showConfirmDialog.value = true
+}
+
+// Reset dialog state
+function resetDialog() {
+  pendingStatus.value = ''
+  sendEmailNotification.value = true
+  showConfirmDialog.value = false
+}
+
+// Confirm status update
+async function confirmStatusUpdate() {
+  await updateStatus(pendingStatus.value, sendEmailNotification.value)
+  showConfirmDialog.value = false
+  resetDialog()
+}
+
+// Status update
+async function updateStatus(status, sendEmail = true) {
+  if (!selectedApplicant.value || !selectedApplicant.value.uid) {
+    $q.notify({
+      type: 'warning',
+      message: 'Cannot update status: Applicant UID not available',
     })
     return
   }
 
   updatingStatus.value = true
   try {
-    // Call the backend API with uid, jobid and status
+    // Call the backend API with uid, status, and email notification flag
     await appStore.updateStatus({
       uid: selectedApplicant.value.uid,
-      jobid: selectedApplicant.value.jobid, // ✅ Added
       status: status,
+      sendEmail: sendEmail
     })
 
     // Update local state
     selectedApplicant.value.status = status
 
     // Update in the applicants array
-    const index = applicants.value.findIndex(
-      (a) => a.uid === selectedApplicant.value.uid && a.jobid === selectedApplicant.value.jobid,
-    )
+    const index = applicants.value.findIndex((a) => a.uid === selectedApplicant.value.uid)
     if (index !== -1) {
       applicants.value[index].status = status
     }
-
+  
+    const emailMessage = sendEmail ? ' Email notification sent.' : ' No email notification sent.'
     $q.notify({
       type: 'positive',
-      message: `Status updated to ${status}. Email notification sent.`,
+      message: `Status updated to ${status}.${emailMessage}`,
     })
   } catch (err) {
     console.error('Status update error:', err)
@@ -1124,7 +1209,7 @@ onMounted(() => {
   border-radius: 8px;
   border: 1px solid #e5e7eb;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
-  overflow: hidden;
+  overflow:hidden;
 }
 .card-header {
   background: #f8f9fa;

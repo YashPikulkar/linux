@@ -6,8 +6,8 @@
         <q-card class="chart-card-enhanced">
           <q-card-section>
             <div class="chart-header">
-              <div class="text-h6">Job Skills Required</div>
-              <div class="text-caption text-grey-6">Skills demand in job postings (All Time)</div>
+              <div class="text-h6">Applied Job Skills Required</div>
+              <div class="text-caption text-grey-6">Skills demand in job applied (All Time)</div>
             </div>
             <div class="skills-chart-container">
               <!-- Chart is always rendered, but may be hidden during loading -->
@@ -18,7 +18,7 @@
               <!-- Loading overlay -->
               <div v-if="isLoadingJobSkills" class="loading-overlay">
                 <q-spinner-dots size="50px" color="primary" />
-                <div class="text-caption q-mt-sm">Loading job skills data...</div>
+                <div class="text-caption q-mt-sm">Loading required applied job skills data...</div>
               </div>
               <!-- No data message -->
               <div
@@ -29,7 +29,7 @@
                 class="no-data-message"
               >
                 <q-icon name="info" size="24px" color="grey-5" />
-                <div class="text-caption text-grey-6 q-mt-sm">No job skills data available</div>
+                <div class="text-caption text-grey-6 q-mt-sm">No job applied</div>
               </div>
             </div>
           </q-card-section>
@@ -80,7 +80,7 @@
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick ,watch} from 'vue'
 import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
 import Chart from 'chart.js/auto'
@@ -88,6 +88,7 @@ import Chart from 'chart.js/auto'
 // --- STORE + TOKEN --- //
 const userStore = useUserStore()
 const token = userStore.token || sessionStorage.getItem('token')
+const userId = userStore.user?.uid || userStore.uid || sessionStorage.getItem('uid')
 const $q = useQuasar()
 
 // --- CHART REFS --- //
@@ -246,12 +247,12 @@ const fetchJobSkillsData = async () => {
   isLoadingJobSkills.value = true
 
   try {
-    const response = await fetch('http://localhost:3000/skills/count-job-skills', {
-      headers: {
-        Authorization: `Bearer ${token}`,
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await fetch(`http://localhost:3000/skills/countUserAppliedJobsSkills/${userId}`, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      'Content-Type': 'application/json',
+    },
+  })
 
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`)
@@ -425,7 +426,20 @@ const refreshData = async () => {
     throw error
   }
 }
-
+watch(
+  skillsData,
+  async () => {
+    if (!isLoadingJobSkills.value ) {
+      console.log('Job skills data changed, recreating chart...')
+      await recreateJobSkillsChart()
+    }
+    else if(!isLoadingApplicantSkills.value ) {
+      console.log('Applicant skills data changed, recreating chart...')
+      await recreateApplicantSkillsChart()
+    }
+  },
+  { deep: true }
+)
 // --- LIFECYCLE --- //
 onMounted(async () => {
   console.log('RecruiterSkillStats mounted, initializing...')

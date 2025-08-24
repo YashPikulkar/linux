@@ -1,6 +1,6 @@
 <script setup>
 import { ref, defineProps, onMounted, computed } from 'vue'
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+const baseUrl = "http://localhost:3000" // Update this to your actual API base URL
 
 const props = defineProps({
   StepFourUpdate: {

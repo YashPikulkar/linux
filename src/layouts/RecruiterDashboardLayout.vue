@@ -46,9 +46,31 @@
         <q-space />
 
         <!-- 🔹 Logout on Right -->
-        <q-btn flat round dense icon="logout" color="primary" @click="handleLogout" />
+        <q-btn flat round dense icon="logout" color="primary" @click="confirmLogout" />
       </q-toolbar>
     </q-header>
+
+    <!-- Logout Confirmation Dialog -->
+    <q-dialog v-model="showLogoutDialog" persistent>
+      <q-card class="logout-card q-pa-lg">
+        <!-- Header -->
+        <q-card-section class="row items-center q-pb-md">
+          <q-icon name="logout" color="primary" size="48px" class="q-mr-md" />
+          <div class="text-h6 text-weight-medium">Confirm Logout</div>
+        </q-card-section>
+
+        <!-- Message -->
+        <q-card-section class="q-pt-none text-body1 text-grey-8">
+          Are you sure you want to log out of your account? Any unsaved changes will be lost.
+        </q-card-section>
+
+        <!-- Actions -->
+        <q-card-actions align="right" class="q-pt-md">
+          <q-btn flat label="Cancel" color="primary" @click="handleLogoutCancel" />
+          <q-btn unelevated label="Log out" color="primary" @click="handleLogoutConfirm" />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
 
     <!-- 🔹 Main Content -->
     <q-page-container>
@@ -76,16 +98,31 @@
 </template>
 
 <script setup>
+import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 import LeftCard from 'src/components/user/LeftCard.vue'
 import { useUserStore } from 'src/stores/user-store'
-import { useRouter } from 'vue-router'
 
 const userStore = useUserStore()
 const router = useRouter()
+const showLogoutDialog = ref(false)
 
-function handleLogout() {
-  userStore.setEverythingToNull
+function logOut() {
+  userStore.setEverythingToNull()
   router.push('/login')
+}
+
+const confirmLogout = () => {
+  showLogoutDialog.value = true
+}
+
+const handleLogoutConfirm = () => {
+  showLogoutDialog.value = false
+  logOut()
+}
+
+const handleLogoutCancel = () => {
+  showLogoutDialog.value = false
 }
 </script>
 
@@ -161,21 +198,53 @@ function handleLogout() {
   -ms-overflow-style: none;
 }
 
+.modern-right-card::-webkit-scrollbar {
+  display: none;
+}
+
 .modern-right-card:hover {
   box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12) !important;
   transform: translateY(-2px);
   border-color: rgba(0, 0, 0, 0.08) !important;
 }
 
+.logout-card {
+  width: 90%;
+  max-width: 500px;
+  border-radius: 12px;
+}
+
 @media (max-width: 599px) {
   .modern-right-card {
     height: 70vh;
+  }
+  
+  .logout-card {
+    width: 100%;
+    max-width: 95%;
+    border-radius: 8px;
+    padding: 16px !important;
+  }
+
+  .q-card-actions {
+    justify-content: center;
+    flex-direction: column;
+  }
+
+  .q-card-actions .q-btn {
+    width: 100%;
+    margin-top: 8px;
   }
 }
 
 @media (min-width: 600px) and (max-width: 1023px) {
   .modern-right-card {
     height: 75vh;
+  }
+  
+  .logout-card {
+    width: 95%;
+    max-width: 400px;
   }
 }
 

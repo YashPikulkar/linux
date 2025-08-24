@@ -72,12 +72,11 @@ const applicationStats = ref({
 
 // Fetch user application statistics
 const fetchApplicationStats = async () => {
-  isLoadingStats.value = true
   try {
-    console.log(
+    /*console.log(
       'Fetching application stats with token:',
       token ? `Token available: ${token}` : 'No token',
-    )
+    )*/
 
     const response = await fetch('http://localhost:3000/application/getUserStats', {
       method: 'GET',
@@ -86,18 +85,50 @@ const fetchApplicationStats = async () => {
         'Content-Type': 'application/json',
       },
     })
-
-    if (!response.ok) {
-      throw new Error(
-        `Failed to fetch application stats: ${response.status} ${response.statusText}`,
-      )
+  if (response.ok) {
+      const data = await response.json()
+      applicationStats.value  = data.stats || {}
+      console.log('Updated stats:', applicationStats.value)
+    } else {
+      console.error('Failed to fetch job stats:', response.status)
+      // Use fallback data
+      // Fallback/mock data
+    applicationStats.value = {
+      totalApplications: 25,
+      applicationsThisMonth: 8,
+      totalCompaniesApplied: 15,
+      offersReceived: 3,
+      totalApplicationsChange: 12,
+      applicationsThisMonthChange: 25,
+      totalCompaniesChange: 8,
+      offersReceivedChange: 50,
     }
+      $q.notify({
+        color: 'warning',
+        message: 'Using sample data - unable to fetch live statistics',
+        icon: 'warning',
+        position: 'top-right',
+        timeout: 4000,
+      })
+    }
+  } catch (error) {
+    console.error('Error fetching job stats:', error)
+    // Use fallback data
+    // Fallback/mock data
+    applicationStats.value = {
+      totalApplications: 25,
+      applicationsThisMonth: 8,
+      totalCompaniesApplied: 15,
+      offersReceived: 3,
+      totalApplicationsChange: 12,
+      applicationsThisMonthChange: 25,
+      totalCompaniesChange: 8,
+      offersReceivedChange: 50,
+    }
+  }
 
-    const data = await response.json()
-    console.log('Application stats API raw response:', data)
-
-    const stats = data.data || data
-
+   
+/*
     applicationStats.value = {
       totalApplications: stats.totalApplications || 0,
       applicationsThisMonth: stats.applicationsThisMonth || 0,
@@ -134,7 +165,7 @@ const fetchApplicationStats = async () => {
     })
   } finally {
     isLoadingStats.value = false
-  }
+  }*/
 }
 
 // Computed property for stats display
@@ -173,19 +204,20 @@ const statsDisplay = computed(() => {
 
 const refreshData = async () => {
   try {
-    $q.notify({
+    isLoadingStats.value = true
+/*$q.notify({
       color: 'info',
       message: 'Refreshing analytics data...',
       icon: 'refresh',
       position: 'top-right',
       timeout: 1000,
-    })
+    })*/
 
     await Promise.all([fetchApplicationStats()])
-
     console.log('All data refreshed successfully')
+    return Promise.resolve()
 
-    $q.notify({
+    /*$q.notify({
       color: 'positive',
       message: 'Analytics data refreshed successfully',
       icon: 'check_circle',
@@ -193,13 +225,13 @@ const refreshData = async () => {
       timeout: 2000,
     })
 
-    return Promise.resolve()
+    return Promise.resolve()*/
   } catch (error) {
     console.error('Error refreshing data:', error)
 
     $q.notify({
       color: 'negative',
-      message: 'Error refreshing analytics data',
+      message: 'Error refreshing stats data',
       icon: 'error',
       position: 'top-right',
       timeout: 3000,
@@ -207,35 +239,13 @@ const refreshData = async () => {
 
     throw error
   }
+  finally {
+    isLoadingStats.value = false
+  }
 }
 
 // Lifecycle hooks
 onMounted(async () => {
-  if (!token) {
-    $q.notify({
-      type: 'warning',
-      message: 'Please log in to view analytics',
-      position: 'top-right',
-      actions: [
-        {
-          label: 'Login',
-          color: 'white',
-          handler: () => {
-            console.log('Redirect to login')
-          },
-        },
-      ],
-    })
-    return
-  }
-
-  $q.notify({
-    color: 'info',
-    message: 'Loading analytics data...',
-    icon: 'hourglass_empty',
-    position: 'top-right',
-    timeout: 1000,
-  })
 
   await fetchApplicationStats()
 
@@ -249,7 +259,7 @@ onBeforeUnmount(() => {
 // Expose methods to parent
 defineExpose({
   refreshData,
-  fetchApplicationStats,
+  refreshStats:fetchApplicationStats,
 })
 </script>
 
