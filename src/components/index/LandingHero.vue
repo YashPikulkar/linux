@@ -46,6 +46,10 @@ export default {
 </script>
 
 <style scoped>
+.q-pa-xl.flex.flex-center.column {
+  background-color: #ffffff;
+}
+
 h1 {
   margin-top: 10px;
   font-size: 3.5rem;

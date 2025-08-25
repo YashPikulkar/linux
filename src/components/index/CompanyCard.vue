@@ -1,8 +1,10 @@
 <template>
   <div class="company-card">
-    <!-- Company Logo -->
+    <!-- Company Initials -->
     <div class="logo-container">
-      <img :src="company.logo" :alt="company.name" class="company-logo" @error="handleImageError" />
+      <div class="company-initials">
+        {{ getCompanyInitials(company.name) }}
+      </div>
     </div>
 
     <!-- Card Content -->
@@ -10,32 +12,19 @@
       <!-- Company Name -->
       <h3 class="company-name">{{ company.name }}</h3>
 
-      <!-- Rating & Reviews -->
-      <div class="rating-section">
-        <div class="rating-stars">
-          <svg class="star-icon" viewBox="0 0 20 20" fill="currentColor">
-            <path
-              d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"
-            />
-          </svg>
-          <span class="rating-value">{{ company.rating }}</span>
-        </div>
-        <span class="reviews-count">({{ formatReviews(company.reviews) }})</span>
-      </div>
-
-      <!-- Description -->
+      <!-- Company Description -->
       <p class="company-description">{{ company.description }}</p>
     </div>
 
     <!-- Action Button -->
     <div class="card-footer">
       <button
-        class="view-jobs-btn"
-        @click="handleViewJobs"
+        class="view-company-btn"
+        @click="handleViewCompany"
         @mouseenter="isHovering = true"
         @mouseleave="isHovering = false"
       >
-        <span>View Jobs</span>
+        <span>View Company</span>
         <svg
           class="arrow-icon"
           :class="{ 'arrow-animated': isHovering }"
@@ -55,6 +44,7 @@
 
 <script setup>
 import { ref } from 'vue'
+import { useRouter } from 'vue-router'
 
 const props = defineProps({
   company: {
@@ -63,31 +53,34 @@ const props = defineProps({
   },
 })
 
-const emit = defineEmits(['view-jobs'])
+const emit = defineEmits(['view-company'])
 
+const router = useRouter()
 const isHovering = ref(false)
 
-const handleImageError = (event) => {
-  // Fallback to a default logo or company initial
-  event.target.src = `data:image/svg+xml;base64,${btoa(`
-    <svg width="100" height="100" xmlns="http://www.w3.org/2000/svg">
-      <rect width="100" height="100" fill="#f3f4f6"/>
-      <text x="50" y="55" font-family="Arial, sans-serif" font-size="24" font-weight="bold" text-anchor="middle" fill="#374151">
-        ${props.company.name.charAt(0).toUpperCase()}
-      </text>
-    </svg>
-  `)}`
-}
+const getCompanyInitials = (companyName) => {
+  if (!companyName) return '?'
 
-const formatReviews = (reviews) => {
-  if (reviews >= 1000) {
-    return `${(reviews / 1000).toFixed(1)}k reviews`
+  const words = companyName.trim().split(' ')
+  if (words.length === 1) {
+    return words[0].substring(0, 2).toUpperCase()
   }
-  return `${reviews} reviews`
+
+  return words
+    .slice(0, 2)
+    .map((word) => word.charAt(0).toUpperCase())
+    .join('')
 }
 
-const handleViewJobs = () => {
-  emit('view-jobs', props.company)
+const handleViewCompany = () => {
+  // Navigate to company details page
+  router.push({
+    name: 'company-details',
+    params: { cid: props.company.cid },
+  })
+
+  // Also emit the event for parent component
+  emit('view-company', props.company)
 }
 </script>
 
@@ -122,18 +115,26 @@ const handleViewJobs = () => {
   height: 80px;
 }
 
-.company-logo {
+.company-initials {
   width: 64px;
   height: 64px;
-  object-fit: contain;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: #f3f4f6;
   border-radius: 0.5rem;
-  background: #f9fafb;
-  padding: 0.5rem;
-  transition: transform 0.3s ease;
+  font-size: 1.5rem;
+  font-weight: 700;
+  color: #374151;
+  transition: all 0.3s ease;
+  border: 2px solid transparent;
 }
 
-.company-card:hover .company-logo {
+.company-card:hover .company-initials {
   transform: scale(1.05);
+  background: #000000;
+  color: #ffffff;
+  border-color: #000000;
 }
 
 .card-content {
@@ -149,46 +150,42 @@ const handleViewJobs = () => {
   line-height: 1.3;
 }
 
-.rating-section {
+.company-description {
+  color: #4b5563;
+  font-size: 0.875rem;
+  line-height: 1.5;
+  margin: 0 0 1rem 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.company-cid {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 0.5rem;
   margin-bottom: 1rem;
+  padding: 0.5rem;
+  background: #f9fafb;
+  border-radius: 0.375rem;
+  border: 1px solid #e5e7eb;
 }
 
-.rating-stars {
-  display: flex;
-  align-items: center;
-  gap: 0.25rem;
+.cid-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: #6b7280;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
 }
 
-.star-icon {
-  width: 16px;
-  height: 16px;
-  color: #000000;
-}
-
-.rating-value {
+.cid-value {
+  font-size: 0.875rem;
   font-weight: 600;
   color: #111827;
-  font-size: 0.9rem;
-}
-
-.reviews-count {
-  color: #6b7280;
-  font-size: 0.875rem;
-}
-
-.company-description {
-  color: #4b5563;
-  font-size: 0.875rem;
-  line-height: 1.5;
-  margin: 0;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  overflow: hidden;
+  font-family: 'Courier New', monospace;
 }
 
 .card-footer {
@@ -197,7 +194,7 @@ const handleViewJobs = () => {
   border-top: 1px solid #f3f4f6;
 }
 
-.view-jobs-btn {
+.view-company-btn {
   width: 100%;
   background: #000000;
   color: #ffffff;
@@ -214,7 +211,7 @@ const handleViewJobs = () => {
   gap: 0.5rem;
 }
 
-.view-jobs-btn:hover {
+.view-company-btn:hover {
   background: #ffffff;
   color: #000000;
   transform: translateY(-1px);
@@ -246,9 +243,13 @@ const handleViewJobs = () => {
     font-size: 0.8rem;
   }
 
-  .view-jobs-btn {
+  .view-company-btn {
     padding: 0.625rem 0.875rem;
     font-size: 0.8rem;
+  }
+
+  .company-initials {
+    font-size: 1.25rem;
   }
 }
 
@@ -263,9 +264,10 @@ const handleViewJobs = () => {
     margin-bottom: 0.75rem;
   }
 
-  .company-logo {
+  .company-initials {
     width: 48px;
     height: 48px;
+    font-size: 1rem;
   }
 
   .company-name {
@@ -273,7 +275,7 @@ const handleViewJobs = () => {
     margin-bottom: 0.5rem;
   }
 
-  .rating-section {
+  .company-cid {
     margin-bottom: 0.75rem;
   }
 
@@ -284,7 +286,7 @@ const handleViewJobs = () => {
 }
 
 /* Focus states for accessibility */
-.view-jobs-btn:focus {
+.view-company-btn:focus {
   outline: 2px solid #000000;
   outline-offset: 2px;
 }

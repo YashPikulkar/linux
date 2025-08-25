@@ -59,28 +59,69 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import gsap from 'gsap'
 import CompanyCard from './CompanyCard.vue'
-import { useStore } from 'src/stores/company-store'
 
 const carousel = ref(null)
 const track = ref(null)
 const isPaused = ref(false)
 const currentSpeed = ref(0.7)
 
-const store = useStore()
-
 let animation = null
 let isHovering = false
 
 const emit = defineEmits(['company-selected'])
 
-// Create enough repeated companies for smooth infinite scroll
+// ✅ Hardcoded companies
+const companies = [
+  {
+    cid: 8,
+    name: 'Cosmic Byte',
+    description:
+      'Leading gaming and tech accessories brand delivering high-quality products for gamers and tech enthusiasts worldwide.',
+  },
+  {
+    cid: 9,
+    name: 'TechNova Solutions',
+    description:
+      'Comprehensive IT solutions provider specializing in digital transformation and enterprise software development.',
+  },
+  {
+    cid: 10,
+    name: 'MediCure Health',
+    description:
+      'Healthcare technology company revolutionizing patient care through innovative medical solutions and digital health platforms.',
+  },
+  {
+    cid: 11,
+    name: 'FinEdge Capital',
+    description:
+      'Financial services and investment firm providing strategic capital solutions for growing businesses and startups.',
+  },
+  {
+    cid: 12,
+    name: 'GreenLeaf Organics',
+    description:
+      'Sustainable agriculture company producing organic food products while promoting environmental conservation and healthy living.',
+  },
+  {
+    cid: 13,
+    name: 'Skyline Robotics',
+    description:
+      'Advanced robotics and automation solutions provider transforming industries through intelligent robotic systems and AI.',
+  },
+  {
+    cid: 14,
+    name: 'InfoTech Private Limited',
+    description:
+      'Full-service IT consulting firm offering custom software development, cloud solutions, and digital infrastructure services.',
+  },
+]
+
+// ✅ Use them for infinite loop effect
 const repeatedCompanies = computed(() => {
-  const companies = store.companies || []
   if (companies.length === 0) return []
 
   const repeatCount = Math.max(12, Math.ceil(24 / companies.length))
@@ -144,7 +185,6 @@ const handleViewJobs = (company) => {
 }
 
 onMounted(() => {
-  // Wait for next tick to ensure DOM is ready
   requestAnimationFrame(() => {
     createAnimation()
   })
