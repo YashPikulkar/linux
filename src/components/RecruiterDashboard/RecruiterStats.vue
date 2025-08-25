@@ -1,106 +1,69 @@
-<!-- AnalyticsRecords.vue -->
 <template>
-  <!-- Job Posting Analytics Header -->
-  <div class="analytics-header q-pa-lg">
-    <div class="row justify-between items-center q-pa-md">
-      <div>
-        <h4 class="text-h5 q-ma-none text-weight-bold">Job Posting Analytics</h4>
-        <p class="text-subtitle2 text-grey-7 q-mt-sm">
-          Track and monitor your job posting performance
-        </p>
-      </div>
-      <q-select
-        v-model="jobAnalyticsFilter"
-        :options="jobFilterOptions"
-        label="Filter by"
-        dense
-        outlined
-        class="filter-select"
-        emit-value
-        map-options
-      />
-    </div>
-  </div>
-
-  <!-- Job Posting Stats Cards - All in one row -->
-  <div class="stats-section q-px-lg">
-    <!-- Optional refresh button -->
-    <div class="row justify-end q-mb-md">
-      <q-btn
-        flat
-        round
-        icon="refresh"
-        @click="refreshStats"
-        :loading="isLoadingStats"
-        color="primary"
-        size="sm"
-      >
-        <q-tooltip>Refresh Stats</q-tooltip>
-      </q-btn>
-    </div>
-
-    <div class="row q-gutter-md">
-      <div class="col" v-for="(stat, index) in jobAnalyticsStats" :key="index">
-        <q-card class="stat-card-enhanced">
-          <q-card-section class="text-center">
-            <div class="stat-icon-wrapper q-mb-sm">
-              <q-icon :name="stat.icon" size="32px" :color="stat.color" />
-              <!-- Optional: Add a small globe icon for global stats -->
-              <q-icon
-                v-if="stat.isGlobal"
-                name="public"
-                size="12px"
-                color="grey-5"
-                class="absolute-top-right q-ma-xs"
-              >
-                <q-tooltip>Platform-wide metric</q-tooltip>
-              </q-icon>
-            </div>
-
-            <!-- Loading skeleton or actual value -->
-            <div v-if="isLoadingStats" class="text-h3 stat-value-enhanced">
-              <q-skeleton type="text" width="60px" height="40px" />
-            </div>
-            <div v-else class="text-h3 stat-value-enhanced" :class="`text-${stat.color}`">
-              {{ stat.value }}
-            </div>
-
-            <div class="text-body2 stat-label-enhanced">{{ stat.label }}</div>
-
-            <!-- Enhanced change display -->
-            <div
-              class="text-caption text-grey-6 q-mt-xs"
-              v-if="stat.change !== undefined && !isLoadingStats"
-            >
-              <template v-if="stat.isGlobal">
-                <!-- For global stats, show platform growth -->
-                <q-icon name="trending_up" color="positive" size="16px" />
-                {{ Math.abs(stat.change) }}% platform growth
-              </template>
-              <template v-else>
-                <!-- For personal stats, show month-over-month change -->
+  <div class="analytics-records-container">
+    <!-- Stats Cards Section -->
+    <div class="stats-section q-pa-lg">
+      <div class="row q-gutter-md">
+        <div class="col" v-for="(stat, index) in jobAnalyticsStats" :key="index">
+          <q-card class="stat-card-enhanced">
+            <q-card-section class="text-center">
+              <div class="stat-icon-wrapper q-mb-sm">
+                <q-icon :name="stat.icon" size="32px" :color="stat.color" />
+                <!-- Optional: Add a small globe icon for global stats -->
                 <q-icon
-                  :name="
-                    stat.change > 0
-                      ? 'trending_up'
-                      : stat.change < 0
-                        ? 'trending_down'
-                        : 'trending_flat'
-                  "
-                  :color="stat.change > 0 ? 'positive' : stat.change < 0 ? 'negative' : 'grey'"
-                  size="16px"
-                />
-                <span v-if="stat.change !== 0">{{ Math.abs(stat.change) }}% from last month</span>
-                <span v-else>No change from last month</span>
-              </template>
-            </div>
-          </q-card-section>
-        </q-card>
+                  v-if="stat.isGlobal"
+                  name="public"
+                  size="12px"
+                  color="grey-5"
+                  class="absolute-top-right q-ma-xs"
+                >
+                  <q-tooltip>Platform-wide metric</q-tooltip>
+                </q-icon>
+              </div>
+
+              <!-- Loading skeleton or actual value -->
+              <div v-if="isLoadingStats" class="text-h3 stat-value-enhanced">
+                <q-skeleton type="text" width="60px" height="40px" />
+              </div>
+              <div v-else class="text-h3 stat-value-enhanced" :class="`text-${stat.color}`">
+                {{ stat.value }}
+              </div>
+
+              <div class="text-body2 stat-label-enhanced">{{ stat.label }}</div>
+
+              <!-- Enhanced change display -->
+              <div
+                class="text-caption text-grey-6 q-mt-xs"
+                v-if="stat.change !== undefined && !isLoadingStats"
+              >
+                <template v-if="stat.isGlobal">
+                  <!-- For global stats, show platform growth -->
+                  <q-icon name="trending_up" color="positive" size="16px" />
+                  {{ Math.abs(stat.change) }}% platform growth
+                </template>
+                <template v-else>
+                  <!-- For personal stats, show month-over-month change -->
+                  <q-icon
+                    :name="
+                      stat.change > 0
+                        ? 'trending_up'
+                        : stat.change < 0
+                          ? 'trending_down'
+                          : 'trending_flat'
+                    "
+                    :color="stat.change > 0 ? 'positive' : stat.change < 0 ? 'negative' : 'grey'"
+                    size="16px"
+                  />
+                  <span v-if="stat.change !== 0">{{ Math.abs(stat.change) }}% from last month</span>
+                  <span v-else>No change from last month</span>
+                </template>
+              </div>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Analytics Charts and Table Layout -->
+    <!-- Analytics Charts and Table Layout -->
   <div class="content-section q-pa-lg">
     <div class="row q-col-gutter-lg">
       <!-- Application Status Pie Chart - Reduced Size -->
@@ -112,9 +75,30 @@
               <div class="text-caption text-grey-6">Current applications breakdown</div>
             </div>
             <div class="pie-chart-container">
-              <canvas ref="pieChartCanvas"></canvas>
-              <!-- Legend -->
-              <div class="pie-legend q-mt-md">
+              <div class="pie-chart-wrapper">
+                <!-- Chart is always rendered, but may be hidden during loading -->
+                <canvas 
+                  ref="pieChartCanvas" 
+                  :style="{ visibility: isLoadingPieChart ? 'hidden' : 'visible' }"
+                ></canvas>
+                <!-- Loading overlay -->
+                <div v-if="isLoadingPieChart" class="loading-overlay">
+                  <q-spinner-dots size="50px" color="primary" />
+                  <div class="text-caption q-mt-sm">Loading application status...</div>
+                </div>
+                <!-- Total count in center of pie chart -->
+                <div 
+                  v-if="!isLoadingPieChart && totalApplications > 0" 
+                  class="pie-center-text"
+                >
+            
+                </div>
+              </div>
+              <!-- Custom Legend -->
+              <div 
+                class="pie-legend q-mt-md" 
+                
+              >
                 <div v-for="(label, index) in pieChartData.labels" :key="label" class="legend-item">
                   <div
                     class="legend-color"
@@ -123,116 +107,126 @@
                   <span class="legend-text">{{ label }}: {{ pieChartData.counts[index] }}</span>
                 </div>
               </div>
+              <!-- No data message -->
+              <div 
+                v-if="!isLoadingPieChart && totalApplications === 0" 
+                class="no-data-message"
+              >
+                <q-icon name="info" size="24px" color="grey-5" />
+                <div class="text-caption text-grey-6 q-mt-sm">No application data available</div>
+              </div>
             </div>
           </q-card-section>
         </q-card>
       </div>
 
-      <!-- Top Performing Job Posts - Takes More Space -->
-      <div class="col-12 col-md-8">
-        <q-card class="table-card-enhanced">
-          <q-card-section>
-            <div class="table-header q-mb-md">
-              <div class="row justify-between items-center">
-                <div>
-                  <div class="text-h6">Top Performing Job Posts</div>
-                  <div class="text-caption text-grey-6">
-                    Live job market data with highest engagement
+        <!-- Top Performing Job Posts - Takes More Space -->
+        <div class="col-12 col-md-8">
+          <q-card class="table-card-enhanced">
+            <q-card-section>
+              <div class="table-header q-mb-md">
+                <div class="row justify-between items-center">
+                  <div>
+                    <div class="text-h6">Top Performing Job Posts</div>
+                    <div class="text-caption text-grey-6">
+                      Live job market data with highest engagement
+                    </div>
                   </div>
+                  <q-btn
+                    flat
+                    round
+                    icon="refresh"
+                    @click="refreshJobData"
+                    :loading="isLoadingJobs"
+                    color="primary"
+                    size="sm"
+                  >
+                    <q-tooltip>Refresh Job Data</q-tooltip>
+                  </q-btn>
                 </div>
-                <q-btn
-                  flat
-                  round
-                  icon="refresh"
-                  @click="refreshJobData"
-                  :loading="isLoadingJobs"
-                  color="primary"
-                  size="sm"
-                >
-                  <q-tooltip>Refresh Job Data</q-tooltip>
-                </q-btn>
               </div>
-            </div>
 
-            <q-table
-              flat
-              bordered
-              :rows="filteredJobs"
-              :columns="jobPostColumns"
-              row-key="title"
-              class="enhanced-table"
-              :grid="$q.screen.xs"
-              :rows-per-page-options="[5, 10, 15]"
-              :pagination="{ rowsPerPage: 5 }"
-            >
-              <!-- Status Badge Template -->
-              <template v-slot:body-cell-status="props">
-                <q-td :props="props">
-                  <q-badge
-                    :color="getStatusColor(props.value)"
-                    :label="props.value"
-                    class="status-badge"
-                  />
-                </q-td>
-              </template>
-
-              <!-- Rate with Progress Bar -->
-              <template v-slot:body-cell-rate="props">
-                <q-td :props="props">
-                  <div class="rate-cell">
-                    <span class="rate-text">{{ props.value }}%</span>
-                    <q-linear-progress
-                      :value="props.value / 100"
-                      size="4px"
-                      :color="getRateColor(props.value)"
-                      class="rate-progress q-mt-xs"
+              <q-table
+                flat
+                bordered
+                :rows="topJobPosts"
+                :columns="jobPostColumns"
+                row-key="title"
+                class="enhanced-table"
+                :grid="$q.screen.xs"
+                :rows-per-page-options="[5, 10, 15]"
+                :pagination="{ rowsPerPage: 5 }"
+                :loading="isLoadingJobs"
+              >
+                <!-- Status Badge Template -->
+                <template v-slot:body-cell-status="props">
+                  <q-td :props="props">
+                    <q-badge
+                      :color="getStatusColor(props.value)"
+                      :label="props.value"
+                      class="status-badge"
                     />
-                  </div>
-                </q-td>
-              </template>
+                  </q-td>
+                </template>
 
-              <!-- Company Column -->
-              <template v-slot:body-cell-company="props">
-                <q-td :props="props">
-                  <div class="company-cell">
-                    <q-avatar size="24px" color="primary" text-color="white" class="q-mr-sm">
-                      {{ props.value.charAt(0) }}
-                    </q-avatar>
-                    <span>{{ props.value }}</span>
-                  </div>
-                </q-td>
-              </template>
+                <!-- Rate with Progress Bar -->
+                <template v-slot:body-cell-rate="props">
+                  <q-td :props="props">
+                    <div class="rate-cell">
+                      <span class="rate-text">{{ props.value }}%</span>
+                      <q-linear-progress
+                        :value="props.value / 100"
+                        size="4px"
+                        :color="getRateColor(props.value)"
+                        class="rate-progress q-mt-xs"
+                      />
+                    </div>
+                  </q-td>
+                </template>
 
-              <!-- Mobile Grid Template -->
-              <template v-slot:item="props" v-if="$q.screen.xs">
-                <div class="col-12">
-                  <q-card class="mobile-job-card q-ma-sm">
-                    <q-card-section>
-                      <div class="text-weight-bold text-primary">{{ props.row.title }}</div>
-                      <div class="text-caption text-grey-7 q-mb-sm">{{ props.row.company }}</div>
-                      <div class="row justify-between q-mt-sm">
-                        <div class="col">
-                          <div class="text-caption text-grey-7">Applicants</div>
-                          <div class="text-h6">{{ props.row.applicants }}</div>
+                <!-- Company Column -->
+                <template v-slot:body-cell-company="props">
+                  <q-td :props="props">
+                    <div class="company-cell">
+                      <q-avatar size="24px" color="primary" text-color="white" class="q-mr-sm">
+                        {{ props.value.charAt(0) }}
+                      </q-avatar>
+                      <span>{{ props.value }}</span>
+                    </div>
+                  </q-td>
+                </template>
+
+                <!-- Mobile Grid Template -->
+                <template v-slot:item="props" v-if="$q.screen.xs">
+                  <div class="col-12">
+                    <q-card class="mobile-job-card q-ma-sm">
+                      <q-card-section>
+                        <div class="text-weight-bold text-primary">{{ props.row.title }}</div>
+                        <div class="text-caption text-grey-7 q-mb-sm">{{ props.row.company }}</div>
+                        <div class="row justify-between q-mt-sm">
+                          <div class="col">
+                            <div class="text-caption text-grey-7">Applicants</div>
+                            <div class="text-h6">{{ props.row.applicants }}</div>
+                          </div>
+                          <div class="col">
+                            <div class="text-caption text-grey-7">Success Rate</div>
+                            <div class="text-h6">{{ props.row.rate }}%</div>
+                          </div>
+                          <div class="col">
+                            <q-badge
+                              :color="getStatusColor(props.row.status)"
+                              :label="props.row.status"
+                            />
+                          </div>
                         </div>
-                        <div class="col">
-                          <div class="text-caption text-grey-7">Success Rate</div>
-                          <div class="text-h6">{{ props.row.rate }}%</div>
-                        </div>
-                        <div class="col">
-                          <q-badge
-                            :color="getStatusColor(props.row.status)"
-                            :label="props.row.status"
-                          />
-                        </div>
-                      </div>
-                    </q-card-section>
-                  </q-card>
-                </div>
-              </template>
-            </q-table>
-          </q-card-section>
-        </q-card>
+                      </q-card-section>
+                    </q-card>
+                  </div>
+                </template>
+              </q-table>
+            </q-card-section>
+          </q-card>
+        </div>
       </div>
     </div>
   </div>
@@ -253,18 +247,16 @@ const pieChartCanvas = ref(null)
 // Chart instances
 let pieChartInstance = null
 
-const jobAnalyticsFilter = ref('all')
-
-const jobFilterOptions = [
-  { label: 'All Jobs', value: 'all' },
-  { label: 'Open Only', value: 'open' },
-  { label: 'Closed Only', value: 'closed' },
-  { label: 'Active (Open + Interviewing)', value: 'active' },
-]
+// Import Chart.js library
+import Chart from 'chart.js/auto'
 
 // Job posts with API integration
 const topJobPosts = ref([])
 const isLoadingJobs = ref(false)
+
+// Loading states - separate for different sections
+const isLoadingStats = ref(false)
+const isLoadingPieChart = ref(false)
 
 // Table columns
 const jobPostColumns = [
@@ -371,6 +363,8 @@ const generateFallbackData = () => {
     'DevOps Specialist',
     'UX Designer',
     'Product Manager',
+    'Full Stack Developer',
+    'Mobile Developer',
   ]
 
   return fallbackJobs.map((title, index) => ({
@@ -383,10 +377,6 @@ const generateFallbackData = () => {
       .toISOString()
       .split('T')[0],
   }))
-}
-
-const refreshJobData = () => {
-  fetchMockJobData()
 }
 
 const getStatusColor = (status) => {
@@ -405,6 +395,7 @@ const getRateColor = (rate) => {
   return 'negative'
 }
 
+// Pie chart data
 const piestats = ref({
   pending: 0,
   accepted: 0,
@@ -413,7 +404,8 @@ const piestats = ref({
 
 // Fetch pie chart data
 const fetchPie = async () => {
-  isLoadingStats.value = true
+  console.log('Fetching pie chart data...')
+  
   try {
     const response = await fetch('http://localhost:3000/jobs/PieChart', {
       method: 'GET',
@@ -426,29 +418,36 @@ const fetchPie = async () => {
     if (response.ok) {
       const data = await response.json()
       piestats.value = {
-        pending: data.pending,
-        accepted: data.accepted,
-        rejected: data.rejected,
+        pending: data.pending || 0,
+        accepted: data.accepted || 0,
+        rejected: data.rejected || 0,
       }
       console.log('Updated pie stats:', piestats.value)
-
-      await nextTick()
-      createPieChart()
     } else {
       console.error('Failed to fetch pie chart data:', response.status)
+      // Use fallback data
+      piestats.value = {
+        pending: 5,
+        accepted: 8,
+        rejected: 3,
+      }
     }
   } catch (error) {
     console.error('Error fetching pie chart data:', error)
-  } finally {
-    isLoadingStats.value = false
+    // Use fallback data
+    piestats.value = {
+      pending: 5,
+      accepted: 8,
+      rejected: 3,
+    }
   }
 }
 
 // Computed properties
 const pieChartData = computed(() => {
-  const pending = piestats.value.pending
-  const accepted = piestats.value.accepted
-  const rejected = piestats.value.rejected
+  const pending = piestats.value.pending || 0
+  const accepted = piestats.value.accepted || 0
+  const rejected = piestats.value.rejected || 0
 
   return {
     labels: ['Pending', 'Accepted', 'Rejected'],
@@ -457,19 +456,8 @@ const pieChartData = computed(() => {
   }
 })
 
-const filteredJobs = computed(() => {
-  let jobs = [...topJobPosts.value]
-
-  switch (jobAnalyticsFilter.value) {
-    case 'open':
-      return jobs.filter((job) => job.status === 'Open')
-    case 'closed':
-      return jobs.filter((job) => job.status === 'Closed')
-    case 'active':
-      return jobs.filter((job) => ['Open', 'Interviewing'].includes(job.status))
-    default:
-      return jobs
-  }
+const totalApplications = computed(() => {
+  return pieChartData.value.counts.reduce((a, b) => a + b, 0)
 })
 
 // API Stats
@@ -484,10 +472,9 @@ const apiStats = ref({
   active_jobs_change: 0,
 })
 
-const isLoadingStats = ref(false)
-
 const fetchJobStats = async () => {
-  isLoadingStats.value = true
+  console.log('Fetching job stats...')
+  
   try {
     const response = await fetch('http://localhost:3000/jobs/getTotalJobsByRecruiter', {
       method: 'GET',
@@ -499,15 +486,43 @@ const fetchJobStats = async () => {
 
     if (response.ok) {
       const data = await response.json()
-      apiStats.value = data.stats
-      console.log('Updated stats:', data.stats)
+      apiStats.value = data.stats || {}
+      console.log('Updated stats:', apiStats.value)
     } else {
       console.error('Failed to fetch job stats:', response.status)
+      // Use fallback data
+      apiStats.value = {
+        total_jobs: 15,
+        jobs_this_month: 5,
+        total_recruiters: 42,
+        active_jobs: 8,
+        jobs_change: 12,
+        jobs_this_month_change: 20,
+        platform_growth: 15,
+        active_jobs_change: 8,
+      }
+       $q.notify({
+        color: 'warning',
+        message: 'Using sample data - unable to fetch live statistics',
+        icon: 'warning',
+        position: 'top-right',
+        timeout: 4000,
+      })
     }
   } catch (error) {
     console.error('Error fetching job stats:', error)
-  } finally {
-    isLoadingStats.value = false
+    // Use fallback data
+    apiStats.value = {
+      total_jobs: 15,
+      jobs_this_month: 5,
+      total_recruiters: 42,
+      active_jobs: 8,
+      jobs_change: 12,
+      jobs_this_month_change: 20,
+      platform_growth: 15,
+      active_jobs_change: 8,
+    }
+    
   }
 }
 
@@ -545,165 +560,282 @@ const jobAnalyticsStats = computed(() => {
   ]
 })
 
-const refreshStats = () => {
-  fetchJobStats()
-  fetchPie()
+// Individual refresh functions
+const refreshJobData = async () => {
+  try {
+    await fetchMockJobData()
+    $q.notify({
+      color: 'positive',
+      message: 'Job data refreshed successfully',
+      icon: 'check_circle',
+      position: 'top-right',
+      timeout: 2000
+    })
+  } catch (error) {
+    console.error('Error refreshing job data:', error)
+    $q.notify({
+      color: 'negative',
+      message: 'Error refreshing job data',
+      icon: 'error',
+      position: 'top-right',
+      timeout: 3000
+    })
+  }
 }
 
-// Enhanced pie chart with better styling
+// Set chart size
+function setChartSize() {
+  if (pieChartCanvas.value) {
+    pieChartCanvas.value.width = 220
+    pieChartCanvas.value.height = 220
+    pieChartCanvas.value.style.width = '220px'
+    pieChartCanvas.value.style.height = '220px'
+  }
+}
+
+// Chart destruction helper
+function destroyChart(instance) {
+  if (instance && typeof instance.destroy === 'function') {
+    try {
+      instance.destroy()
+    } catch (error) {
+      console.warn('Error destroying chart:', error)
+    }
+  }
+  return null
+}
+
+// Improved Chart.js Pie Chart creation function
 function createPieChart() {
-  if (!pieChartCanvas.value) return
-
-  const canvas = pieChartCanvas.value
-  const ctx = canvas.getContext('2d')
   const data = pieChartData.value
+  const total = totalApplications.value
 
-  // Set canvas size - smaller for better layout
-  canvas.width = 220
-  canvas.height = 220
+  console.log('Creating pie chart with data:', data, 'Total:', total)
 
-  ctx.clearRect(0, 0, canvas.width, canvas.height)
+  // Handle null/empty data or total = 0
+  if (!pieChartCanvas.value || !data || !data.labels || data.labels.length === 0 || total === 0) {
+    return new Chart(pieChartCanvas.value, {
+      type: 'doughnut',
+      data: {
+        labels: ['No Data'],
+        datasets: [{
+          data: [1],
+          backgroundColor: ['#f0f0f0'],
+          borderWidth: 0,
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { display: false },
+          tooltip: { enabled: false },
+        },
+        cutout: '40%',
+        animation: {
+          animateRotate: true,
+          animateScale: true,
+          duration: 600
+        }
+      }
+    })
+  }
 
-  const centerX = canvas.width / 2
-  const centerY = canvas.height / 2
-  const radius = Math.min(centerX, centerY) - 30
+  // Normal chart
+  return new Chart(pieChartCanvas.value, {
+    type: 'doughnut',
+    data: {
+      labels: data.labels,
+      datasets: [
+        {
+          data: data.counts,
+          backgroundColor: data.colors,
+          borderColor: '#ffffff',
+          borderWidth: 2,
+          hoverBackgroundColor: data.colors,
+          hoverBorderWidth: 3,
+          hoverOffset: 5,
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: { display: false },
+        tooltip: {
+          enabled: true,
+          backgroundColor: 'rgba(0, 0, 0, 0.9)',
+          titleColor: '#ffffff',
+          bodyColor: '#ffffff',
+          borderColor: '#ffffff',
+          borderWidth: 1,
+          cornerRadius: 6,
+          displayColors: true,
+          callbacks: {
+            title: (context) => context[0].label,
+            label: (context) => {
+              const value = context.raw
+              const percentage = Math.round((value / total) * 100)
+              return `${value} applications (${percentage}%)`
+            },
+          },
+        },
+      },
+      hover: {
+        animationDuration: 300,
+      },
+      animation: {
+        animateScale: true,
+        animateRotate: true,
+        duration: 600,
+      },
+      cutout: '40%',
+    },
+  })
+}
 
-  const total = data.counts.reduce((sum, count) => sum + count, 0)
 
-  if (total === 0) {
-    // Draw empty state
-    ctx.fillStyle = '#f0f0f0'
-    ctx.beginPath()
-    ctx.arc(centerX, centerY, radius, 0, 2 * Math.PI)
-    ctx.fill()
+// Safely destroy and recreate pie chart
+const recreatePieChart = async () => {
+  console.log('Recreating pie chart...')
+  
+  // Safely destroy previous instance
+  pieChartInstance = destroyChart(pieChartInstance)
 
-    ctx.fillStyle = '#666'
-    ctx.font = '14px Arial'
-    ctx.textAlign = 'center'
-    ctx.fillText('No Data', centerX, centerY)
+  // Wait for DOM updates
+  await nextTick()
+  
+  // Ensure canvas is ready
+  if (!pieChartCanvas.value) {
+    console.warn('Pie chart canvas not available')
     return
   }
 
-  let currentAngle = -Math.PI / 2
+  // Set chart size
+  setChartSize()
 
-  // Draw pie slices with shadow effect
-  data.counts.forEach((count, index) => {
-    if (count > 0) {
-      const sliceAngle = (count / total) * 2 * Math.PI
-
-      // Shadow
-      ctx.shadowColor = 'rgba(0,0,0,0.2)'
-      ctx.shadowBlur = 8
-      ctx.shadowOffsetX = 2
-      ctx.shadowOffsetY = 2
-
-      // Draw slice
-      ctx.beginPath()
-      ctx.moveTo(centerX, centerY)
-      ctx.arc(centerX, centerY, radius, currentAngle, currentAngle + sliceAngle)
-      ctx.closePath()
-      ctx.fillStyle = data.colors[index]
-      ctx.fill()
-
-      // Reset shadow
-      ctx.shadowColor = 'transparent'
-      ctx.shadowBlur = 0
-      ctx.shadowOffsetX = 0
-      ctx.shadowOffsetY = 0
-
-      // White border
-      ctx.strokeStyle = '#ffffff'
-      ctx.lineWidth = 2
-      ctx.stroke()
-
-      currentAngle += sliceAngle
-    }
-  })
-
-  // Draw center circle for donut effect
-  ctx.beginPath()
-  ctx.arc(centerX, centerY, radius * 0.4, 0, 2 * Math.PI)
-  ctx.fillStyle = '#ffffff'
-  ctx.fill()
-  ctx.strokeStyle = '#e0e0e0'
-  ctx.lineWidth = 2
-  ctx.stroke()
-
-  // Center text
-  ctx.fillStyle = '#333'
-  ctx.font = 'bold 16px Arial'
-  ctx.textAlign = 'center'
-  ctx.fillText(total.toString(), centerX, centerY - 5)
-  ctx.font = '12px Arial'
-  ctx.fillText('Total', centerX, centerY + 12)
-}
-
-// Initialize charts
-const initializeCharts = async () => {
-  await nextTick()
+  // Small delay to ensure canvas is fully ready
   setTimeout(() => {
-    createPieChart()
-  }, 100)
+    try {
+      pieChartInstance = createPieChart()
+      console.log('Pie chart recreated successfully')
+    } catch (error) {
+      console.error('Error creating pie chart:', error)
+    }
+  }, 150)
 }
 
-pieChartInstance
+// Fetch pie data and recreate chart
+const fetchAndRecreatePieChart = async () => {
+  isLoadingPieChart.value = true
+  try {
+    await fetchPie()
+    await recreatePieChart()
+  } catch (error) {
+    console.error('Error in fetchAndRecreatePieChart:', error)
+  } finally {
+    isLoadingPieChart.value = false
+  }
+}
 
-// Watchers
+// Main refresh function exposed to parent component
+const refreshData = async () => {
+  console.log('AnalyticsRecords: Starting data refresh...')
+  
+  try {
+    // Set loading states
+    isLoadingStats.value = true
+    
+    // Run all refresh functions in parallel
+    await Promise.all([
+      fetchJobStats(),
+      fetchAndRecreatePieChart(),
+      fetchMockJobData()
+    ])
+    
+    console.log('AnalyticsRecords: All data refreshed successfully')
+    return Promise.resolve()
+  } catch (error) {
+    console.error('AnalyticsRecords: Error refreshing data:', error)
+    $q.notify({
+      color: 'negative', 
+      message: 'Error refreshing stats data', 
+      icon: 'error',
+      position: 'top-right',
+      timeout: 3000
+    })
+    throw error
+  } finally {
+    isLoadingStats.value = false
+  }
+}
+
+// Expose refresh method to parent component
+defineExpose({
+  refreshData,
+  // Also expose individual refresh functions for granular control
+  refreshStats: fetchJobStats,
+  refreshPieChart: fetchAndRecreatePieChart,
+  refreshJobData: refreshJobData
+})
+
+// Initialize charts function
+const initializeCharts = async () => {
+  console.log('Initializing pie chart...')
+  await nextTick()
+  
+  // Initial pie chart creation
+  await fetchAndRecreatePieChart()
+}
+
+// Watchers - recreate chart when data changes
 watch(
   pieChartData,
-  () => {
-    createPieChart()
+  async () => {
+    if (!isLoadingPieChart.value) {
+      console.log('Pie chart data changed, recreating chart...')
+      await recreatePieChart()
+    }
   },
-  { deep: true },
+  { deep: true }
 )
 
 // Lifecycle hooks
-onMounted(() => {
-  fetchJobStats()
-  fetchPie()
-  fetchMockJobData()
-  initializeCharts()
+onMounted(async () => {
+  console.log('AnalyticsRecords mounted, initializing...')
+await initializeCharts()
+    console.log('Analytics component initialized successfully')
 
-  // Auto-refresh job data every 60 seconds
-  setInterval(() => {
-    if (!isLoadingJobs.value) {
-      fetchMockJobData()
-    }
-  }, 60000)
 })
 
 onBeforeUnmount(() => {
-  pieChartInstance = null
+  console.log('AnalyticsRecords unmounting, cleaning up...')
+  
+  // Clean up chart instance
+  pieChartInstance = destroyChart(pieChartInstance)
 })
 </script>
 
 <style scoped>
-/* Header Styling */
-.analytics-header {
-  background: linear-gradient(135deg, black 0%, grey 100%);
-  color: white;
-  margin: -16px -16px 0 -16px;
+.analytics-records-container {
+  min-height: 100vh;
+  background: #f8fafc;
 }
 
-.analytics-header .filter-select {
-  min-width: 200px;
+.loading-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 200px;
+  color: #64748b;
 }
 
-.analytics-header .filter-select >>> .q-field__control {
-  background: rgba(255, 255, 255, 0.1);
-  border: 1px solid rgba(255, 255, 255, 0.3);
-  color: white;
-}
-
-.analytics-header .filter-select >>> .q-field__native {
-  color: white;
-}
-
-/* Enhanced Stats Cards */
+/* Enhanced Stats Cards - Fully Responsive */
 .stats-section {
   background: #f8fafc;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+  padding: 1rem 0.5rem;
 }
 
 .stat-card-enhanced {
@@ -711,11 +843,12 @@ onBeforeUnmount(() => {
   border-radius: 16px;
   transition: all 0.3s ease;
   background: white;
-  min-height: 160px;
+  min-height: 140px;
   display: flex;
   align-items: center;
   position: relative;
   overflow: hidden;
+  margin-bottom: 1rem;
 }
 
 .stat-card-enhanced::before {
@@ -735,40 +868,45 @@ onBeforeUnmount(() => {
 }
 
 .stat-icon-wrapper {
-  width: 64px;
-  height: 64px;
+  width: 48px;
+  height: 48px;
   border-radius: 50%;
   background: rgba(102, 126, 234, 0.1);
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  margin: 0 auto 0.5rem auto;
+  flex-shrink: 0;
 }
 
 .stat-value-enhanced {
   font-weight: 700;
-  font-size: 2.5rem;
+  font-size: 1.75rem;
   line-height: 1;
-  margin: 0.5rem 0;
+  margin: 0.25rem 0;
 }
 
 .stat-label-enhanced {
   color: #64748b;
   font-weight: 600;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  text-align: center;
 }
 
-/* Content Section */
+/* Content Section - Responsive */
 .content-section {
   background: white;
+  padding: 1rem 0.5rem;
 }
 
-/* Pie Chart Styling */
+/* Responsive Pie Chart Styling */
 .chart-card-enhanced {
   border: 2px solid #e2e8f0;
   border-radius: 16px;
   transition: all 0.3s ease;
   height: 100%;
+  min-height: 350px;
+  margin-bottom: 1rem;
 }
 
 .chart-card-enhanced:hover {
@@ -778,57 +916,172 @@ onBeforeUnmount(() => {
 
 .chart-header {
   border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+  padding-bottom: 0.75rem;
+  margin-bottom: 0.75rem;
   text-align: center;
 }
 
+.chart-header .text-h6 {
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.chart-header .text-caption {
+  font-size: 0.75rem;
+}
+
+/* Fully Responsive Pie Chart Container */
 .pie-chart-container {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
+  padding: 0.5rem;
+  position: relative;
+  min-height: 280px;
+  width: 100%;
+}
+
+.pie-chart-wrapper {
+  position: relative;
+  width: 100%;
+  max-width: 250px;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .pie-chart-container canvas {
-  max-width: 100%;
+  max-width: 100% !important;
+  max-height: 100% !important;
+  width: auto !important;
+  height: auto !important;
 }
 
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.95);
+  color: #64748b;
+  z-index: 10;
+  border-radius: 8px;
+}
+
+.loading-overlay .q-spinner {
+  margin-bottom: 12px;
+}
+
+.loading-overlay .text-caption {
+  font-weight: 500;
+  opacity: 0.8;
+  font-size: 0.75rem;
+}
+
+/* Responsive Legend */
 .pie-legend {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   align-items: flex-start;
+  margin-top: 1rem;
+  width: 100%;
+  max-width: 250px;
 }
 
 .legend-item {
   display: flex;
   align-items: center;
   gap: 8px;
+  width: 100%;
 }
 
 .legend-color {
   width: 12px;
   height: 12px;
   border-radius: 50%;
+  flex-shrink: 0;
 }
 
 .legend-text {
-  font-size: 12px;
+  font-size: 0.75rem;
   color: #666;
+  flex: 1;
 }
 
-/* Enhanced Table */
+.pie-center-text {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  text-align: center;
+  pointer-events: none;
+  z-index: 5;
+}
+
+.total-number {
+  font-size: 1.25rem;
+  font-weight: bold;
+  color: #2c3e50;
+}
+
+.total-label {
+  font-size: 0.625rem;
+  color: #666;
+  margin-top: 2px;
+}
+
+.no-data-message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  z-index: 5;
+}
+
+.no-data-message .q-icon {
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+
+.no-data-message .text-caption {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* Fully Responsive Enhanced Table */
 .table-card-enhanced {
   border: 2px solid #e2e8f0;
   border-radius: 16px;
   overflow: hidden;
   height: 100%;
+  min-height: 350px;
 }
 
 .table-header {
   border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 1rem;
+  padding: 0.75rem 1rem;
+}
+
+.table-header .text-h6 {
+  font-size: 1.1rem;
+  margin-bottom: 0.25rem;
+}
+
+.table-header .text-caption {
+  font-size: 0.75rem;
 }
 
 .enhanced-table {
@@ -837,15 +1090,17 @@ onBeforeUnmount(() => {
 
 .enhanced-table >>> .q-table__top {
   background: #f8fafc;
+  padding: 0.5rem;
 }
 
 .enhanced-table >>> .q-table thead th {
   background: #f1f5f9;
   color: #374151;
   font-weight: 600;
-  font-size: 0.875rem;
-  padding: 12px 8px;
+  font-size: 0.75rem;
+  padding: 8px 4px;
   border-bottom: 2px solid #e2e8f0;
+  white-space: nowrap;
 }
 
 .enhanced-table >>> .q-table tbody tr {
@@ -857,98 +1112,437 @@ onBeforeUnmount(() => {
 }
 
 .enhanced-table >>> .q-table tbody td {
-  padding: 10px 8px;
+  padding: 8px 4px;
   border-bottom: 1px solid #f1f5f9;
+  font-size: 0.75rem;
 }
 
 .status-badge {
-  font-size: 0.75rem;
-  padding: 4px 12px;
-  border-radius: 20px;
+  font-size: 0.625rem;
+  padding: 2px 8px;
+  border-radius: 12px;
   font-weight: 500;
+  white-space: nowrap;
 }
 
 .rate-cell {
-  min-width: 80px;
+  min-width: 60px;
 }
 
 .rate-text {
   font-weight: 600;
   color: #374151;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
 }
 
 .rate-progress {
-  width: 50px;
+  width: 40px;
+  margin-top: 2px;
 }
 
 .company-cell {
   display: flex;
   align-items: center;
-  font-size: 0.875rem;
+  font-size: 0.75rem;
+  gap: 0.5rem;
 }
 
+.company-cell .q-avatar {
+  font-size: 0.625rem;
+}
+
+/* Mobile Job Cards - Enhanced Responsive */
 .mobile-job-card {
   border: 1px solid #e2e8f0;
   border-radius: 8px;
+  margin: 0.25rem 0;
 }
 
-/* Responsive Design */
-@media (max-width: 1024px) {
+.mobile-job-card .q-card-section {
+  padding: 0.75rem;
+}
+
+.mobile-job-card .text-weight-bold {
+  font-size: 0.875rem;
+  margin-bottom: 0.25rem;
+}
+
+.mobile-job-card .text-caption {
+  font-size: 0.75rem;
+  margin-bottom: 0.5rem;
+}
+
+.mobile-job-card .text-h6 {
+  font-size: 1rem;
+}
+
+/* Responsive Breakpoints */
+
+/* Large Desktop (1200px+) */
+@media (min-width: 1200px) {
+  .stats-section {
+    padding: 2rem 1rem;
+  }
+  
+  .content-section {
+    padding: 1.5rem 1rem;
+  }
+  
+  .stat-card-enhanced {
+    min-height: 180px;
+  }
+  
+  .stat-icon-wrapper {
+    width: 64px;
+    height: 64px;
+  }
+  
+  .stat-value-enhanced {
+    font-size: 2.5rem;
+  }
+  
+  .stat-label-enhanced {
+    font-size: 0.875rem;
+  }
+  
+  .pie-chart-wrapper {
+    max-width: 280px;
+  }
+  
+  .enhanced-table >>> .q-table thead th {
+    font-size: 0.875rem;
+    padding: 12px 8px;
+  }
+  
+  .enhanced-table >>> .q-table tbody td {
+    font-size: 0.875rem;
+    padding: 10px 8px;
+  }
+}
+
+/* Desktop (992px - 1199px) */
+@media (min-width: 992px) and (max-width: 1199px) {
+  .stat-card-enhanced {
+    min-height: 160px;
+  }
+  
   .stat-value-enhanced {
     font-size: 2rem;
   }
-
-  .pie-chart-container canvas {
-    width: 180px !important;
-    height: 180px !important;
+  
+  .pie-chart-wrapper {
+    max-width: 240px;
   }
 }
 
-@media (max-width: 768px) {
-  .analytics-header {
-    text-align: center;
+/* Tablet (768px - 991px) */
+@media (min-width: 768px) and (max-width: 991px) {
+  .stats-section {
+    padding: 1.5rem 0.75rem;
   }
-
-  .analytics-header .row {
-    flex-direction: column;
-    gap: 1rem;
+  
+  .content-section {
+    padding: 1rem 0.75rem;
   }
-
+  
   .stat-card-enhanced {
     min-height: 140px;
+    margin-bottom: 0.75rem;
   }
-
+  
   .stat-value-enhanced {
-    font-size: 1.8rem;
+    font-size: 1.75rem;
   }
-
-  .pie-chart-container {
-    padding: 5px;
+  
+  .pie-chart-wrapper {
+    max-width: 200px;
+  }
+  
+  .chart-card-enhanced {
+    min-height: 320px;
+  }
+  
+  .table-card-enhanced {
+    min-height: 320px;
   }
 }
 
-@media (max-width: 599px) {
+/* Large Mobile (576px - 767px) */
+@media (min-width: 576px) and (max-width: 767px) {
+  .stats-section {
+    padding: 1rem 0.5rem;
+  }
+  
+  .content-section {
+    padding: 0.75rem 0.5rem;
+  }
+  
   .content-section .row {
     flex-direction: column;
   }
-
+  
   .stat-card-enhanced {
     min-height: 120px;
+    margin-bottom: 0.5rem;
   }
-
+  
   .stat-value-enhanced {
     font-size: 1.5rem;
   }
-
+  
   .stat-icon-wrapper {
-    width: 48px;
-    height: 48px;
+    width: 40px;
+    height: 40px;
   }
+  
+  .pie-chart-wrapper {
+    max-width: 180px;
+  }
+  
+  .chart-card-enhanced,
+  .table-card-enhanced {
+    min-height: 300px;
+    margin-bottom: 1rem;
+  }
+  
+  .total-number {
+    font-size: 1rem;
+  }
+  
+  .total-label {
+    font-size: 0.5rem;
+  }
+}
 
+/* Small Mobile (up to 575px) */
+@media (max-width: 575px) {
+  .analytics-records-container {
+    padding: 0;
+  }
+  
+  .stats-section {
+    padding: 0.75rem 0.25rem;
+  }
+  
+  .content-section {
+    padding: 0.5rem 0.25rem;
+  }
+  
+  .content-section .row {
+    flex-direction: column;
+    margin: 0;
+  }
+  
+  .stat-card-enhanced {
+    min-height: 100px;
+    margin-bottom: 0.5rem;
+    border-radius: 12px;
+  }
+  
+  .stat-value-enhanced {
+    font-size: 1.25rem;
+  }
+  
+  .stat-label-enhanced {
+    font-size: 0.625rem;
+  }
+  
+  .stat-icon-wrapper {
+    width: 36px;
+    height: 36px;
+    margin-bottom: 0.25rem;
+  }
+  
+  .chart-card-enhanced,
+  .table-card-enhanced {
+    min-height: 280px;
+    margin-bottom: 0.75rem;
+    border-radius: 12px;
+  }
+  
+  .pie-chart-container {
+    min-height: 240px;
+    padding: 0.25rem;
+  }
+  
+  .pie-chart-wrapper {
+    max-width: 160px;
+  }
+  
+  .chart-header .text-h6 {
+    font-size: 1rem;
+  }
+  
+  .chart-header .text-caption {
+    font-size: 0.625rem;
+  }
+  
+  .table-header {
+    padding: 0.5rem 0.75rem;
+  }
+  
+  .table-header .text-h6 {
+    font-size: 1rem;
+  }
+  
+  .table-header .text-caption {
+    font-size: 0.625rem;
+  }
+  
+  .enhanced-table >>> .q-table thead th {
+    font-size: 0.625rem;
+    padding: 6px 2px;
+  }
+  
+  .enhanced-table >>> .q-table tbody td {
+    font-size: 0.625rem;
+    padding: 6px 2px;
+  }
+  
+  .status-badge {
+    font-size: 0.5rem;
+    padding: 1px 6px;
+  }
+  
+  .rate-progress {
+    width: 30px;
+  }
+  
+  .company-cell .q-avatar {
+    width: 20px;
+    height: 20px;
+    font-size: 0.5rem;
+  }
+  
+  .mobile-job-card .q-card-section {
+    padding: 0.5rem;
+  }
+  
+  .mobile-job-card .text-weight-bold {
+    font-size: 0.75rem;
+  }
+  
+  .mobile-job-card .text-caption {
+    font-size: 0.625rem;
+  }
+  
+  .mobile-job-card .text-h6 {
+    font-size: 0.875rem;
+  }
+  
+  .legend-text {
+    font-size: 0.625rem;
+  }
+  
+  .legend-color {
+    width: 10px;
+    height: 10px;
+  }
+  
+  .total-number {
+    font-size: 0.875rem;
+  }
+  
+  .total-label {
+    font-size: 0.5rem;
+  }
+}
+
+/* Extra Small Mobile (up to 375px) */
+@media (max-width: 375px) {
+  .stat-card-enhanced {
+    min-height: 90px;
+  }
+  
+  .stat-value-enhanced {
+    font-size: 1.125rem;
+  }
+  
+  .stat-icon-wrapper {
+    width: 32px;
+    height: 32px;
+  }
+  
+  .pie-chart-wrapper {
+    max-width: 140px;
+  }
+  
+  .chart-card-enhanced,
+  .table-card-enhanced {
+    min-height: 260px;
+  }
+  
+  .pie-chart-container {
+    min-height: 220px;
+  }
+}
+
+/* Print Styles */
+@media print {
+  .analytics-records-container {
+    background: white;
+  }
+  
+  .stat-card-enhanced,
+  .chart-card-enhanced,
+  .table-card-enhanced {
+    border: 1px solid #ccc;
+    box-shadow: none;
+    break-inside: avoid;
+  }
+  
+  .enhanced-table >>> .q-table tbody tr:hover {
+    background: transparent;
+  }
+}
+
+/* High DPI Displays */
+@media (-webkit-min-device-pixel-ratio: 2), (min-resolution: 192dpi) {
   .pie-chart-container canvas {
-    width: 150px !important;
-    height: 150px !important;
+    image-rendering: -webkit-optimize-contrast;
+    image-rendering: crisp-edges;
+  }
+}
+
+/* Accessibility - Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+  .stat-card-enhanced,
+  .chart-card-enhanced:hover,
+  .enhanced-table >>> .q-table tbody tr {
+    transition: none;
+  }
+  
+  .stat-card-enhanced:hover {
+    transform: none;
+  }
+}
+
+/* Dark Mode Support (if needed) */
+@media (prefers-color-scheme: dark) {
+  .analytics-records-container {
+    background: #1a1a1a;
+  }
+  
+  .stat-card-enhanced,
+  .chart-card-enhanced,
+  .table-card-enhanced {
+    background: #2d2d2d;
+    border-color: #444;
+    color: #fff;
+  }
+  
+  .chart-header,
+  .table-header {
+    border-color: #444;
+  }
+  
+  .enhanced-table >>> .q-table thead th {
+    background: #333;
+    color: #fff;
+  }
+  
+  .enhanced-table >>> .q-table tbody tr:hover {
+    background: #333;
   }
 }
 </style>

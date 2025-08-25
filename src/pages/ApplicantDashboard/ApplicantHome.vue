@@ -35,9 +35,10 @@
 </template>
 
 <script setup>
-import { onMounted, onUnmounted, ref } from 'vue'
+import { nextTick,onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useQuasar } from 'quasar'
+import { useUserStore } from 'src/stores/user-store'
 import { useJobsStore } from 'src/stores/job-store'
 import JobCard from 'src/components/Jobs/JobCard.vue'
 import JobDetails from 'src/components/Jobs/JobDetails.vue'
@@ -46,6 +47,8 @@ import ApplicantStats from 'src/components/ApplicantDashboard/ApplicantStats.vue
 import ApplicantSkillStats from 'src/components/ApplicantDashboard/ApplicantSkillStats.vue'
 
 const $q = useQuasar()
+const userStore = useUserStore()
+const token = userStore.token || sessionStorage.getItem('token')
 const jobsStore = useJobsStore()
 const router = useRouter()
 
@@ -69,6 +72,7 @@ const refreshAllData = async () => {
 
   try {
     // Jobs
+    await nextTick()
     try {
       await jobsStore.fetchRecommendedJobs()
       successful.push('Recommended Jobs')
@@ -102,39 +106,50 @@ const refreshAllData = async () => {
       }
     }
 
-    // Notify based on outcome
-    if (failed.length === 0) {
+    if (failed.length === 0 && successful.length > 0) {
       $q.notify({
         color: 'positive',
-        message: `All ${successful.length} components refreshed successfully!`,
+        message: `All  components refreshed successfully!`,
         icon: 'check_circle',
         position: 'top-right',
-        timeout: 3000,
+        timeout: 3000
       })
-      console.log('🎉 Refresh success:', successful)
     } else if (successful.length > 0) {
-      console.warn('⚠️ Partial refresh:', { successful, failed })
+      $q.notify({
+        color: 'warning',
+        message: `${successful.length} components refreshed, ${failed.length} failed`,
+        icon: 'warning',
+        position: 'top-right',
+        timeout: 4000
+      })
     } else {
       $q.notify({
         color: 'negative',
         message: 'All refreshes failed',
         icon: 'error',
         position: 'top-right',
-        timeout: 4000,
+        timeout: 4000
       })
-      console.error('❌ Refresh failed completely:', failed)
     }
+  } catch (err) {
+    console.error('❌ Unexpected error during refresh:', err)
+    $q.notify({
+      color: 'negative',
+      message: 'Unexpected error during refresh',
+      icon: 'error',
+      position: 'top-right',
+      timeout: 4000
+    })
   } finally {
     isRefreshingAll.value = false
   }
 }
 
 // Router nav
-// Router nav
 const goToJobs = () => {
   try {
-    router.push({ name: 'Jobs' }) // <--- use the route name under applicant dashboard
-    console.log('➡️ Navigated to Applicant Jobs page')
+    router.push('/all-jobs')
+    console.log('➡️ Navigated to jobs page')
   } catch (error) {
     console.error('❌ Error navigating to jobs:', error)
     $q.notify({
@@ -148,18 +163,50 @@ const goToJobs = () => {
 }
 
 // Expose for external use
-defineExpose({
+/*defineExpose({
   refreshAllData,
-})
+})*/
 
 // Lifecycle
 onMounted(async () => {
+  // ✅ Token check
+  if (!token) {
+    $q.notify({
+      type: 'warning',
+      message: 'Please log in to view analytics',
+      position: 'top-right',
+      actions: [
+        {
+          label: 'Login',
+          color: 'white',
+          handler: () => router.push('/login')
+        }
+      ]
+    })
+    return
+  }
+  // ✅ Initial full refresh BEFORE rendering children
+  $q.notify({
+    color: 'info',
+    message: 'Loading analytics data...',
+    icon: 'hourglass_empty',
+    position: 'top-right',
+    timeout: 1000
+  })
+
   try {
     await jobsStore.fetchRecommendedJobs()
     console.log('✅ Initial recommended jobs fetched')
   } catch (error) {
     console.error('❌ Error fetching jobs on mount:', error)
   }
+  console.log('🚀 Parent mounted, starting first load...')
+
+  
+  
+
+  await refreshAllData()
+  //isFirstLoadDone.value = true  // ✅ only now children appear
 
   // Auto-refresh every 5 minutes
   refreshIntervalId = setInterval(refreshAllData, 300000)

@@ -1,7 +1,7 @@
 <template>
-  <!-- Skills Analytics Charts - Side by Side -->
   <div class="skills-section q-pa-lg">
     <div class="row q-col-gutter-lg">
+      
       <!-- Job Skills Required Chart -->
       <div class="col-12 col-md-6">
         <q-card class="chart-card-enhanced">
@@ -11,10 +11,23 @@
               <div class="text-caption text-grey-6">Skills demand in job postings (All Time)</div>
             </div>
             <div class="skills-chart-container">
-              <canvas ref="jobSkillsChartCanvas" v-if="!isLoadingSkills"></canvas>
-              <div v-else class="loading-container">
+              <!-- Chart is always rendered, but may be hidden during loading -->
+              <canvas 
+                ref="jobSkillsChartCanvas" 
+                :style="{ visibility: isLoadingJobSkills ? 'hidden' : 'visible' }"
+              ></canvas>
+              <!-- Loading overlay -->
+              <div v-if="isLoadingJobSkills" class="loading-overlay">
                 <q-spinner-dots size="50px" color="primary" />
                 <div class="text-caption q-mt-sm">Loading job skills data...</div>
+              </div>
+              <!-- No data message -->
+              <div 
+                v-if="!isLoadingJobSkills && (!skillsData.jobSkills.length || skillsData.jobCounts.every(c => c === 0))" 
+                class="no-data-message"
+              >
+                <q-icon name="info" size="24px" color="grey-5" />
+                <div class="text-caption text-grey-6 q-mt-sm">No job skills data available</div>
               </div>
             </div>
           </q-card-section>
@@ -27,56 +40,58 @@
           <q-card-section>
             <div class="chart-header">
               <div class="text-h6">Applicant Skills Available</div>
-              <div class="text-caption text-grey-6">
-                Skills competency among applicants (All Time)
-              </div>
+              <div class="text-caption text-grey-6">Skills competency among applicants (All Time)</div>
             </div>
             <div class="skills-chart-container">
-              <canvas ref="applicantSkillsChartCanvas" v-if="!isLoadingSkills"></canvas>
-              <div v-else class="loading-container">
+              <!-- Chart is always rendered, but may be hidden during loading -->
+              <canvas 
+                ref="applicantSkillsChartCanvas" 
+                :style="{ visibility: isLoadingApplicantSkills ? 'hidden' : 'visible' }"
+              ></canvas>
+              <!-- Loading overlay -->
+              <div v-if="isLoadingApplicantSkills" class="loading-overlay">
                 <q-spinner-dots size="50px" color="orange" />
                 <div class="text-caption q-mt-sm">Loading applicant skills data...</div>
+              </div>
+              <!-- No data message -->
+              <div 
+                v-if="!isLoadingApplicantSkills && (!skillsData.applicantSkills.length || skillsData.applicantCounts.every(c => c === 0))" 
+                class="no-data-message"
+              >
+                <q-icon name="info" size="24px" color="grey-5" />
+                <div class="text-caption text-grey-6 q-mt-sm">No applicant skills data available</div>
               </div>
             </div>
           </q-card-section>
         </q-card>
       </div>
+
     </div>
   </div>
 </template>
 
 <script setup>
-import { ref, onMounted, onBeforeUnmount, nextTick } from 'vue'
+import { ref, onMounted, onBeforeUnmount, nextTick ,watch} from 'vue'
+import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
+import Chart from 'chart.js/auto'
 
+// --- STORE + TOKEN --- //
 const userStore = useUserStore()
 const token = userStore.token || sessionStorage.getItem('token')
+const $q = useQuasar()
 
-// Chart refs
+// --- CHART REFS --- //
 const jobSkillsChartCanvas = ref(null)
 const applicantSkillsChartCanvas = ref(null)
-
-// Loading states
-const isLoadingSkills = ref(false)
-
-// Set larger chart sizes after mount
-function setLargeChartSizes() {
-  if (jobSkillsChartCanvas.value) {
-    jobSkillsChartCanvas.value.width = 700
-    jobSkillsChartCanvas.value.height = 500
-  }
-  if (applicantSkillsChartCanvas.value) {
-    applicantSkillsChartCanvas.value.width = 700
-    applicantSkillsChartCanvas.value.height = 500
-  }
-}
-
-// Import Chart.js library
-import Chart from './charts.js'
-let applicantSkillsChartInstance = null
 let jobSkillsChartInstance = null
+let applicantSkillsChartInstance = null
 
-// Skills data - will be populated dynamically from API
+// --- LOADING STATES --- //
+const isLoadingJobSkills = ref(false)
+const isLoadingApplicantSkills = ref(false)
+
+// --- DATA --- //
 const skillsData = ref({
   jobSkills: [],
   jobCounts: [],
@@ -84,281 +99,370 @@ const skillsData = ref({
   applicantCounts: [],
 })
 
-// API Integration for Skills Data
-const fetchSkillsData = async () => {
-  isLoadingSkills.value = true
+// --- HELPER: DESTROY CHART SAFELY --- //
+function destroyChart(instance) {
+  if (instance && typeof instance.destroy === 'function') {
+    try {
+      instance.destroy()
+    } catch (error) {
+      console.warn('Error destroying chart:', error)
+    }
+  }
+  return null
+}
+
+// --- HELPER: CREATE BAR CHART --- //
+function createBarChart(canvas, labels, counts, label, colors) {
+  if (!canvas) {
+    console.warn('Canvas not available for chart:', label)
+    return null
+  }
+  
+  if (!labels.length || !counts.length) {
+    console.warn('No data available for chart:', label)
+    return null
+  }
+
   try {
-    // Fetch job skills required data
-    const [jobSkillsResponse, applicantSkillsResponse] = await Promise.all([
-      fetch('http://localhost:3000/skills/count-job-skills', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+    return new Chart(canvas, {
+      type: 'bar',
+      data: {
+        labels: labels.slice(0, 15), // Limit to 15 items for better visibility
+        datasets: [{
+          label,
+          data: counts.slice(0, 15),
+          backgroundColor: colors.bg,
+          borderColor: colors.border,
+          borderWidth: 1,
+          hoverBackgroundColor: colors.hoverBg,
+          hoverBorderColor: colors.border,
+          borderRadius: 4,
+          borderSkipped: false,
+        }],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        plugins: {
+          legend: { 
+            display: true, 
+            position: 'top',
+            labels: {
+              font: { size: 12 },
+              padding: 15
+            }
+          },
+          title: { 
+            display: true, 
+            text: label, 
+            font: { size: 14, weight: 'bold' },
+            padding: { bottom: 20 }
+          },
+          tooltip: { 
+            enabled: true,
+            backgroundColor: 'rgba(0, 0, 0, 0.8)',
+            titleColor: '#ffffff',
+            bodyColor: '#ffffff',
+            borderColor: colors.border,
+            borderWidth: 1,
+            cornerRadius: 6,
+            callbacks: {
+              title: function(context) {
+                return context[0].label
+              },
+              label: function(context) {
+                return `${label.split(' ')[0]}: ${context.raw} count`
+              }
+            }
+          },
         },
-      }),
-      fetch('http://localhost:3000/skills/count-app-skills', {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
+        scales: {
+          y: { 
+            beginAtZero: true, 
+            ticks: { 
+              precision: 0,
+              font: { size: 11 }
+            },
+            title: {
+              display: true,
+              text: 'Count',
+              font: { size: 12 }
+            }
+          },
+          x: { 
+            ticks: { 
+              autoSkip: false, 
+              maxRotation: 45, 
+              minRotation: 45,
+              font: { size: 10 }
+            },
+            title: {
+              display: true,
+              text: 'Skills',
+              font: { size: 12 }
+            }
+          },
         },
-      }),
-    ])
-
-    if (!jobSkillsResponse.ok || !applicantSkillsResponse.ok) {
-      throw new Error('Failed to fetch skills data')
-    }
-
-    const jobData = await jobSkillsResponse.json()
-    const applicantData = await applicantSkillsResponse.json()
-
-    // Process job skills data - use all skills from the API response
-    const jobSkills = Object.keys(jobData.data || {})
-    const jobCounts = Object.values(jobData.data || {})
-
-    // Process applicant skills data - use all skills from the API response
-    const applicantSkills = Object.keys(applicantData.data || {})
-    const applicantCounts = Object.values(applicantData.data || {})
-
-    // Update skills data with processed API response
-    skillsData.value = {
-      jobSkills,
-      jobCounts,
-      applicantSkills,
-      applicantCounts,
-    }
-
-    // Recreate charts with new data
-    await nextTick()
-    createJobSkillsChart()
-    createApplicantSkillsChart()
+        animation: {
+          duration: 750,
+          easing: 'easeInOutQuart'
+        },
+        interaction: {
+          intersect: false,
+          mode: 'index'
+        }
+      },
+    })
   } catch (error) {
-    console.error('Error fetching skills data:', error)
-    generateFallbackSkillsData()
-  } finally {
-    isLoadingSkills.value = false
+    console.error('Error creating chart:', label, error)
+    return null
   }
 }
 
-const generateFallbackSkillsData = () => {
-  // Fallback data structure matching the API response format
-  const allPossibleSkills = [
-    'JavaScript',
-    'React',
-    'Node.js',
-    'Python',
-    'Java',
-    'C++',
-    'CSS',
-    'HTML',
-    'TypeScript',
-    'Vue.js',
-    'Angular',
-    'Docker',
-    'AWS',
-    'SQL',
-    'MongoDB',
-    'MySQL',
-    'PostgreSQL',
-    'Git',
-  ]
+// --- FALLBACK DATA (CONSISTENT, not random) --- //
+const fallbackJobData = {
+  skills: ['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'TypeScript', 'CSS', 'HTML'],
+  counts: [12, 10, 8, 15, 9, 7, 6, 5],
+}
+const fallbackApplicantData = {
+  skills: ['JavaScript', 'React', 'Node.js', 'Python', 'Java', 'TypeScript', 'CSS', 'HTML'],
+  counts: [11, 9, 7, 14, 8, 6, 5, 4],
+}
 
-  // Generate random counts for fallback data
-  const jobCounts = allPossibleSkills.map(() => Math.floor(Math.random() * 10))
-  const applicantCounts = allPossibleSkills.map((count) =>
-    Math.max(0, count - Math.floor(Math.random() * 3)),
-  )
+// --- FETCH FUNCTIONS --- //
+const fetchJobSkillsData = async () => {
+  console.log('Fetching job skills data...')
+  isLoadingJobSkills.value = true
+  
+  try {
+    const response = await fetch('http://localhost:3000/skills/count-job-skills', {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const jobData = await response.json()
+    console.log('Job skills API response:', jobData)
 
-  skillsData.value = {
-    jobSkills: allPossibleSkills,
-    jobCounts,
-    applicantSkills: allPossibleSkills,
-    applicantCounts,
+    if (jobData.data && typeof jobData.data === 'object') {
+      skillsData.value.jobSkills = Object.keys(jobData.data)
+      skillsData.value.jobCounts = Object.values(jobData.data)
+    } else {
+      throw new Error('Invalid job data structure')
+    }
+
+    console.log('Job skills data processed:', {
+      skills: skillsData.value.jobSkills,
+      counts: skillsData.value.jobCounts
+    })
+
+  } catch (err) {
+    console.error('Error fetching job skills:', err)
+    skillsData.value.jobSkills = [...fallbackJobData.skills]
+    skillsData.value.jobCounts = [...fallbackJobData.counts]
+    console.log('Using fallback job skills data')
   }
-
-  // Recreate charts with fallback data
-  createJobSkillsChart()
-  createApplicantSkillsChart()
 }
 
-const refreshSkillsData = () => {
-  fetchSkillsData()
-}
+const fetchApplicantSkillsData = async () => {
+  console.log('Fetching applicant skills data...')
+  isLoadingApplicantSkills.value = true
+  
+  try {
+    const response = await fetch('http://localhost:3000/skills/count-app-skills', {
+      headers: { 
+        Authorization: `Bearer ${token}`,
+        'Content-Type': 'application/json',
+      },
+    })
+    
+    if (!response.ok) {
+      throw new Error(`HTTP error! status: ${response.status}`)
+    }
+    
+    const appData = await response.json()
+    console.log('Applicant skills API response:', appData)
 
-// Chart creation functions using Chart.js
-function createJobSkillsChart() {
-  if (!jobSkillsChartCanvas.value) return
+    if (appData.data && typeof appData.data === 'object') {
+      skillsData.value.applicantSkills = Object.keys(appData.data)
+      skillsData.value.applicantCounts = Object.values(appData.data)
+    } else {
+      throw new Error('Invalid applicant data structure')
+    }
 
-  // Destroy previous instance if exists
-  if (jobSkillsChartInstance) {
-    jobSkillsChartInstance.destroy()
+    console.log('Applicant skills data processed:', {
+      skills: skillsData.value.applicantSkills,
+      counts: skillsData.value.applicantCounts
+    })
+
+  } catch (err) {
+    console.error('Error fetching applicant skills:', err)
+    skillsData.value.applicantSkills = [...fallbackApplicantData.skills]
+    skillsData.value.applicantCounts = [...fallbackApplicantData.counts]
+    console.log('Using fallback applicant skills data')
   }
-
-  const { jobSkills, jobCounts } = skillsData.value
-
-  // Limit to 15 skills for better visualization
-  const displaySkills = jobSkills.slice(0, 15)
-  const displayCounts = jobCounts.slice(0, 15)
-
-  jobSkillsChartInstance = new Chart(jobSkillsChartCanvas.value, {
-    type: 'bar', // Changed to bar chart for better count visualization
-    data: {
-      labels: displaySkills,
-      datasets: [
-        {
-          label: 'Job Skills Required (Count)',
-          data: displayCounts,
-          backgroundColor: 'rgba(25, 118, 210, 0.7)',
-          borderColor: '#1976D2',
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: true },
-        title: { display: true, text: 'Job Skills Required' },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: function (context) {
-              return `${context.dataset.label}: ${context.raw}`
-            },
-          },
-        },
-      },
-      scales: {
-        y: {
-          title: { display: true, text: 'Demand (Count)' },
-          beginAtZero: true,
-          ticks: {
-            precision: 0,
-          },
-          grid: {
-            drawOnChartArea: true,
-            color: '#e0e0e0',
-          },
-        },
-        x: {
-          title: { display: true, text: 'Skills' },
-          ticks: {
-            autoSkip: false,
-            maxRotation: 45,
-            minRotation: 45,
-          },
-        },
-      },
-    },
-  })
 }
 
-function createApplicantSkillsChart() {
-  if (!applicantSkillsChartCanvas.value) return
-
-  // Destroy previous instance if exists
-  if (applicantSkillsChartInstance) {
-    applicantSkillsChartInstance.destroy()
-  }
-
-  const { applicantSkills, applicantCounts } = skillsData.value
-
-  // Limit to 15 skills for better visualization
-  const displaySkills = applicantSkills.slice(0, 15)
-  const displayCounts = applicantCounts.slice(0, 15)
-
-  applicantSkillsChartInstance = new Chart(applicantSkillsChartCanvas.value, {
-    type: 'bar', // Changed to bar chart for better count visualization
-    data: {
-      labels: displaySkills,
-      datasets: [
-        {
-          label: 'Applicant Skills Available (Count)',
-          data: displayCounts,
-          backgroundColor: 'rgba(255, 107, 53, 0.7)',
-          borderColor: '#FF6B35',
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      plugins: {
-        legend: { display: true },
-        title: { display: true, text: 'Applicant Skills Available' },
-        tooltip: {
-          enabled: true,
-          callbacks: {
-            label: function (context) {
-              return `${context.dataset.label}: ${context.raw}`
-            },
-          },
-        },
-      },
-      scales: {
-        y: {
-          title: { display: true, text: 'Available (Count)' },
-          beginAtZero: true,
-          ticks: {
-            precision: 0,
-          },
-          grid: {
-            drawOnChartArea: true,
-            color: '#e0e0e0',
-          },
-        },
-        x: {
-          title: { display: true, text: 'Skills' },
-          ticks: {
-            autoSkip: false,
-            maxRotation: 45,
-            minRotation: 45,
-          },
-        },
-      },
-    },
-  })
-}
-
-// Initialize charts function
-const initializeCharts = async () => {
+// --- CHART RECREATION FUNCTIONS --- //
+const recreateJobSkillsChart = async () => {
+  console.log('Recreating job skills chart...')
+  
+  // Destroy existing chart
+  jobSkillsChartInstance = destroyChart(jobSkillsChartInstance)
+  
+  // Wait for DOM updates
   await nextTick()
-  setLargeChartSizes()
+  
+  if (!jobSkillsChartCanvas.value) {
+    console.warn('Job skills canvas not available')
+    return
+  }
+
+  // Small delay to ensure canvas is ready
   setTimeout(() => {
-    createJobSkillsChart()
-    createApplicantSkillsChart()
-  }, 100)
+    jobSkillsChartInstance = createBarChart(
+      jobSkillsChartCanvas.value,
+      skillsData.value.jobSkills,
+      skillsData.value.jobCounts,
+      'Job Skills Required (Count)',
+      {
+        bg: 'rgba(25, 118, 210, 0.7)',
+        border: '#1976D2',
+        hoverBg: 'rgba(25, 118, 210, 0.9)',
+      }
+    )
+    console.log('Job skills chart recreated')
+    isLoadingJobSkills.value = false
+  }, 150)
 }
 
-// Lifecycle hooks
-onMounted(() => {
-  initializeCharts()
-  fetchSkillsData() // Fetch real data from API
+const recreateApplicantSkillsChart = async () => {
+  console.log('Recreating applicant skills chart...')
+  
+  // Destroy existing chart
+  applicantSkillsChartInstance = destroyChart(applicantSkillsChartInstance)
+  
+  // Wait for DOM updates
+  await nextTick()
+  
+  if (!applicantSkillsChartCanvas.value) {
+    console.warn('Applicant skills canvas not available')
+    return
+  }
+
+  // Small delay to ensure canvas is ready
+  setTimeout(() => {
+    applicantSkillsChartInstance = createBarChart(
+      applicantSkillsChartCanvas.value,
+      skillsData.value.applicantSkills,
+      skillsData.value.applicantCounts,
+      'Applicant Skills Available (Count)',
+      {
+        bg: 'rgba(255, 107, 53, 0.7)',
+        border: '#FF6B35',
+        hoverBg: 'rgba(255, 107, 53, 0.9)',
+      }
+    )
+    console.log('Applicant skills chart recreated')
+    isLoadingApplicantSkills.value = false
+  }, 150)
+}
+
+// --- COMBINED DATA FETCH AND CHART RECREATION --- //
+const fetchAndRecreateJobSkills = async () => {
+  try {
+    await fetchJobSkillsData()
+    await recreateJobSkillsChart()
+  } catch (error) {
+    console.error('Error in fetchAndRecreateJobSkills:', error)
+    isLoadingJobSkills.value = false
+  }
+}
+
+const fetchAndRecreateApplicantSkills = async () => {
+  try {
+    await fetchApplicantSkillsData()
+    await recreateApplicantSkillsChart()
+  } catch (error) {
+    console.error('Error in fetchAndRecreateApplicantSkills:', error)
+    isLoadingApplicantSkills.value = false
+  }
+}
+
+// --- MAIN REFRESH FUNCTION --- //
+const refreshData = async () => {
+  console.log('RecruiterSkillStats: Starting data refresh...')
+  
+  try {
+    // Run both refresh operations in parallel
+    await Promise.all([
+      fetchAndRecreateJobSkills(),
+      fetchAndRecreateApplicantSkills()
+    ])
+    
+    console.log('RecruiterSkillStats: All data refreshed and charts recreated successfully')
+    return Promise.resolve()
+  } catch (error) {
+    console.error('RecruiterSkillStats: Error refreshing data:', error)
+    $q.notify({
+      color: 'negative', 
+      message: 'Error refreshing skills data', 
+      icon: 'error',
+      position: 'top-right',
+      timeout: 3000
+    })
+    throw error
+  }
+}
+watch(
+  skillsData,
+  async () => {
+    if (!isLoadingJobSkills.value ) {
+      console.log('Job skills data changed, recreating chart...')
+      await recreateJobSkillsChart()
+    }
+    else if(!isLoadingApplicantSkills.value ) {
+      console.log('Applicant skills data changed, recreating chart...')
+      await recreateApplicantSkillsChart()
+    }
+  },
+  { deep: true }
+)
+
+// --- LIFECYCLE --- //
+onMounted(async () => {
+  console.log('RecruiterSkillStats mounted, initializing...')
+  
+  // Wait for DOM to be ready
+  await nextTick()
+  
+  // Initial data fetch and chart creation
+  await refreshData()
 })
 
 onBeforeUnmount(() => {
+  console.log('RecruiterSkillStats unmounting, cleaning up...')
+  
   // Clean up chart instances
-  if (jobSkillsChartInstance) {
-    jobSkillsChartInstance.destroy()
-    jobSkillsChartInstance = null
-  }
-  if (applicantSkillsChartInstance) {
-    applicantSkillsChartInstance.destroy()
-    applicantSkillsChartInstance = null
-  }
+  jobSkillsChartInstance = destroyChart(jobSkillsChartInstance)
+  applicantSkillsChartInstance = destroyChart(applicantSkillsChartInstance)
 })
 
-// Expose refresh function for parent components
-defineExpose({
-  refreshSkillsData,
+// --- EXPOSE TO PARENT --- //
+defineExpose({ 
+  refreshData,
+  // Also expose individual refresh functions for granular control
+  refreshJobSkills: fetchAndRecreateJobSkills,
+  refreshApplicantSkills: fetchAndRecreateApplicantSkills
 })
 </script>
 
 <style scoped>
-/* (Keep all existing styles the same) */
 .skills-section {
   background: #f8fafc;
 }
@@ -367,7 +471,7 @@ defineExpose({
   border: 2px solid #e2e8f0;
   border-radius: 16px;
   transition: all 0.3s ease;
-  height: 96%;
+  height: 100%;
 }
 
 .chart-card-enhanced:hover {
@@ -377,6 +481,8 @@ defineExpose({
 
 .chart-header {
   border-bottom: 1px solid #f1f5f9;
+  padding-bottom: 1rem;
+  margin-bottom: 1rem;
 }
 
 .skills-chart-container {
@@ -386,7 +492,8 @@ defineExpose({
   justify-content: center;
   align-items: center;
   padding: 20px;
-  overflow-x: auto;
+  position: relative;
+  overflow: hidden;
 }
 
 .skills-chart-container canvas {
@@ -395,35 +502,91 @@ defineExpose({
   cursor: default;
 }
 
+.loading-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  background: rgba(255, 255, 255, 0.9);
+  color: #64748b;
+  z-index: 10;
+  border-radius: 8px;
+}
 .loading-container {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 100%;
+  height: 200px;
   color: #64748b;
 }
 
+.no-data-message {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  color: #64748b;
+  z-index: 5;
+}
+
+/* Responsive Design */
 @media (max-width: 1024px) {
   .skills-chart-container {
-    height: 420px;
+    height: 380px;
   }
 }
 
 @media (max-width: 768px) {
   .skills-chart-container {
-    height: 360px;
-    padding: 10px;
+    height: 350px;
+    padding: 15px;
+  }
+
+  .chart-header {
+    text-align: center;
   }
 }
 
 @media (max-width: 599px) {
   .skills-chart-container {
-    height: 320px;
+    height: 300px;
+    padding: 10px;
   }
 
   .skills-chart-container canvas {
     touch-action: none;
   }
+}
+
+/* Enhanced loading states */
+.loading-overlay .q-spinner {
+  margin-bottom: 16px;
+}
+
+.loading-overlay .text-caption {
+  font-weight: 500;
+  opacity: 0.8;
+}
+
+/* No data styling */
+.no-data-message .q-icon {
+  margin-bottom: 8px;
+  opacity: 0.6;
+}
+
+.no-data-message .text-caption {
+  font-weight: 500;
+  opacity: 0.8;
 }
 </style>
