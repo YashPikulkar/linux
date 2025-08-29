@@ -1,6 +1,6 @@
 <script setup>
 import { ref, computed, onMounted, defineProps } from 'vue'
-const baseUrl = import.meta.env.VITE_API_BASE_URL
+const baseUrl = 'http://localhost:3000' // Replace with your actual base URL
 
 const props = defineProps({
   StepSixUpdate: {

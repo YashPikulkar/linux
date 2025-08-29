@@ -1,13 +1,11 @@
 <!-- AnalyticsRecords.vue -->
 <template>
-  <!-- Job Posting Analytics Header -->
-  <div class="analytics-header q-pa-lg">
-    <div class="row justify-between items-center q-pa-md">
-      <div>
-        <h4 class="text-h5 q-ma-none text-weight-bold">Job Posting Analytics</h4>
-        <p class="text-subtitle2 text-grey-7 q-mt-sm">
-          Track and monitor your job posting performance
-        </p>
+  <!-- Compact Job Posting Analytics Header -->
+  <div class="analytics-header-compact">
+    <div class="row justify-between items-center">
+      <div class="header-content">
+        <h4 class="header-title">Job Posting Analytics</h4>
+        <p class="header-subtitle">Track and monitor your job posting performance</p>
       </div>
       <q-select
         v-model="jobAnalyticsFilter"
@@ -15,17 +13,17 @@
         label="Filter by"
         dense
         outlined
-        class="filter-select"
+        class="filter-select-compact"
         emit-value
         map-options
       />
     </div>
   </div>
 
-  <!-- Job Posting Stats Cards - All in one row -->
-  <div class="stats-section q-px-lg">
+  <!-- Compact Job Posting Stats Cards -->
+  <div class="stats-section-compact">
     <!-- Optional refresh button -->
-    <div class="row justify-end q-mb-md">
+    <div class="row justify-end q-mb-sm">
       <q-btn
         flat
         round
@@ -39,60 +37,47 @@
       </q-btn>
     </div>
 
-    <div class="row q-gutter-md">
+    <div class="row q-gutter-sm">
       <div class="col" v-for="(stat, index) in jobAnalyticsStats" :key="index">
-        <q-card class="stat-card-enhanced">
-          <q-card-section class="text-center">
-            <div class="stat-icon-wrapper q-mb-sm">
-              <q-icon :name="stat.icon" size="32px" :color="stat.color" />
-              <!-- Optional: Add a small globe icon for global stats -->
+        <q-card class="stat-card-compact">
+          <q-card-section class="stat-card-content">
+            <div class="stat-icon-compact">
+              <q-icon :name="stat.icon" size="24px" :color="stat.color" />
               <q-icon
                 v-if="stat.isGlobal"
                 name="public"
-                size="12px"
+                size="10px"
                 color="grey-5"
-                class="absolute-top-right q-ma-xs"
+                class="global-indicator"
               >
                 <q-tooltip>Platform-wide metric</q-tooltip>
               </q-icon>
             </div>
 
             <!-- Loading skeleton or actual value -->
-            <div v-if="isLoadingStats" class="text-h3 stat-value-enhanced">
-              <q-skeleton type="text" width="60px" height="40px" />
+            <div v-if="isLoadingStats" class="stat-value-compact">
+              <q-skeleton type="text" width="40px" height="28px" />
             </div>
-            <div v-else class="text-h3 stat-value-enhanced" :class="`text-${stat.color}`">
+            <div v-else class="stat-value-compact" :class="`text-${stat.color}`">
               {{ stat.value }}
             </div>
 
-            <div class="text-body2 stat-label-enhanced">{{ stat.label }}</div>
+            <div class="stat-label-compact">{{ stat.label }}</div>
 
-            <!-- Enhanced change display -->
-            <div
-              class="text-caption text-grey-6 q-mt-xs"
-              v-if="stat.change !== undefined && !isLoadingStats"
-            >
-              <template v-if="stat.isGlobal">
-                <!-- For global stats, show platform growth -->
-                <q-icon name="trending_up" color="positive" size="16px" />
-                {{ Math.abs(stat.change) }}% platform growth
-              </template>
-              <template v-else>
-                <!-- For personal stats, show month-over-month change -->
-                <q-icon
-                  :name="
-                    stat.change > 0
-                      ? 'trending_up'
-                      : stat.change < 0
-                        ? 'trending_down'
-                        : 'trending_flat'
-                  "
-                  :color="stat.change > 0 ? 'positive' : stat.change < 0 ? 'negative' : 'grey'"
-                  size="16px"
-                />
-                <span v-if="stat.change !== 0">{{ Math.abs(stat.change) }}% from last month</span>
-                <span v-else>No change from last month</span>
-              </template>
+            <!-- Compact change display -->
+            <div class="stat-change-compact" v-if="stat.change !== undefined && !isLoadingStats">
+              <q-icon
+                :name="
+                  stat.change > 0
+                    ? 'trending_up'
+                    : stat.change < 0
+                      ? 'trending_down'
+                      : 'trending_flat'
+                "
+                :color="stat.change > 0 ? 'positive' : stat.change < 0 ? 'negative' : 'grey'"
+                size="12px"
+              />
+              <span>{{ Math.abs(stat.change) }}%</span>
             </div>
           </q-card-section>
         </q-card>
@@ -100,27 +85,33 @@
     </div>
   </div>
 
-  <!-- Analytics Charts and Table Layout -->
-  <div class="content-section q-pa-lg">
-    <div class="row q-col-gutter-lg">
-      <!-- Application Status Pie Chart - Reduced Size -->
+  <!-- Compact Analytics Charts and Table Layout -->
+  <div class="content-section-compact">
+    <div class="row q-col-gutter-md">
+      <!-- Application Status Pie Chart - Compact -->
       <div class="col-12 col-md-4">
-        <q-card class="chart-card-enhanced">
-          <q-card-section>
-            <div class="chart-header">
-              <div class="text-h6">Application Status</div>
-              <div class="text-caption text-grey-6">Current applications breakdown</div>
+        <q-card class="chart-card-compact">
+          <q-card-section class="chart-section-compact">
+            <div class="chart-header-compact">
+              <div class="chart-title">Application Status</div>
+              <div class="chart-subtitle">Current applications breakdown</div>
             </div>
-            <div class="pie-chart-container">
+            <div class="pie-chart-container-compact">
               <canvas ref="pieChartCanvas"></canvas>
-              <!-- Legend -->
-              <div class="pie-legend q-mt-md">
-                <div v-for="(label, index) in pieChartData.labels" :key="label" class="legend-item">
+              <!-- Compact Legend -->
+              <div class="pie-legend-compact">
+                <div
+                  v-for="(label, index) in pieChartData.labels"
+                  :key="label"
+                  class="legend-item-compact"
+                >
                   <div
-                    class="legend-color"
+                    class="legend-color-compact"
                     :style="{ backgroundColor: pieChartData.colors[index] }"
                   ></div>
-                  <span class="legend-text">{{ label }}: {{ pieChartData.counts[index] }}</span>
+                  <span class="legend-text-compact"
+                    >{{ label }}: {{ pieChartData.counts[index] }}</span
+                  >
                 </div>
               </div>
             </div>
@@ -128,17 +119,15 @@
         </q-card>
       </div>
 
-      <!-- Top Performing Job Posts - Takes More Space -->
+      <!-- Top Performing Job Posts - Compact -->
       <div class="col-12 col-md-8">
-        <q-card class="table-card-enhanced">
-          <q-card-section>
-            <div class="table-header q-mb-md">
+        <q-card class="table-card-compact">
+          <q-card-section class="table-section-compact">
+            <div class="table-header-compact">
               <div class="row justify-between items-center">
                 <div>
-                  <div class="text-h6">Top Performing Job Posts</div>
-                  <div class="text-caption text-grey-6">
-                    Live job market data with highest engagement
-                  </div>
+                  <div class="table-title">Top Performing Job Posts</div>
+                  <div class="table-subtitle">Live job market data with highest engagement</div>
                 </div>
                 <q-btn
                   flat
@@ -160,7 +149,7 @@
               :rows="filteredJobs"
               :columns="jobPostColumns"
               row-key="title"
-              class="enhanced-table"
+              class="compact-table"
               :grid="$q.screen.xs"
               :rows-per-page-options="[5, 10, 15]"
               :pagination="{ rowsPerPage: 5 }"
@@ -171,7 +160,7 @@
                   <q-badge
                     :color="getStatusColor(props.value)"
                     :label="props.value"
-                    class="status-badge"
+                    class="status-badge-compact"
                   />
                 </q-td>
               </template>
@@ -179,13 +168,13 @@
               <!-- Rate with Progress Bar -->
               <template v-slot:body-cell-rate="props">
                 <q-td :props="props">
-                  <div class="rate-cell">
-                    <span class="rate-text">{{ props.value }}%</span>
+                  <div class="rate-cell-compact">
+                    <span class="rate-text-compact">{{ props.value }}%</span>
                     <q-linear-progress
                       :value="props.value / 100"
-                      size="4px"
+                      size="3px"
                       :color="getRateColor(props.value)"
-                      class="rate-progress q-mt-xs"
+                      class="rate-progress-compact"
                     />
                   </div>
                 </q-td>
@@ -194,8 +183,8 @@
               <!-- Company Column -->
               <template v-slot:body-cell-company="props">
                 <q-td :props="props">
-                  <div class="company-cell">
-                    <q-avatar size="24px" color="primary" text-color="white" class="q-mr-sm">
+                  <div class="company-cell-compact">
+                    <q-avatar size="20px" color="primary" text-color="white" class="company-avatar">
                       {{ props.value.charAt(0) }}
                     </q-avatar>
                     <span>{{ props.value }}</span>
@@ -206,23 +195,24 @@
               <!-- Mobile Grid Template -->
               <template v-slot:item="props" v-if="$q.screen.xs">
                 <div class="col-12">
-                  <q-card class="mobile-job-card q-ma-sm">
-                    <q-card-section>
-                      <div class="text-weight-bold text-primary">{{ props.row.title }}</div>
-                      <div class="text-caption text-grey-7 q-mb-sm">{{ props.row.company }}</div>
-                      <div class="row justify-between q-mt-sm">
+                  <q-card class="mobile-job-card-compact">
+                    <q-card-section class="mobile-card-content">
+                      <div class="mobile-title">{{ props.row.title }}</div>
+                      <div class="mobile-company">{{ props.row.company }}</div>
+                      <div class="row justify-between mobile-stats">
                         <div class="col">
-                          <div class="text-caption text-grey-7">Applicants</div>
-                          <div class="text-h6">{{ props.row.applicants }}</div>
+                          <div class="mobile-stat-label">Applicants</div>
+                          <div class="mobile-stat-value">{{ props.row.applicants }}</div>
                         </div>
                         <div class="col">
-                          <div class="text-caption text-grey-7">Success Rate</div>
-                          <div class="text-h6">{{ props.row.rate }}%</div>
+                          <div class="mobile-stat-label">Success Rate</div>
+                          <div class="mobile-stat-value">{{ props.row.rate }}%</div>
                         </div>
                         <div class="col">
                           <q-badge
                             :color="getStatusColor(props.row.status)"
                             :label="props.row.status"
+                            class="status-badge-compact"
                           />
                         </div>
                       </div>
@@ -453,7 +443,7 @@ const pieChartData = computed(() => {
   return {
     labels: ['Pending', 'Accepted', 'Rejected'],
     counts: [pending, accepted, rejected],
-    colors: ['#FF9800', '#4CAF50', '#F44336'],
+    colors: ['#D2691E', '#228B22', '#8B4513'],
   }
 })
 
@@ -558,15 +548,15 @@ function createPieChart() {
   const ctx = canvas.getContext('2d')
   const data = pieChartData.value
 
-  // Set canvas size - smaller for better layout
-  canvas.width = 220
-  canvas.height = 220
+  // Set canvas size - smaller for compact layout
+  canvas.width = 180
+  canvas.height = 180
 
   ctx.clearRect(0, 0, canvas.width, canvas.height)
 
   const centerX = canvas.width / 2
   const centerY = canvas.height / 2
-  const radius = Math.min(centerX, centerY) - 30
+  const radius = Math.min(centerX, centerY) - 25
 
   const total = data.counts.reduce((sum, count) => sum + count, 0)
 
@@ -578,7 +568,7 @@ function createPieChart() {
     ctx.fill()
 
     ctx.fillStyle = '#666'
-    ctx.font = '14px Arial'
+    ctx.font = '12px Arial'
     ctx.textAlign = 'center'
     ctx.fillText('No Data', centerX, centerY)
     return
@@ -592,10 +582,10 @@ function createPieChart() {
       const sliceAngle = (count / total) * 2 * Math.PI
 
       // Shadow
-      ctx.shadowColor = 'rgba(0,0,0,0.2)'
-      ctx.shadowBlur = 8
-      ctx.shadowOffsetX = 2
-      ctx.shadowOffsetY = 2
+      ctx.shadowColor = 'rgba(0,0,0,0.15)'
+      ctx.shadowBlur = 6
+      ctx.shadowOffsetX = 1
+      ctx.shadowOffsetY = 1
 
       // Draw slice
       ctx.beginPath()
@@ -626,16 +616,16 @@ function createPieChart() {
   ctx.fillStyle = '#ffffff'
   ctx.fill()
   ctx.strokeStyle = '#e0e0e0'
-  ctx.lineWidth = 2
+  ctx.lineWidth = 1
   ctx.stroke()
 
   // Center text
   ctx.fillStyle = '#333'
-  ctx.font = 'bold 16px Arial'
+  ctx.font = 'bold 14px Arial'
   ctx.textAlign = 'center'
-  ctx.fillText(total.toString(), centerX, centerY - 5)
-  ctx.font = '12px Arial'
-  ctx.fillText('Total', centerX, centerY + 12)
+  ctx.fillText(total.toString(), centerX, centerY - 3)
+  ctx.font = '10px Arial'
+  ctx.fillText('Total', centerX, centerY + 10)
 }
 
 // Initialize charts
@@ -678,277 +668,455 @@ onBeforeUnmount(() => {
 </script>
 
 <style scoped>
-/* Header Styling */
-.analytics-header {
-  background: linear-gradient(135deg, black 0%, grey 100%);
-  color: white;
+.analytics-header-compact {
+  background: linear-gradient(135deg, #7ddf91 0%, #d5ddd3 100%);
+  color: black;
   margin: -16px -16px 0 -16px;
+  padding: 18px 20px; /* Increased from 12px */
 }
 
-.analytics-header .filter-select {
-  min-width: 200px;
+.header-content {
+  margin: 0;
 }
 
-.analytics-header .filter-select >>> .q-field__control {
+.header-title {
+  font-size: 1.75rem; /* Increased from 1.5rem */
+  font-weight: 600;
+  margin: 0;
+  line-height: 1.3;
+}
+
+.header-subtitle {
+  font-size: 0.95rem; /* Increased from 0.875rem */
+  color: #164607(255, 255, 255, 0.85);
+  margin: 4px 0 0 0; /* Increased margin */
+  line-height: 1.3;
+}
+
+.filter-select-compact {
+  min-width: 160px;
+}
+
+.filter-select-compact >>> .q-field__control {
   background: rgba(255, 255, 255, 0.1);
   border: 1px solid rgba(255, 255, 255, 0.3);
   color: white;
+  min-height: 36px;
 }
 
-.analytics-header .filter-select >>> .q-field__native {
+.filter-select-compact >>> .q-field__native {
   color: white;
 }
 
-/* Enhanced Stats Cards */
-.stats-section {
-  background: #f8fafc;
-  padding-top: 2rem;
-  padding-bottom: 2rem;
+/* Compact Stats Section */
+.stats-section-compact {
+  background: linear-gradient(135deg, #f8fffe 0%, #f0f7f0 100%);
+  padding: 16px 20px; /* Reduced padding */
 }
 
-.stat-card-enhanced {
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  transition: all 0.3s ease;
+.stat-card-compact {
+  border: 1px solid #e8f5e8;
+  border-radius: 12px;
+  transition: all 0.2s ease;
   background: white;
-  min-height: 160px;
-  display: flex;
-  align-items: center;
-  position: relative;
-  overflow: hidden;
+  min-height: 120px; /* Reduced from 160px */
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.08);
 }
 
-.stat-card-enhanced::before {
+.stat-card-compact::before {
   content: '';
   position: absolute;
   top: 0;
   left: 0;
   right: 0;
-  height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  height: 3px;
+  background: linear-gradient(90deg, #d2691e, #228b22);
 }
 
-.stat-card-enhanced:hover {
-  transform: translateY(-4px);
-  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.1);
-  border-color: #cbd5e1;
+.stat-card-compact:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 8px 16px rgba(210, 105, 30, 0.12);
+  border-color: #d4e6d4;
 }
 
-.stat-icon-wrapper {
-  width: 64px;
-  height: 64px;
+.stat-card-content {
+  text-align: center;
+  padding: 12px 8px; /* Reduced padding */
+}
+
+.stat-icon-compact {
+  width: 48px; /* Reduced from 64px */
+  height: 48px;
   border-radius: 50%;
-  background: rgba(102, 126, 234, 0.1);
+  background: linear-gradient(135deg, rgba(210, 105, 30, 0.1), rgba(34, 139, 34, 0.1));
   display: flex;
   align-items: center;
   justify-content: center;
-  margin: 0 auto;
+  margin: 0 auto 8px;
+  position: relative;
 }
 
-.stat-value-enhanced {
+.global-indicator {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+}
+
+.stat-value-compact {
   font-weight: 700;
-  font-size: 2.5rem;
+  font-size: 2rem; /* Reduced from 2.5rem */
   line-height: 1;
-  margin: 0.5rem 0;
+  margin: 8px 0; /* Reduced margin */
+  color: #2d5016;
 }
 
-.stat-label-enhanced {
-  color: #64748b;
-  font-weight: 600;
-  font-size: 0.875rem;
+.stat-label-compact {
+  color: #4a6741;
+  font-weight: 500;
+  font-size: 0.8rem; /* Slightly smaller */
+  line-height: 1.2;
 }
 
-/* Content Section */
-.content-section {
+.stat-change-compact {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-top: 4px;
+}
+
+/* Compact Content Section */
+.content-section-compact {
   background: white;
+  padding: 16px 20px; /* Reduced padding */
 }
 
-/* Pie Chart Styling */
-.chart-card-enhanced {
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  transition: all 0.3s ease;
+/* Compact Chart Card */
+.chart-card-compact {
+  border: 1px solid #e8f5e8;
+  border-radius: 12px;
+  transition: all 0.2s ease;
   height: 100%;
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.05);
 }
 
-.chart-card-enhanced:hover {
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.08);
-  border-color: #cbd5e1;
+.chart-card-compact:hover {
+  box-shadow: 0 6px 16px rgba(210, 105, 30, 0.08);
+  border-color: #d4e6d4;
 }
 
-.chart-header {
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 1rem;
-  margin-bottom: 1rem;
+.chart-section-compact {
+  padding: 16px; /* Reduced padding */
+}
+
+.chart-header-compact {
+  border-bottom: 1px solid #f0f7f0;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
   text-align: center;
 }
 
-.pie-chart-container {
+.chart-title {
+  font-size: 1.1rem;
+  font-weight: 600;
+  color: #2d5016;
+  margin: 0;
+}
+
+.chart-subtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 2px 0 0 0;
+}
+
+.pie-chart-container-compact {
   display: flex;
   flex-direction: column;
   align-items: center;
-  padding: 10px;
+  padding: 8px;
 }
 
-.pie-chart-container canvas {
+.pie-chart-container-compact canvas {
   max-width: 100%;
 }
 
-.pie-legend {
+.pie-legend-compact {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 6px;
   align-items: flex-start;
+  margin-top: 12px;
 }
 
-.legend-item {
+.legend-item-compact {
   display: flex;
   align-items: center;
-  gap: 8px;
+  gap: 6px;
 }
 
-.legend-color {
-  width: 12px;
-  height: 12px;
+.legend-color-compact {
+  width: 10px;
+  height: 10px;
   border-radius: 50%;
 }
 
-.legend-text {
-  font-size: 12px;
-  color: #666;
-}
-
-/* Enhanced Table */
-.table-card-enhanced {
-  border: 2px solid #e2e8f0;
-  border-radius: 16px;
-  overflow: hidden;
-  height: 100%;
-}
-
-.table-header {
-  border-bottom: 1px solid #f1f5f9;
-  padding-bottom: 1rem;
-}
-
-.enhanced-table {
-  border: none;
-}
-
-.enhanced-table >>> .q-table__top {
-  background: #f8fafc;
-}
-
-.enhanced-table >>> .q-table thead th {
-  background: #f1f5f9;
-  color: #374151;
-  font-weight: 600;
-  font-size: 0.875rem;
-  padding: 12px 8px;
-  border-bottom: 2px solid #e2e8f0;
-}
-
-.enhanced-table >>> .q-table tbody tr {
-  transition: background-color 0.2s;
-}
-
-.enhanced-table >>> .q-table tbody tr:hover {
-  background: #f8fafc;
-}
-
-.enhanced-table >>> .q-table tbody td {
-  padding: 10px 8px;
-  border-bottom: 1px solid #f1f5f9;
-}
-
-.status-badge {
+.legend-text-compact {
   font-size: 0.75rem;
-  padding: 4px 12px;
-  border-radius: 20px;
+  color: #4a6741;
   font-weight: 500;
 }
 
-.rate-cell {
-  min-width: 80px;
+/* Compact Table */
+.table-card-compact {
+  border: 1px solid #e8f5e8;
+  border-radius: 12px;
+  overflow: hidden;
+  height: 100%;
+  box-shadow: 0 2px 8px rgba(210, 105, 30, 0.05);
 }
 
-.rate-text {
+.table-section-compact {
+  padding: 16px; /* Reduced padding */
+}
+
+.table-header-compact {
+  border-bottom: 1px solid #f0f7f0;
+  padding-bottom: 8px;
+  margin-bottom: 12px;
+}
+
+.table-title {
+  font-size: 1.1rem;
   font-weight: 600;
-  color: #374151;
-  font-size: 0.875rem;
+  color: #2d5016;
+  margin: 0;
 }
 
-.rate-progress {
-  width: 50px;
+.table-subtitle {
+  font-size: 0.75rem;
+  color: #6b7280;
+  margin: 2px 0 0 0;
 }
 
-.company-cell {
+.compact-table {
+  border: none;
+}
+
+.compact-table >>> .q-table__top {
+  background: #f8fffe;
+}
+
+.compact-table >>> .q-table thead th {
+  background: linear-gradient(135deg, #f0f7f0, #e8f5e8);
+  color: #2d5016;
+  font-weight: 600;
+  font-size: 0.8rem;
+  padding: 8px 6px; /* Reduced padding */
+  border-bottom: 2px solid #d4e6d4;
+}
+
+.compact-table >>> .q-table tbody tr {
+  transition: background-color 0.2s;
+}
+
+.compact-table >>> .q-table tbody tr:hover {
+  background: #f8fffe;
+}
+
+.compact-table >>> .q-table tbody td {
+  padding: 8px 6px; /* Reduced padding */
+  border-bottom: 1px solid #f0f7f0;
+  font-size: 0.85rem;
+}
+
+.status-badge-compact {
+  font-size: 0.7rem;
+  padding: 3px 8px;
+  border-radius: 12px;
+  font-weight: 500;
+}
+
+.rate-cell-compact {
+  min-width: 60px;
+}
+
+.rate-text-compact {
+  font-weight: 600;
+  color: #2d5016;
+  font-size: 0.8rem;
+}
+
+.rate-progress-compact {
+  width: 40px;
+  margin-top: 2px;
+}
+
+.company-cell-compact {
   display: flex;
   align-items: center;
-  font-size: 0.875rem;
+  font-size: 0.8rem;
+  gap: 6px;
 }
 
-.mobile-job-card {
-  border: 1px solid #e2e8f0;
+.company-avatar {
+  font-size: 0.7rem;
+}
+
+.mobile-job-card-compact {
+  border: 1px solid #e8f5e8;
   border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(210, 105, 30, 0.05);
+}
+
+.mobile-card-content {
+  padding: 12px;
+}
+
+.mobile-title {
+  font-weight: 600;
+  color: #d2691e;
+  font-size: 0.9rem;
+  margin-bottom: 4px;
+}
+
+.mobile-company {
+  color: #6b7280;
+  font-size: 0.75rem;
+  margin-bottom: 8px;
+}
+
+.mobile-stats {
+  margin-top: 8px;
+}
+
+.mobile-stat-label {
+  color: #6b7280;
+  font-size: 0.7rem;
+  margin-bottom: 2px;
+}
+
+.mobile-stat-value {
+  font-weight: 600;
+  font-size: 1rem;
+  color: #2d5016;
 }
 
 /* Responsive Design */
 @media (max-width: 1024px) {
-  .stat-value-enhanced {
-    font-size: 2rem;
+  .analytics-header-compact {
+    padding: 10px 16px;
   }
 
-  .pie-chart-container canvas {
-    width: 180px !important;
-    height: 180px !important;
+  .header-title {
+    font-size: 1.3rem;
+  }
+
+  .stat-value-compact {
+    font-size: 1.8rem;
+  }
+
+  .pie-chart-container-compact canvas {
+    width: 160px !important;
+    height: 160px !important;
   }
 }
 
 @media (max-width: 768px) {
-  .analytics-header {
+  .analytics-header-compact .row {
+    flex-direction: column;
+    gap: 8px;
     text-align: center;
   }
 
-  .analytics-header .row {
-    flex-direction: column;
-    gap: 1rem;
+  .filter-select-compact {
+    min-width: 140px;
   }
 
-  .stat-card-enhanced {
-    min-height: 140px;
+  .stat-card-compact {
+    min-height: 100px;
   }
 
-  .stat-value-enhanced {
-    font-size: 1.8rem;
+  .stat-value-compact {
+    font-size: 1.6rem;
   }
 
-  .pie-chart-container {
-    padding: 5px;
+  .stat-icon-compact {
+    width: 40px;
+    height: 40px;
+  }
+
+  .stats-section-compact,
+  .content-section-compact {
+    padding: 12px 16px;
   }
 }
 
 @media (max-width: 599px) {
-  .content-section .row {
+  .analytics-header-compact {
+    padding: 8px 12px;
+  }
+
+  .header-title {
+    font-size: 1.2rem;
+  }
+
+  .header-subtitle {
+    font-size: 0.8rem;
+  }
+
+  .content-section-compact .row {
     flex-direction: column;
   }
 
-  .stat-card-enhanced {
-    min-height: 120px;
+  .stat-card-compact {
+    min-height: 90px;
   }
 
-  .stat-value-enhanced {
-    font-size: 1.5rem;
+  .stat-value-compact {
+    font-size: 1.4rem;
   }
 
-  .stat-icon-wrapper {
-    width: 48px;
-    height: 48px;
+  .stat-icon-compact {
+    width: 36px;
+    height: 36px;
   }
 
-  .pie-chart-container canvas {
-    width: 150px !important;
-    height: 150px !important;
+  .pie-chart-container-compact canvas {
+    width: 140px !important;
+    height: 140px !important;
   }
+
+  .chart-section-compact,
+  .table-section-compact {
+    padding: 12px;
+  }
+}
+
+/* Custom Color Overrides for Copper/Green Theme */
+.text-primary {
+  color: #d2691e !important;
+}
+
+.text-positive {
+  color: #228b22 !important;
+}
+
+.text-warning {
+  color: #8b4513 !important;
+}
+
+.text-info {
+  color: #2f4f4f !important;
+}
+
+/* Button and Interactive Element Colors */
+.compact-table >>> .q-btn--flat.text-primary {
+  color: #d2691e !important;
+}
+
+.compact-table >>> .q-linear-progress__track {
+  background: rgba(210, 105, 30, 0.1) !important;
 }
 </style>

@@ -1,43 +1,38 @@
 <template>
   <div class="applicants-management">
+    <!-- Advertisement Banner (Topmost) -->
+    <div class="ad-banner">
+      <q-icon name="star" color="yellow-8" size="32px" class="q-mr-md" />
+      <div>
+        <div class="ad-title">✨ Application Ranking System</div>
+        <div class="ad-desc">
+          Our intelligent ranking system uses advanced algorithms to score and rank applicants,
+          helping you find the best fit faster!
+        </div>
+      </div>
+    </div>
+
     <!-- Header Section -->
     <div class="header-section">
       <div class="row items-center justify-between">
         <div class="col-auto">
           <q-btn
             flat
+            dense
+            round
+            size="sm"
             icon="arrow_back"
-            label="Back to Jobs"
             color="primary"
             @click="goBack"
-            class="modern-btn q-mb-sm"
+            class="modern-btn q-mr-sm"
+            aria-label="Back to Jobs"
           />
-          <div class="text-h5 text-weight-bold">
+          <span class="text-h5 text-weight-bold">
             {{ jobDetails?.title || 'Job Applications' }}
-          </div>
-          <div class="text-subtitle2 text-grey-7">
-            {{ jobDetails?.company }} • {{ jobDetails?.location }} •
-            {{ jobDetails?.jobtype }}
-            <span v-if="jobId" class="q-ml-sm">• Job ID: {{ jobId }}</span>
-          </div>
+          </span>
         </div>
         <div class="col-auto">
           <div class="row q-gutter-md items-center">
-            <q-toggle
-              v-model="sendEmails"
-              label="Email notifications"
-              color="primary"
-              class="modern-toggle"
-            />
-            <q-btn-toggle
-              v-model="viewMode"
-              toggle-color="primary"
-              :options="[
-                { label: 'Cards', value: 'cards' },
-                { label: 'Table', value: 'table' },
-              ]"
-              class="modern-toggle"
-            />
             <q-btn
               icon="download"
               label="Export"
@@ -149,6 +144,23 @@
                   </div>
                   <div class="applicant-meta">Applied: {{ formatDate(applicant.applied) }}</div>
                 </div>
+
+                <!-- ML Score Display -->
+                <div class="score-section">
+                  <div
+                    class="ml-score"
+                    :class="{
+                      'score-excellent': applicant.label && applicant.label >= 0.8,
+                      'score-good':
+                        applicant.label && applicant.label >= 0.6 && applicant.label < 0.8,
+                      'score-fair': applicant.label && applicant.label < 0.6,
+                    }"
+                  >
+                    {{ applicant.label ? Math.round(applicant.label * 100) : 0 }}%
+                  </div>
+                  <div class="match-text">Match Score</div>
+                </div>
+
                 <q-chip
                   :color="statusColors[applicant.status]"
                   text-color="white"
@@ -158,7 +170,7 @@
                   {{ applicant.status }}
                 </q-chip>
               </div>
-              <div class="applicant-details">
+              <div class="applicant-details-card">
                 <div class="detail-row">
                   <q-icon name="location_on" size="16px" />
                   <span>{{ applicant.preferredLocation || 'Not specified' }}</span>
@@ -227,7 +239,7 @@
                 color="positive"
                 icon="check_circle"
                 label="Accept"
-                @click="updateStatus('accepted')"
+                @click="showStatusDialog('accepted')"
                 :disable="selectedApplicant.status === 'accepted'"
                 :loading="updatingStatus"
                 class="action-btn"
@@ -236,7 +248,7 @@
                 color="orange"
                 icon="schedule"
                 label="Pending"
-                @click="updateStatus('pending')"
+                @click="showStatusDialog('pending')"
                 :disable="selectedApplicant.status === 'pending'"
                 :loading="updatingStatus"
                 outline
@@ -246,7 +258,7 @@
                 color="negative"
                 icon="cancel"
                 label="Reject"
-                @click="updateStatus('rejected')"
+                @click="showStatusDialog('rejected')"
                 :disable="selectedApplicant.status === 'rejected'"
                 :loading="updatingStatus"
                 outline
@@ -280,7 +292,7 @@
             <!-- Overview Tab -->
             <q-tab-panel name="overview" class="tab-panel">
               <div class="row q-gutter-lg">
-                <div class="col-6">
+                <div class="col-12 col-md-6">
                   <q-card class="info-card">
                     <q-card-section class="card-header">Application Details</q-card-section>
                     <q-card-section class="info-content">
@@ -307,49 +319,43 @@
                     </q-card-section>
                   </q-card>
                 </div>
-                <div class="col-6">
-                  <q-card class="info-card">
-                    <q-card-section class="card-header">Links & Documents</q-card-section>
-                    <q-card-section class="info-content">
-                      <div class="info-row" v-if="selectedApplicant.linkedIn">
+                <q-card class="info-card">
+                  <q-card-section class="card-header">Links & Documents</q-card-section>
+                  <q-card-section class="info-content">
+                    <div class="row items-center q-gutter-md">
+                      <div v-if="selectedApplicant.linkedIn" class="col-auto">
                         <span class="info-label">LinkedIn:</span>
-                        <span class="info-value">
-                          <a
-                            :href="selectedApplicant.linkedIn"
-                            target="_blank"
-                            class="link-primary"
-                          >
-                            View Profile
-                          </a>
-                        </span>
+                        <a
+                          :href="selectedApplicant.linkedIn"
+                          target="_blank"
+                          class="link-primary q-ml-xs"
+                        >
+                          View Profile
+                        </a>
                       </div>
-                      <div class="info-row" v-if="selectedApplicant.portfolioWebsite">
+                      <div v-if="selectedApplicant.portfolioWebsite" class="col-auto">
                         <span class="info-label">Portfolio:</span>
-                        <span class="info-value">
-                          <a
-                            :href="selectedApplicant.portfolioWebsite"
-                            target="_blank"
-                            class="link-primary"
-                          >
-                            View Portfolio
-                          </a>
-                        </span>
+                        <a
+                          :href="selectedApplicant.portfolioWebsite"
+                          target="_blank"
+                          class="link-primary q-ml-xs"
+                        >
+                          View Portfolio
+                        </a>
                       </div>
-                      <div class="info-row" v-if="selectedApplicant.resume_url">
+                      <div v-if="selectedApplicant.resume_url" class="col-auto">
                         <span class="info-label">Resume:</span>
-                        <span class="info-value">
-                          <a
-                            :href="selectedApplicant.resume_url"
-                            target="_blank"
-                            class="link-primary"
-                          >
-                            View Resume
-                          </a>
-                        </span>
+                        <a
+                          :href="selectedApplicant.resume_url"
+                          target="_blank"
+                          class="link-primary q-ml-xs"
+                        >
+                          View Resume
+                        </a>
                       </div>
-                    </q-card-section>
-                  </q-card>
-                </div>
+                    </div>
+                  </q-card-section>
+                </q-card>
               </div>
             </q-tab-panel>
 
@@ -568,6 +574,49 @@
         </div>
       </div>
     </div>
+
+    <!-- Status Change Confirmation Dialog -->
+    <q-dialog v-model="showConfirmDialog" persistent @hide="resetDialog">
+      <q-card style="min-width: 400px">
+        <q-card-section class="row items-center q-pb-none">
+          <div class="text-h6">Confirm Status Change</div>
+          <q-space />
+          <q-btn icon="close" flat round dense v-close-popup />
+        </q-card-section>
+
+        <q-card-section class="q-pt-md">
+          <div class="text-body1 q-mb-md">
+            Are you sure you want to change the status of
+            <strong>{{ selectedApplicant?.name || 'this applicant' }}</strong>
+            to <strong class="text-capitalize">{{ pendingStatus }}</strong
+            >?
+          </div>
+
+          <q-checkbox
+            v-model="sendEmailNotification"
+            label="Send email notification to applicant"
+            color="primary"
+            class="q-mb-sm"
+          />
+
+          <div v-if="sendEmailNotification" class="text-caption text-grey-6">
+            An email notification will be sent to {{ selectedApplicant?.email || 'the applicant' }}
+            informing them about the status change.
+          </div>
+        </q-card-section>
+
+        <q-card-actions align="right" class="q-pa-md">
+          <q-btn flat label="Cancel" color="grey-7" v-close-popup @click="resetDialog" />
+          <q-btn
+            label="Confirm"
+            color="primary"
+            @click="confirmStatusUpdate"
+            :loading="updatingStatus"
+            :disable="updatingStatus"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
@@ -594,8 +643,8 @@ const props = defineProps({
 const jobId = computed(() => props.jobDetails?.jobid)
 
 // UI State
-const sendEmails = ref(false)
-const viewMode = ref('cards')
+//const sendEmails = ref(false)
+//const viewMode = ref('cards')
 const searchQuery = ref('')
 const statusFilter = ref(null)
 const statusOptions = [
@@ -612,6 +661,11 @@ const activeTab = ref('overview')
 const selectedApplicant = ref(null)
 const updatingStatus = ref(false)
 const jobDetails = ref(props.jobDetails || {})
+
+// Confirmation Dialog State
+const showConfirmDialog = ref(false)
+const pendingStatus = ref('')
+const sendEmailNotification = ref(true) // Default to true (checked by default)
 
 // Local applicants state
 const applicants = ref([])
@@ -693,39 +747,80 @@ function formatDate(dateStr) {
   return d.toLocaleDateString()
 }
 
-// Status update// Status update
-async function updateStatus(status) {
-  if (!selectedApplicant.value || !selectedApplicant.value.uid || !selectedApplicant.value.jobid) {
+// Show status confirmation dialog
+function showStatusDialog(status) {
+  if (!selectedApplicant.value || !selectedApplicant.value.uid) {
     $q.notify({
       type: 'warning',
-      message: 'Cannot update status: Applicant UID or JobID not available',
+      message: 'Cannot update status: Applicant UID not available',
+    })
+    return
+  }
+
+  pendingStatus.value = status
+  sendEmailNotification.value = true // Reset to default (checked)
+  showConfirmDialog.value = true
+}
+
+// Reset dialog state
+function resetDialog() {
+  pendingStatus.value = ''
+  sendEmailNotification.value = true
+  showConfirmDialog.value = false
+}
+
+// Confirm status update
+async function confirmStatusUpdate() {
+  await updateStatus(pendingStatus.value, sendEmailNotification.value)
+  showConfirmDialog.value = false
+  resetDialog()
+}
+
+// Status update
+async function updateStatus(status, sendEmail = true) {
+  if (!selectedApplicant.value || !selectedApplicant.value.uid) {
+    $q.notify({
+      type: 'warning',
+      message: 'Cannot update status: Applicant UID not available',
     })
     return
   }
 
   updatingStatus.value = true
   try {
-    // Call the backend API with uid, jobid and status
+    // Call the backend API with uid, jobid, and status
     await appStore.updateStatus({
       uid: selectedApplicant.value.uid,
-      jobid: selectedApplicant.value.jobid, // ✅ Added
+      jobid: jobId.value,
       status: status,
     })
+
+    // Send email if requested and status is accepted or rejected
+    let emailMessage = ' No email notification sent.'
+    if (sendEmail && (status === 'accepted' || status === 'rejected')) {
+      try {
+        await appStore.sendEmail({
+          uid: selectedApplicant.value.uid,
+          status: status,
+        })
+        emailMessage = ' Email notification sent.'
+      } catch (emailErr) {
+        emailMessage = ` Email sending failed: ${emailErr.message}`
+      }
+    }
 
     // Update local state
     selectedApplicant.value.status = status
 
     // Update in the applicants array
-    const index = applicants.value.findIndex(
-      (a) => a.uid === selectedApplicant.value.uid && a.jobid === selectedApplicant.value.jobid,
-    )
+    const index = applicants.value.findIndex((a) => a.uid === selectedApplicant.value.uid)
     if (index !== -1) {
       applicants.value[index].status = status
     }
 
     $q.notify({
       type: 'positive',
-      message: `Status updated to ${status}. Email notification sent.`,
+      message: `Status updated to ${status}.${emailMessage}`,
     })
   } catch (err) {
     console.error('Status update error:', err)
@@ -843,137 +938,200 @@ onMounted(() => {
 </script>
 
 <style scoped>
+/* --- Layout & General --- */
 .applicants-management {
   min-height: 100vh;
   display: flex;
   flex-direction: column;
-  background-color: #fafafa;
+  background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
 }
+
+/* --- Advertisement Banner --- */
+.ad-banner {
+  display: flex;
+  align-items: center;
+  gap: 18px;
+  background: linear-gradient(90deg, #e0e7ff 0%, #f0fdfa 100%);
+  border-radius: 10px;
+  margin: 0 32px 0 32px;
+  padding: 18px 28px;
+  box-shadow: 0 2px 12px rgba(56, 189, 248, 0.08);
+  border: 1px solid #dbeafe;
+  min-height: 60px;
+  margin-top: 18px;
+}
+.ad-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #2563eb;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
+}
+.ad-desc {
+  font-size: 14px;
+  color: #334155;
+  font-weight: 500;
+}
+
+/* --- Header --- */
 .header-section {
   background: #ffffff;
-  padding: 20px 24px;
+  padding: 18px 32px 10px 32px;
   border-bottom: 1px solid #e8e8e8;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 2px 8px rgba(0, 32, 128, 0.04);
+  position: sticky;
+  top: 0;
+  z-index: 10;
 }
-.modern-toggle .q-btn {
-  border-radius: 6px;
+
+/* --- Remove red from everywhere --- */
+.stat-number.stat-rejected {
+  color: #64748b; /* Use neutral gray instead of red */
 }
-.modern-btn {
-  border-radius: 6px;
-  font-weight: 500;
-  text-transform: none;
+.score-fair {
+  color: #f59e0b !important;
+} /* Use orange for fair scores instead of red */
+
+/* --- Small Back Button --- */
+.modern-btn[icon='arrow_back'],
+.modern-btn.q-mr-sm {
+  min-width: 32px;
+  min-height: 32px;
+  padding: 0;
 }
+
+/* --- Stats Section --- */
 .stats-section {
-  background: #f8f9fa;
-  padding: 16px 24px;
+  background: #f3f6fa;
+  padding: 10px 32px 10px 32px;
   border-bottom: 1px solid #e8e8e8;
 }
 .stats-container {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 32px;
-  max-width: 800px;
+  gap: 28px;
+  max-width: 900px;
   margin: 0 auto;
 }
 .stat-item {
   text-align: center;
-  min-width: 120px;
+  min-width: 100px;
 }
 .stat-number {
-  font-size: 28px;
-  font-weight: 600;
+  font-size: 30px;
+  font-weight: 700;
   line-height: 1;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
+  letter-spacing: 0.5px;
 }
 .stat-number.text-primary {
-  color: #3b82f6;
+  color: #2563eb;
 }
 .stat-number.text-orange {
   color: #f59e0b;
 }
 .stat-number.stat-accepted {
-  color: #475569;
+  color: #059669;
 }
 .stat-number.stat-rejected {
-  color: #6b7280;
+  color: #64748b;
 }
 .stat-label {
-  font-size: 13px;
-  color: #6b7280;
-  font-weight: 500;
+  font-size: 12px;
+  color: #64748b;
+  font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 .stat-divider {
   width: 1px;
-  height: 40px;
+  height: 36px;
   background: #e5e7eb;
 }
+
+/* --- Main Content --- */
 .main-content {
   flex: 1;
   min-height: 0;
   display: flex;
+  gap: 0;
+  background: none;
 }
+
+/* --- Sidebar --- */
 .applicants-sidebar {
-  background: white;
-  border-right: 1px solid #e8e8e8;
+  background: #f9fafb;
+  border-right: 1.5px solid #e5e7eb;
   overflow-y: auto;
-  max-height: calc(100vh - 140px);
-  width: 420px;
+  height: calc(100vh - 170px);
+  width: 400px;
   min-width: 320px;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
 }
 .filter-section {
-  padding: 20px;
-  border-bottom: 1px solid #f3f4f6;
-  background: #fafbfc;
+  padding: 18px 18px 10px 18px;
+  border-bottom: 1px solid #e5e7eb;
+  background: #f3f6fa;
 }
 .modern-input .q-field__control {
   border-radius: 8px;
 }
 .debug-info {
-  padding: 8px 20px;
-  background: #f8f9fa;
+  padding: 6px 18px;
+  background: #f1f5f9;
   font-size: 11px;
-  color: #6c757d;
-  border-bottom: 1px solid #f3f4f6;
+  color: #64748b;
+  border-bottom: 1px solid #e5e7eb;
 }
 .applicants-list {
-  padding: 12px;
+  padding: 10px 8px 10px 8px;
+  flex: 1;
+  overflow-y: auto;
+  min-height: 0;
 }
 .loading-state,
 .empty-state {
   text-align: center;
-  padding: 48px 20px;
+  padding: 40px 10px;
 }
+
+/* --- Applicant Cards --- */
 .applicant-cards {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
 }
 .applicant-card {
-  background: white;
-  border: 1px solid #e5e7eb;
-  border-radius: 8px;
-  padding: 16px;
+  background: linear-gradient(90deg, #fff 80%, #f0fdfa 100%);
+  border: 1.5px solid #e0e7ef;
+  border-radius: 12px;
+  padding: 14px 18px 10px 18px;
   cursor: pointer;
-  transition: all 0.16s ease;
+  transition:
+    box-shadow 0.18s,
+    border-color 0.18s,
+    transform 0.12s;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
+  min-height: 90px;
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
 }
-.applicant-card:hover {
-  border-color: #d1d5db;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
-  transform: translateY(-2px);
-}
+.applicant-card:hover,
 .applicant-card.selected {
-  background: #eff6ff;
-  border-color: #3b82f6;
-  box-shadow: 0 0 0 1px #3b82f6;
+  border-color: #2563eb;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.1);
+  background: linear-gradient(90deg, #e0e7ff 80%, #f0fdfa 100%);
+  transform: translateY(-2px) scale(1.01);
 }
 .applicant-header {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .applicant-avatar {
   flex-shrink: 0;
@@ -983,46 +1141,90 @@ onMounted(() => {
   min-width: 0;
 }
 .applicant-name {
-  font-weight: 600;
-  color: #1f2937;
-  font-size: 14px;
+  font-weight: 700;
+  color: #1e293b;
+  font-size: 15px;
   margin-bottom: 2px;
+  letter-spacing: 0.1px;
 }
 .applicant-meta {
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
 }
 .status-chip {
   flex-shrink: 0;
   font-size: 11px;
-  font-weight: 600;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  margin-left: 8px;
 }
-.applicant-details {
+.applicant-details-card {
   display: flex;
-  flex-direction: column;
-  gap: 6px;
+  flex-direction: row;
+  gap: 18px;
+  margin-top: 2px;
+  font-size: 12px;
+  color: #64748b;
 }
 .detail-row {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 5px;
   font-size: 12px;
-  color: #6b7280;
+  color: #64748b;
 }
 .resume-link {
-  color: #3b82f6;
+  color: #2563eb;
   text-decoration: none;
-  font-weight: 500;
+  font-weight: 600;
 }
 .resume-link:hover {
   text-decoration: underline;
 }
+
+/* --- Score Section --- */
+.score-section {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  margin: 0 10px;
+}
+.ml-score {
+  font-size: 22px;
+  font-weight: bold;
+  color: #059669;
+  line-height: 1;
+  margin-bottom: 2px;
+  transition: color 0.2s;
+}
+.match-text {
+  font-size: 10px;
+  color: #64748b;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.score-excellent {
+  color: #059669 !important;
+} /* 80%+ Green */
+.score-good {
+  color: #f59e0b !important;
+} /* 60-79% Orange */
+.score-fair {
+  color: #f59e0b !important;
+} /* <60% Orange */
+
+/* --- Details Panel --- */
 .applicant-details {
-  background: #fafafa;
+  background: #f9fafb;
   overflow-y: auto;
-  max-height: calc(100vh - 140px);
+  height: calc(100vh - 170px);
   flex: 1;
   padding: 0;
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
 }
 .no-selection {
   display: flex;
@@ -1041,12 +1243,14 @@ onMounted(() => {
 }
 .profile-header {
   background: white;
-  padding: 24px;
+  padding: 24px 32px;
   display: flex;
   align-items: flex-start;
   justify-content: space-between;
   gap: 24px;
   border-bottom: 1px solid #e8e8e8;
+  border-radius: 0 0 12px 12px;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
 }
 .profile-info {
   display: flex;
@@ -1057,7 +1261,7 @@ onMounted(() => {
 .profile-avatar {
   flex-shrink: 0;
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
 }
 .profile-avatar img {
@@ -1070,173 +1274,153 @@ onMounted(() => {
   flex: 1;
 }
 .profile-name {
-  font-size: 20px;
-  font-weight: 600;
-  color: #1f2937;
+  font-size: 22px;
+  font-weight: 700;
+  color: #1e293b;
   margin-bottom: 4px;
 }
 .profile-email,
 .profile-phone {
-  color: #6b7280;
+  color: #64748b;
   font-size: 14px;
   margin-bottom: 2px;
 }
 .status-chip-large {
-  font-weight: 600;
+  font-weight: 700;
+  font-size: 13px;
 }
 .profile-actions {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 10px;
   min-width: 140px;
 }
 .action-btn {
-  border-radius: 6px;
-  font-weight: 500;
+  border-radius: 8px;
+  font-weight: 600;
+  font-size: 14px;
 }
 .profile-separator {
   background: #e8e8e8;
 }
 .modern-tabs {
   background: white;
-  padding: 0 24px;
+  padding: 0 32px;
   border-bottom: 1px solid #e8e8e8;
 }
 .modern-tabs .q-tab {
-  color: #6b7280;
-  font-weight: 500;
+  color: #64748b;
+  font-weight: 600;
   text-transform: none;
+  font-size: 15px;
 }
 .modern-tabs .q-tab--active {
-  color: #3b82f6;
+  color: #2563eb;
 }
 .tab-panels {
   flex: 1;
-  background: #fafafa;
+  background: #f9fafb;
   overflow-y: auto;
 }
 .tab-panel {
-  padding: 24px;
+  padding: 28px 32px;
   min-height: 400px;
 }
+
+/* --- Info Cards --- */
 .info-card {
   background: white;
-  border-radius: 8px;
-  border: 1px solid #e5e7eb;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  border-radius: 10px;
+  border: 1.5px solid #e0e7ef;
+  box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
   overflow: hidden;
+  margin-bottom: 18px;
 }
 .card-header {
-  background: #f8f9fa;
-  padding: 16px 20px;
-  font-weight: 600;
-  color: #374151;
+  background: #f3f6fa;
+  padding: 14px 20px;
+  font-weight: 700;
+  color: #1e293b;
   border-bottom: 1px solid #e5e7eb;
+  font-size: 16px;
 }
 .info-content {
-  padding: 20px;
+  padding: 18px 20px;
 }
 .info-row {
   display: flex;
-  margin-bottom: 12px;
+  margin-bottom: 10px;
   align-items: flex-start;
 }
 .info-label {
-  width: 150px;
-  color: #6b7280;
-  font-weight: 600;
+  width: 140px;
+  color: #64748b;
+  font-weight: 700;
   font-size: 13px;
 }
 .info-value {
   flex: 1;
-  color: #111827;
+  color: #1e293b;
   font-size: 14px;
 }
-.education-item {
-  padding: 12px 0;
-  border-bottom: 1px dashed #eef2f7;
-}
-.education-header {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 6px;
-}
-.education-degree {
-  font-weight: 600;
-  color: #111827;
-}
-.education-institution {
-  color: #6b7280;
-  font-size: 13px;
-}
-.education-details {
-  color: #4b5563;
-  font-size: 13px;
-  display: flex;
-  gap: 12px;
-  flex-wrap: wrap;
-  margin-bottom: 8px;
-}
-.education-years {
-  color: #6b7280;
-  font-size: 13px;
-}
-.education-grade {
-  font-size: 13px;
-  color: #374151;
-  margin-top: 6px;
-}
-.education-description {
-  color: #6b7280;
-  font-size: 13px;
-  margin-top: 8px;
-}
+
+/* --- Education & Experience --- */
+.education-item,
 .experience-item {
-  padding: 12px 0;
-  border-bottom: 1px dashed #eef2f7;
+  padding: 10px 0;
+  border-bottom: 1px dashed #e0e7ef;
 }
+.education-header,
 .experience-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
-  margin-bottom: 6px;
+  margin-bottom: 4px;
 }
+.education-degree,
 .experience-position {
-  font-weight: 600;
-  color: #111827;
+  font-weight: 700;
+  color: #1e293b;
 }
+.education-institution,
 .experience-company {
-  color: #6b7280;
+  color: #64748b;
   font-size: 13px;
 }
+.education-details,
 .experience-details {
-  color: #4b5563;
+  color: #334155;
   font-size: 13px;
   display: flex;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
+.education-years,
 .experience-duration {
-  color: #6b7280;
+  color: #64748b;
   font-size: 13px;
 }
-.experience-description {
-  color: #4b5563;
-  margin-top: 8px;
+.education-grade {
   font-size: 13px;
+  color: #1e293b;
+  margin-top: 4px;
+}
+.education-description,
+.experience-description {
+  color: #64748b;
+  font-size: 13px;
+  margin-top: 6px;
 }
 .experience-skills {
-  margin-top: 8px;
+  margin-top: 6px;
 }
 .skills-label {
   font-size: 13px;
-  color: #374151;
-  font-weight: 600;
-  margin-bottom: 6px;
+  color: #1e293b;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 .skills-list {
   display: flex;
@@ -1244,25 +1428,25 @@ onMounted(() => {
   flex-wrap: wrap;
 }
 .skill-chip {
-  background: #eff6ff;
-  color: #075985;
+  background: #e0e7ff;
+  color: #2563eb;
   border-radius: 999px;
-  padding: 4px 8px;
+  padding: 4px 10px;
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
 }
 .cover-letter {
-  background: #ffffff;
-  border: 1px solid #eef2f7;
+  background: #f3f6fa;
+  border: 1px solid #e0e7ef;
   padding: 12px;
   border-radius: 8px;
-  color: #374151;
+  color: #334155;
   font-size: 14px;
   white-space: pre-wrap;
 }
 .link-primary {
-  color: #3b82f6;
-  font-weight: 600;
+  color: #2563eb;
+  font-weight: 700;
   text-decoration: none;
 }
 .link-primary:hover {
@@ -1272,19 +1456,23 @@ onMounted(() => {
   margin: 0 12px;
   height: auto;
 }
+
+/* --- Scrollbars --- */
 .applicants-sidebar::-webkit-scrollbar,
 .applicant-details::-webkit-scrollbar,
 .tab-panels::-webkit-scrollbar {
-  width: 10px;
-  height: 10px;
+  width: 8px;
+  height: 8px;
 }
 .applicants-sidebar::-webkit-scrollbar-thumb,
 .applicant-details::-webkit-scrollbar-thumb,
 .tab-panels::-webkit-scrollbar-thumb {
-  background: rgba(16, 24, 40, 0.06);
+  background: rgba(37, 99, 235, 0.08);
   border-radius: 8px;
 }
-@media (max-width: 900px) {
+
+/* --- Responsive --- */
+@media (max-width: 1100px) {
   .main-content {
     flex-direction: column;
   }
@@ -1293,7 +1481,8 @@ onMounted(() => {
     min-width: auto;
     max-height: none;
     border-right: none;
-    border-bottom: 1px solid #e8e8e8;
+    border-bottom: 1.5px solid #e5e7eb;
+    height: auto;
   }
   .q-separator--vertical {
     display: none;
@@ -1314,6 +1503,14 @@ onMounted(() => {
   .tab-panel {
     padding: 16px;
     min-height: auto;
+  }
+  .ad-banner,
+  .header-section,
+  .stats-section {
+    margin-left: 0;
+    margin-right: 0;
+    padding-left: 12px;
+    padding-right: 12px;
   }
 }
 </style>
