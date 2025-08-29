@@ -23,13 +23,51 @@
         </div>
 
         <div class="header-actions">
-          <button v-if="!isEditing" class="btn btn-primary" @click="startEditing">Edit</button>
-          <div v-else class="edit-actions">
-            <button class="btn btn-secondary" @click="cancelEditing">Cancel</button>
-            <button class="btn btn-primary" @click="saveChanges">Save Changes</button>
-          </div>
-          <button class="btn btn-danger" @click="confirmDeleteJob(job)">Delete</button>
+          <q-btn 
+            v-if="!isEditing" 
+            dense 
+            flat 
+            round 
+            icon="edit" 
+            @click="startEditing" 
+            color="black" 
+          />
+          <q-btn 
+            v-if="isEditing"
+            dense 
+            flat 
+            round 
+            icon="check" 
+            @click="showSaveConfirmation" 
+            color="positive" 
+            :disable="!hasChanges"
+            :class="{ 'pulse-animation': hasChanges }"
+          />
+          <q-btn
+            v-if="isEditing"
+            dense
+            flat
+            round
+            icon="close"
+            @click="showCancelConfirmation"
+            color="negative"
+          />
+          <q-btn 
+            v-if="!isEditing" 
+            dense 
+            flat 
+            round 
+            icon="delete" 
+            @click="confirmDeleteJob(job)" 
+            color="negative" 
+          />
         </div>
+      </div>
+
+      <!-- Change indicator -->
+      <div v-if="isEditing && hasChanges" class="change-indicator">
+        <q-icon name="info" color="primary" size="sm" />
+        <span>You have unsaved changes</span>
       </div>
 
       <!-- Content -->
@@ -241,70 +279,208 @@
     </div>
 
     <!-- Delete Dialog -->
-    <div v-if="deleteDialog" class="dialog-overlay" @click="deleteDialog = false">
-      <div class="dialog" @click.stop>
-        <div class="dialog-header">
-          <h3 class="dialog-title">Delete Job Posting</h3>
-        </div>
-        <div class="dialog-content">
-          <p>Are you sure you want to delete this job posting? This action cannot be undone.</p>
-        </div>
-        <div class="dialog-actions">
-          <button class="btn btn-secondary" @click="deleteDialog = false">Cancel</button>
-          <button class="btn btn-danger" @click="deleteJob">Delete Job</button>
-        </div>
-      </div>
-    </div>
+    <q-dialog v-model="deleteDialog" persistent>
+      <q-card class="confirmation-dialog">
+        <q-card-section class="row items-center">
+          <q-avatar icon="delete" color="primary" text-color="white" />
+          <span class="q-ml-sm text-h6">Delete Job Posting</span>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          Are you sure you want to delete this job posting? This action cannot be undone.
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="#7a7a7a" @click="deleteDialog = false" />
+          <q-btn 
+            unelevated 
+            label="Delete Job" 
+            color="primary" 
+            @click="deleteJob"
+            :loading="isDeleting"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Save Confirmation Dialog -->
+    <q-dialog v-model="showSaveDialog" persistent>
+      <q-card class="confirmation-dialog">
+        <q-card-section class="row items-center">
+          <q-avatar icon="save" color="primary" text-color="white" />
+          <span class="q-ml-sm text-h6">Save Changes</span>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          Are you sure you want to save the changes to this job posting?
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="#7a7a7a" @click="showSaveDialog = false" />
+          <q-btn 
+            unelevated 
+            label="Save Changes" 
+            color="primary" 
+            @click="confirmSave"
+            :loading="isSaving"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Cancel Confirmation Dialog -->
+    <q-dialog v-model="showCancelDialog" persistent>
+      <q-card class="confirmation-dialog">
+        <q-card-section class="row items-center">
+          <q-avatar icon="warning" color="primary" text-color="white" />
+          <span class="q-ml-sm text-h6">Discard Changes</span>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          You have unsaved changes. Are you sure you want to discard them?
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Keep Editing" color="#7a7a7a" @click="showCancelDialog = false" />
+          <q-btn 
+            unelevated 
+            label="Discard Changes" 
+            color="primary" 
+            @click="confirmCancel"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
   </div>
 </template>
 
 <script setup>
-import { ref, reactive, watch } from 'vue'
+import { ref, reactive, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useJobsStore } from 'src/stores/appStore'
 
 const props = defineProps({
-  job: {
-    type: Object,
-    required: true,
-  },
-  goBack: {
-    type: Function,
-    required: true,
-  },
+  job: { type: Object, required: true },
+  goBack: { type: Function, required: true },
 })
+
+const emit = defineEmits(['jobDeleted'])
 
 const $q = useQuasar()
 const deleteDialog = ref(false)
 const jobToDelete = ref(null)
 const jobsStore = useJobsStore()
 const isEditing = ref(false)
+const showSaveDialog = ref(false)
+const showCancelDialog = ref(false)
+const isSaving = ref(false)
 
+// Store original data for comparison
+const originalJob = ref({})
 const editedJob = reactive({ ...props.job })
 
+// Change detection
+const hasChanges = ref(false)
+
+// Initialize data
+function initializeData() {
+  const jobData = JSON.parse(JSON.stringify(props.job))
+  originalJob.value = jobData
+  Object.assign(editedJob, jobData)
+}
+
+// Deep comparison function
+function deepEqual(obj1, obj2) {
+  if (obj1 === obj2) return true
+  
+  if (obj1 && obj2 && typeof obj1 === 'object' && typeof obj2 === 'object') {
+    const keys1 = Object.keys(obj1)
+    const keys2 = Object.keys(obj2)
+    
+    if (keys1.length !== keys2.length) return false
+    
+    return keys1.every(key => deepEqual(obj1[key], obj2[key]))
+  }
+  
+  return false
+}
+
+// Check for changes
+function checkForChanges() {
+  const fields = ['title', 'smallDescription', 'bigDescription', 'job_type', 'mode_of_work', 
+                  'experience_min', 'experience_max', 'salary_min', 'salary_max', 
+                  'equity_min', 'equity_max', 'opening', 'qualification']
+  
+  const changed = fields.some(field => !deepEqual(editedJob[field], originalJob.value[field]))
+  hasChanges.value = changed
+}
+
+// Watch for changes in editedJob
+watch(() => editedJob, () => {
+  if (isEditing.value) {
+    nextTick(() => {
+      checkForChanges()
+    })
+  }
+}, { deep: true })
+
+// Watch for prop changes
 watch(
   () => props.job,
   (newJob) => {
     Object.assign(editedJob, newJob)
+    initializeData()
   },
 )
 
+// Edit state management
 const startEditing = () => {
   isEditing.value = true
+  initializeData()
+  checkForChanges()
+}
+
+const showCancelConfirmation = () => {
+  if (hasChanges.value) {
+    showCancelDialog.value = true
+  } else {
+    cancelEditing()
+  }
+}
+
+const confirmCancel = () => {
+  showCancelDialog.value = false
+  cancelEditing()
 }
 
 const cancelEditing = () => {
-  Object.assign(editedJob, props.job)
+  Object.assign(editedJob, originalJob.value)
   isEditing.value = false
+  hasChanges.value = false
+}
+
+const showSaveConfirmation = () => {
+  if (hasChanges.value) {
+    showSaveDialog.value = true
+  }
+}
+
+const confirmSave = async () => {
+  showSaveDialog.value = false
+  isSaving.value = true
+  
+  try {
+    await saveChanges()
+  } finally {
+    isSaving.value = false
+  }
 }
 
 const saveChanges = async () => {
   try {
     const res = await fetch(`http://localhost:3000/jobs/edit-job`, {
       method: 'PATCH',
-      headers: {
-        'Content-Type': 'application/json',
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ ...editedJob }),
     })
 
@@ -313,13 +489,19 @@ const saveChanges = async () => {
       notify(responseJSON.message, 'negative')
     } else {
       notify('Job updated successfully!', 'positive')
-      Object.assign(props.job, editedJob)
+      
+      // Update original data and reset change tracking
+      originalJob.value = JSON.parse(JSON.stringify(editedJob))
+      hasChanges.value = false
+      isEditing.value = false
+      
+      // Refresh store so list view updates
+      await jobsStore.fetchJobByRecruiter()
     }
   } catch (error) {
     console.error('Error occurred while updating job:', error)
     notify('Error occurred while updating job', 'negative')
   }
-  isEditing.value = false
 }
 
 const confirmDeleteJob = (job) => {
@@ -330,8 +512,12 @@ const confirmDeleteJob = (job) => {
 const deleteJob = async () => {
   try {
     await jobsStore.deleteJob(jobToDelete.value.jobid)
+    
     notify('Job deleted successfully', 'positive')
     deleteDialog.value = false
+    
+    emit('jobDeleted', jobToDelete.value.jobid)
+    
     jobToDelete.value = null
     props.goBack()
   } catch (error) {
@@ -354,16 +540,49 @@ const formatDate = (dateString) => {
 }
 
 const notify = (msg, color = 'primary') => {
-  $q.notify({
-    message: msg,
-    color,
-    position: 'bottom',
-    timeout: 3000,
-  })
+  $q.notify({ message: msg, color, position: 'bottom', timeout: 3000 })
 }
+
+// Initialize on mount
+initializeData()
 </script>
 
+
+
 <style scoped>
+.change-indicator {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  margin: 0 1.5rem 1rem 1.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #856404;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(33, 150, 243, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(33, 150, 243, 0);
+  }
+}
+
+.edit-actions {
+  display: flex;
+  gap: 8px;
+}
 .job-details-container {
   width: 100%;
   margin: 0 auto;
