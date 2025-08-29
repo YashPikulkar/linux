@@ -1,164 +1,129 @@
 <template>
-  <div id="login-button" class="hero-container">
-    <q-card class="hero-card">
-      <q-card-section class="hero-content">
-        <!-- Heading -->
-        <h1 class="hero-title">Where startups and job seekers connect</h1>
+  <div class="q-pa-xl flex flex-center column">
+    <!-- Heading -->
+    <h1 class="text-h4 text-weight-bold text-center q-sm-xl">
+      Where startups and job seekers connect
+    </h1>
 
-        <!-- CTA Buttons -->
-        <div class="hero-actions">
-          <!-- Hire Button -->
-          <q-btn
-            label="Log in"
-            color="dark"
-            text-color="white"
-            class="hero-btn hero-btn-primary"
-            unelevated
-            rounded
-            no-caps
-            size="lg"
-            @click="goToLogin"
-          />
+    <!-- CTA Buttons -->
+    <div class="row justify-center cta-buttons">
+      <!-- Hire Button -->
+      <q-btn
+        label="Find your next hire"
+        class="cta-hire-btn"
+        unelevated
+        rounded
+        no-caps
+        size="xl"
+        @click="goToLogin"
+      />
 
-          <!-- Job Button -->
-          <q-btn
-            id="register-btn"
-            label="Register"
-            color="white"
-            text-color="dark"
-            class="hero-btn hero-btn-secondary"
-            rounded
-            no-caps
-            size="lg"
-            outline
-            @click="goToRegister"
-          />
-        </div>
-      </q-card-section>
-    </q-card>
+      <!-- Job Button -->
+      <q-btn
+        label="Find your next job"
+        class="cta-job-btn"
+        rounded
+        no-caps
+        size="xl"
+        @click="goToJobs"
+      />
+    </div>
   </div>
 </template>
 
-<script setup>
-import { useRouter } from 'vue-router'
-
-const router = useRouter()
-
-const goToRegister = () => {
-  router.push('/register')
-}
-
-const goToLogin = () => {
-  router.push('/login')
+<script>
+export default {
+  name: 'LandingHero',
+  methods: {
+    goToJobs() {
+      this.$router.push('/all-jobs') // ✅ Goes to All Jobs dashboard
+    },
+    goToLogin() {
+      this.$router.push('/special-feature') // ✅ Goes to Login page
+    },
+  },
 }
 </script>
 
 <style scoped>
-.hero-container {
+.q-pa-xl.flex.flex-center.column {
+  background-color: #ffffff; /* Clean white background */
+}
+
+h1 {
+  margin-top: 10px;
+  font-size: 3.5rem;
+  color: #1C1C1C; /* Primary charcoal */
+}
+
+/* 🔹 Wrapper for spacing between buttons */
+.cta-buttons {
+  gap: 30px; /* More space between buttons */
+  margin-top: 25px;
   display: flex;
-  align-items: center;
-  justify-content: center;
-  min-height: 400px;
-  padding: 40px;
-  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
-}
-
-.hero-card {
-  width: 100%;
-  max-width: 1480px;
-  border-radius: 16px;
-  box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
-  border: 1px solid rgba(0, 0, 0, 0.05);
-  overflow: hidden;
-}
-
-.hero-content {
-  padding: 60px 40px;
-  text-align: center;
-}
-
-.hero-title {
-  font-size: 2.5rem;
-  font-weight: 700;
-  margin: 0 0 40px 0;
-  color: #212121;
-  line-height: 1.2;
-}
-
-.hero-actions {
-  display: flex;
-  justify-content: center;
-  gap: 20px;
   flex-wrap: wrap;
+  justify-content: center;
 }
 
-.hero-btn {
-  padding: 12px 52px;
+/* 🔹 Hire Button (Primary CTA) */
+.cta-hire-btn {
+  font-size: 18px;
   font-weight: 600;
-  font-size: 1rem;
-  letter-spacing: 0.5px;
-  transition: all 0.3s ease;
+  color: #ffffff; /* White text */
+  background-color: #1C1C1C; /* Charcoal base */
+  border: 2px solid transparent;
+  border-radius: 14px;
+  padding: 16px 40px;
+  transition: all 0.25s ease;
+  min-width: 200px;
 }
 
-.hero-btn-primary {
-  background: #212121;
+/* Hover → Copper accent + glow */
+.cta-hire-btn:hover {
+  background: #b87333; /* Copper accent */
+  color: #ffffff;
+  border-color: #b87333;
+  transform: translateY(-1px);
+  box-shadow: 0 4px 12px rgba(184, 115, 51, 0.4); /* Copper glow */
 }
 
-.hero-btn-primary:hover {
-  background: #424242;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(33, 33, 33, 0.3);
+/* Focus → solid copper outline for accessibility */
+.cta-hire-btn:focus {
+  outline: 2px solid #8a5525; /* Darker copper */
+  outline-offset: 2px;
 }
 
-.hero-btn-primary:active {
-  transform: translateY(0);
+/* Active → darker copper pressed state */
+.cta-hire-btn:active {
+  background: #8a5525; /* Darker copper */
+  border-color: #8a5525;
+  transform: translateY(0); /* Pressed in */
+  box-shadow: 0 2px 6px rgba(138, 85, 37, 0.3); /* Softer shadow */
 }
 
-.hero-btn-secondary {
-  border: 2px solid #212121;
+/* 🔹 Job Button (Secondary CTA) */
+.cta-job-btn {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1C1C1C; /* Charcoal text */
+  background-color: #ffffff; /* Neutral background */
+  border: 2px solid #d1d5db; /* Subtle border */
+  border-radius: 14px;
+  padding: 16px 40px;
+  transition: all 0.25s ease;
+  min-width: 200px;
+}
+.cta-job-btn:hover {
+  background-color: rgba(184, 115, 51, 0.08); /* Light copper tint */
+  border: 2px solid #B87333; /* Copper border */
+  color: #B87333; /* Copper text */
+  box-shadow: 0 0 0 4px rgba(184, 115, 51, 0.2); /* Soft copper glow */
 }
 
-.hero-btn-secondary:hover {
-  background: rgba(33, 33, 33, 0.05);
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(33, 33, 33, 0.1);
+.cta-job-btn:focus {
+  outline: 2px solid #8a5525; /* Darker copper for accessibility */
+  outline-offset: 2px;
 }
 
-.hero-btn-secondary:active {
-  transform: translateY(0);
-}
 
-/* Responsive design */
-@media (max-width: 768px) {
-  .hero-container {
-    padding: 20px;
-    min-height: 300px;
-  }
-
-  .hero-content {
-    padding: 40px 20px;
-  }
-
-  .hero-title {
-    font-size: 2rem;
-    margin-bottom: 30px;
-  }
-
-  .hero-actions {
-    flex-direction: column;
-    align-items: center;
-    gap: 15px;
-  }
-
-  .hero-btn {
-    width: 100%;
-    max-width: 300px;
-  }
-}
-
-@media (max-width: 480px) {
-  .hero-title {
-    font-size: 1.75rem;
-  }
-}
 </style>

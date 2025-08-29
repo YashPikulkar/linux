@@ -1,23 +1,30 @@
 <template>
   <q-layout view="hHh lpR fFf" class="main-layout">
-    <!-- Simple Header -->
-    <q-header elevated class="bg-primary text-white">
-      <q-toolbar>
-        <q-toolbar-title>Basic Header</q-toolbar-title>
-      </q-toolbar>
-    </q-header>
+    <!-- Header -->
+    <land-header />
 
+    <!-- Page Content -->
     <q-page-container>
-      <q-page class="q-pa-md">
-        <!-- Page content goes here -->
-        <div>Welcome to the dashboard!</div>
-      </q-page>
+      <router-view />
     </q-page-container>
   </q-layout>
 </template>
 
 <script setup>
-// No extra logic needed for simple header
+import { useRouter } from 'vue-router'
+import { useUserStore } from 'src/stores/user-store'
+import LandHeader from 'src/components/navbar/LandHeader.vue'
+
+const router = useRouter()
+const userStore = useUserStore()
+
+// 🔹 Optional: Route Guard Logic (for role-based protection)
+router.beforeEach((to, from, next) => {
+  const role = userStore.role
+  if (to.path.startsWith('/applicant') && role !== 'applicant') return next('/login')
+  if (to.path.startsWith('/recruiter') && role !== 'recruiter') return next('/login')
+  next()
+})
 </script>
 
 <style scoped>

@@ -107,7 +107,7 @@ function handleTagClick(tag) {
   }
 
   // Navigate
-  router.push({ name: 'jobsdashboard' })
+  router.push({ name: 'Jobs' })
 }
 // Resize handler
 function updateScreenSize() {
@@ -273,7 +273,7 @@ onUnmounted(() => {
   width: 100%;
   min-height: 60vh;
   position: relative;
-  background-color: #f9f9f9;
+  background-color: #F4F4F4; /* Support gray */
   z-index: 2;
   display: flex;
   flex-direction: column;
@@ -290,13 +290,15 @@ onUnmounted(() => {
   gap: 10px;
   white-space: nowrap;
   margin-bottom: 30px;
+  margin-top: 46px; /* Default for large screens */
   z-index: 3;
   position: relative;
+  color: #1C1C1C; /* Primary charcoal */
 }
 
 .prefix {
   font-weight: 700;
-  color: #000;
+  color: #1C1C1C; /* Primary charcoal */
   position: relative;
 }
 
@@ -304,20 +306,21 @@ onUnmounted(() => {
   display: inline-block;
   width: 8px;
   height: 8px;
-  background: red;
+  background: #B87333; /* Copper accent dot */
   border-radius: 50%;
   margin-left: 2px;
 }
 
 .main-text {
-  color: #111;
+  color: #1C1C1C; /* Primary charcoal */
 }
 
 .highlighted {
-  border: 2px dashed red;
+  border: 2px dashed #B87333; /* Copper accent border */
   border-radius: 12px;
   padding: 2px 8px;
   margin-left: 6px;
+  color: #B87333; /* Copper accent text */
 }
 
 .tag-container {
@@ -329,12 +332,15 @@ onUnmounted(() => {
   pointer-events: none;
   z-index: 1;
 
-  background: linear-gradient(135deg, #ffffff, #f7c1c1);
+  background: linear-gradient(
+    135deg,
+    #ffffff,
+    #f7e4d5
+  ); /* Soft copper-tinted gradient */
 }
 
 .tag {
   font-family: 'Poppins', sans-serif;
-
   position: absolute;
   padding: 12px 18px;
   background-color: #fff;
@@ -344,19 +350,21 @@ onUnmounted(() => {
   font-weight: 300;
   white-space: nowrap;
   box-shadow: 0 4px 10px rgba(0, 0, 0, 0.06);
-  color: rgba(0, 0, 0, 0.85);
+  color: rgba(28, 28, 28, 0.85); /* Charcoal text */
   opacity: 0;
   transition:
     background 0.2s ease,
-    color 0.2s ease;
+    color 0.2s ease,
+    border 0.2s ease,
+    box-shadow 0.2s ease;
   pointer-events: auto;
 }
 
 .tag.hovered {
-  background-color: rgba(255, 0, 0, 0.1); /* Light red with transparency */
-  border: 2px solid rgba(255, 0, 0, 0.4); /* Slightly darker red border */
-  color: #e53935; /* Red text */
-  box-shadow: 0 0 0 4px rgba(255, 0, 0, 0.2); /* Red glow effect */
+  background-color: rgba(184, 115, 51, 0.1); /* Light copper with transparency */
+  border: 2px solid rgba(184, 115, 51, 0.4); /* Slightly darker copper border */
+  color: #B87333; /* Copper text */
+  box-shadow: 0 0 0 4px rgba(184, 115, 51, 0.2); /* Copper glow effect */
 }
 
 .static-tag-section {
@@ -384,11 +392,15 @@ onUnmounted(() => {
   border-radius: 20px;
   font-size: 14px;
   font-weight: 600;
-  color: #111;
+  color: #1C1C1C; /* Primary charcoal text */
   white-space: nowrap;
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.04);
+  transition: all 0.2s ease;
 }
-.hero-title {
-  margin-top: 46px; /* Default for large screens */
+
+.static-tag:hover {
+  border-color: #B87333; /* Copper border on hover */
+  color: #B87333; /* Copper text on hover */
 }
+
 </style>

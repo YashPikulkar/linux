@@ -1,186 +1,241 @@
+
 <template>
-  <q-card flat bordered class="company-profile-card">
+  <div>
     <div class="card-header">
       <div class="card-title">Company Profile</div>
       <div class="action-buttons">
-        <q-btn dense flat round icon="edit" v-if="!isEditable" @click="enableEdit" color="black" />
-        <q-btn dense flat round icon="check" v-if="isEditable" @click="save" color="positive" />
+        <q-btn dense flat round icon="edit" v-if="!isGlobalEditable" @click="enableGlobalEdit" color="black" />
+        <q-btn 
+          dense 
+          flat 
+          round 
+          icon="check" 
+          v-if="isGlobalEditable" 
+          @click="showSaveConfirmation" 
+          color="positive" 
+          :disable="!hasChanges"
+          :class="{ 'pulse-animation': hasChanges }"
+        />
         <q-btn
           dense
           flat
           round
           icon="close"
-          v-if="isEditable"
-          @click="cancelEdit"
+          v-if="isGlobalEditable"
+          @click="showCancelConfirmation"
           color="negative"
         />
       </div>
     </div>
-
     <q-separator class="custom-separator" />
-
-    <q-form class="form-content">
-      <q-input
-        v-model="editData.name"
-        :disable="!isEditable"
-        filled
-        label="Company Name"
-        class="styled-input"
-      />
-      <q-input
-        v-model="editData.description"
-        :disable="!isEditable"
-        filled
-        type="textarea"
-        label="Description"
-        class="styled-input"
-      />
-      <q-select
-        v-model="editData.companySize"
-        :disable="!isEditable"
-        filled
-        label="Company Size"
-        :options="sizeOptions"
-        class="styled-input"
-      />
-      <q-select
-        v-model="editData.status"
-        :disable="!isEditable"
-        filled
-        label="Status"
-        :options="statusOptions"
-        class="styled-input"
-      />
-      <q-input
-        v-model="editData.CEO"
-        :disable="!isEditable"
-        filled
-        label="CEO"
-        class="styled-input"
-      />
-      <q-input
-        v-model="editData.companyEmail"
-        :disable="!isEditable"
-        filled
-        label="Company Email"
-        class="styled-input"
-      />
-
-      <!-- 🔹 Location Multi-Select -->
-      <q-select
-        v-model="editData.locationids"
-        :disable="!isEditable"
-        filled
-        label="Preferred Locations"
-        multiple
-        use-chips
-        emit-value
-        map-options
-        :options="locationOptions"
-        class="styled-input"
-      />
-
-      <!-- 🔹 Market Multi-Select -->
-      <q-select
-        v-model="editData.marketids"
-        :disable="!isEditable"
-        filled
-        label="Markets"
-        multiple
-        use-chips
-        emit-value
-        map-options
-        :options="marketOptions"
-        class="styled-input"
-      />
-
-      <!-- 🔹 Company Type Multi-Select -->
-      <q-select
-        v-model="editData.type"
-        :disable="!isEditable"
-        filled
-        label="Company Type"
-        multiple
-        use-chips
-        emit-value
-        map-options
-        :options="companyTypeOptions"
-        class="styled-input"
-      />
-
-      <!-- Tags -->
-      <div class="section-header">
-        <div class="section-title">Tags</div>
-        <q-btn v-if="isEditable" flat dense round icon="add" class="add-btn" @click="addTag" />
-      </div>
-      <div v-for="(tag, index) in editData.tags" :key="'tag-' + index" class="dynamic-item">
-        <q-input
-          v-model="editData.tags[index]"
-          :disable="!isEditable"
-          filled
-          placeholder="Innovative / Work-Life Balance"
-          class="styled-input dynamic-input"
-        />
-        <q-btn
-          v-if="isEditable"
-          flat
-          dense
-          round
-          icon="remove"
-          class="remove-btn"
-          @click="removeTag(index)"
+    
+    <!-- Change indicator -->
+    <div v-if="isGlobalEditable && hasChanges" class="change-indicator">
+      <q-icon name="info" color="primary" size="sm" />
+      <span>You have unsaved changes</span>
+    </div>
+    
+    <div class="bottom-section row q-mt-sm">
+      <div class="left-side">
+        <CompanyBasicInfo 
+          class="widget" 
+          :is-global-editable="isGlobalEditable"
+          :edit-data="editData"
+          :size-options="sizeOptions"
+          :status-options="statusOptions"
+          @update:edit-data="updateEditData"
+          @data-changed="onDataChanged"
         />
       </div>
+      
+      <div class="right-side ">
+        <CompanyLocationsMarkets 
+          class="widget" 
+          :is-global-editable="isGlobalEditable"
+          :edit-data="editData"
+          :location-options="locationOptions"
+          :market-options="marketOptions"
+          :company-type-options="companyTypeOptions"
+          @update:edit-data="updateEditData"
+          @data-changed="onDataChanged"
+        />
+        
+        <!-- Tags Component -->
+        <TagsComponent 
+          class="widget" 
+          :is-global-editable="isGlobalEditable"
+          :edit-data="editData"
+          @update:edit-data="updateEditData"
+          @data-changed="onDataChanged"
+        />
+      </div>
+    </div>
 
-      <!-- Links -->
-      <div class="section-header">
-        <div class="section-title">Links</div>
-        <q-btn v-if="isEditable" flat dense round icon="add" class="add-btn" @click="addLink" />
-      </div>
-      <div v-for="(link, index) in editData.links" :key="'link-' + index" class="dynamic-item">
-        <q-input
-          v-model="editData.links[index]"
-          :disable="!isEditable"
-          filled
-          class="styled-input dynamic-input"
-        />
-        <q-btn
-          v-if="isEditable"
-          flat
-          dense
-          round
-          icon="remove"
-          class="remove-btn"
-          @click="removeLink(index)"
-        />
-      </div>
-    </q-form>
-  </q-card>
+    <!-- Links Component - Full Width Below -->
+    <div class="full-width-section">
+      <LinksComponent 
+        class="widget" 
+        :is-global-editable="isGlobalEditable"
+        :edit-data="editData"
+        @update:edit-data="updateEditData"
+        @data-changed="onDataChanged"
+      />
+    </div>
+
+    <!-- Save Confirmation Dialog -->
+    <q-dialog v-model="showSaveDialog" persistent>
+      <q-card class="confirmation-dialog">
+        <q-card-section class="row items-center">
+          <q-avatar icon="save" color="primary" text-color="white" />
+          <span class="q-ml-sm text-h6">Save Changes</span>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          Are you sure you want to save the changes to your company profile?
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Cancel" color="#7a7a7a" @click="showSaveDialog = false" />
+          <q-btn 
+            unelevated 
+            label="Save Changes" 
+            color="primary" 
+            @click="confirmSave"
+            :loading="isSaving"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+
+    <!-- Cancel Confirmation Dialog -->
+    <q-dialog v-model="showCancelDialog" persistent>
+      <q-card class="confirmation-dialog">
+        <q-card-section class="row items-center">
+          <q-avatar icon="warning" color="primary" text-color="white" />
+          <span class="q-ml-sm text-h6">Discard Changes</span>
+        </q-card-section>
+
+        <q-card-section class="q-pt-none">
+          You have unsaved changes. Are you sure you want to discard them?
+        </q-card-section>
+
+        <q-card-actions align="right">
+          <q-btn flat label="Keep Editing" color="#7a7a7a" @click="showCancelDialog = false" />
+          <q-btn 
+            unelevated 
+            label="Discard Changes" 
+            color="primary" 
+            @click="confirmCancel"
+          />
+        </q-card-actions>
+      </q-card>
+    </q-dialog>
+  </div>
 </template>
 
 <script setup>
-import { onMounted, reactive, ref, computed } from 'vue'
+import { onMounted, ref, computed, watch, nextTick } from 'vue'
 import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
 import { useFilterStore } from 'src/stores/filter-store'
 
+// Import child components
+import CompanyBasicInfo from 'src/components/RecruiterDashboard/CompanyBasicInfo.vue'
+import CompanyLocationsMarkets from 'src/components/RecruiterDashboard/CompanySelectFields.vue'
+import TagsComponent from 'src/components/RecruiterDashboard/CompanyTags.vue'
+import LinksComponent from 'src/components/RecruiterDashboard/CompanyLinks.vue'
+
 const $q = useQuasar()
-const isEditable = ref(false)
+const isGlobalEditable = ref(false)
+const showSaveDialog = ref(false)
+const showCancelDialog = ref(false)
+const isSaving = ref(false)
 
 const userStore = useUserStore()
 const filterStore = useFilterStore()
 
-// Clone reactive company data
-const editData = reactive(JSON.parse(JSON.stringify(userStore.company)))
+// Store original data for comparison - using ref instead of reactive
+const originalData = ref({})
+const editData = ref({})
 
-// Ensure arrays exist
-editData.locationids = Array.isArray(editData.locationids) ? editData.locationids : []
-editData.marketids = Array.isArray(editData.marketids) ? editData.marketids : []
-editData.tags = Array.isArray(editData.tags) ? editData.tags : []
-editData.links = Array.isArray(editData.links) ? editData.links : []
-editData.type = Array.isArray(editData.type) ? editData.type : [] // 🔹 Company type
+// Change detection
+const hasChanges = ref(false)
+const changedFields = ref([])
 
-// Options for selects (computed to update reactively after fetch)
+// Initialize data
+function initializeData() {
+  const companyData = JSON.parse(JSON.stringify(userStore.company))
+  
+  // Ensure arrays exist
+  companyData.locationids = Array.isArray(companyData.locationids) ? companyData.locationids : []
+  companyData.marketids = Array.isArray(companyData.marketids) ? companyData.marketids : []
+  companyData.tags = Array.isArray(companyData.tags) ? companyData.tags : []
+  companyData.links = Array.isArray(companyData.links) ? companyData.links : []
+  companyData.type = Array.isArray(companyData.type) ? companyData.type : []
+
+  // Set original data
+  originalData.value = JSON.parse(JSON.stringify(companyData))
+  
+  // Set edit data
+  editData.value = JSON.parse(JSON.stringify(companyData))
+}
+
+// Deep comparison function
+function deepEqual(obj1, obj2) {
+  if (obj1 === obj2) return true
+  
+  if (Array.isArray(obj1) && Array.isArray(obj2)) {
+    if (obj1.length !== obj2.length) return false
+    return obj1.every((item, index) => deepEqual(item, obj2[index]))
+  }
+  
+  if (obj1 && obj2 && typeof obj1 === 'object' && typeof obj2 === 'object') {
+    const keys1 = Object.keys(obj1)
+    const keys2 = Object.keys(obj2)
+    
+    if (keys1.length !== keys2.length) return false
+    
+    return keys1.every(key => deepEqual(obj1[key], obj2[key]))
+  }
+  
+  return false
+}
+
+// Check for changes
+function checkForChanges() {
+  const changed = []
+  const fields = ['name', 'description', 'companySize', 'status', 'CEO', 'companyEmail', 'locationids', 'marketids', 'type', 'tags', 'links']
+  
+  fields.forEach(field => {
+    if (!deepEqual(editData.value[field], originalData.value[field])) {
+      changed.push(field)
+    }
+  })
+  
+  changedFields.value = changed
+  hasChanges.value = changed.length > 0
+}
+
+// Watch for changes in editData
+watch(() => editData.value, () => {
+  nextTick(() => {
+    checkForChanges()
+  })
+}, { deep: true })
+
+// Handle updates from child components
+function updateEditData(updatedData) {
+  editData.value = { ...updatedData }
+}
+
+// Handle data changes from child components
+function onDataChanged() {
+  nextTick(() => {
+    checkForChanges()
+  })
+}
+
+// Options for selects
 const locationOptions = computed(() =>
   filterStore.locations.map((loc) => ({ label: loc.label, value: loc.value })),
 )
@@ -200,7 +255,6 @@ const sizeOptions = [
 ]
 const statusOptions = ['Hiring', 'Not-Hiring']
 
-// 🔹 Company Type Options
 const companyTypeOptions = [
   { label: 'Startup', value: 'Startup' },
   { label: 'Small Business', value: 'Small Business' },
@@ -218,56 +272,92 @@ const companyTypeOptions = [
 ]
 
 onMounted(async () => {
-  // Fetch filter data so options are populated
   await filterStore.fetchFilters()
-  console.log('Reactive Edit Data:', editData)
+  initializeData()
+  console.log('Initialized Edit Data:', editData.value)
 })
 
-function enableEdit() {
-  isEditable.value = true
+// Global edit functions
+function enableGlobalEdit() {
+  isGlobalEditable.value = true
+  // Reset change detection when entering edit mode
+  checkForChanges()
 }
 
-// Tags and Links
-function addTag() {
-  editData.tags.push('')
+function showCancelConfirmation() {
+  if (hasChanges.value) {
+    showCancelDialog.value = true
+  } else {
+    cancelGlobalEdit()
+  }
 }
 
-function addLink() {
-  editData.links.push('')
+function confirmCancel() {
+  showCancelDialog.value = false
+  cancelGlobalEdit()
 }
 
-function removeTag(index) {
-  editData.tags.splice(index, 1)
+function cancelGlobalEdit() {
+  // Reset to original data
+  editData.value = JSON.parse(JSON.stringify(originalData.value))
+  isGlobalEditable.value = false
+  hasChanges.value = false
+  changedFields.value = []
 }
 
-function removeLink(index) {
-  editData.links.splice(index, 1)
+function showSaveConfirmation() {
+  if (hasChanges.value) {
+    showSaveDialog.value = true
+  }
 }
 
-function cancelEdit() {
-  Object.assign(editData, JSON.parse(JSON.stringify(userStore.company)))
-  isEditable.value = false
+async function confirmSave() {
+  showSaveDialog.value = false
+  isSaving.value = true
+  
+  try {
+    await saveAll()
+  } finally {
+    isSaving.value = false
+  }
 }
-async function save() {
-  isEditable.value = false
 
+async function saveAll() {
+  isGlobalEditable.value = false
+  await updateCompanyProfile()
+}
+
+// Common save function
+async function updateCompanyProfile(customMessage = 'Company profile updated.') {
+  // Create a copy to avoid mutating the original
+  const dataToSave = { ...editData.value }
+  
   // Clean arrays before sending
-  editData.tags = editData.tags.filter(Boolean)
-  editData.links = editData.links.filter(Boolean)
-  editData.marketids = editData.marketids.filter((id) =>
+  dataToSave.tags = dataToSave.tags?.filter(Boolean) || []
+  dataToSave.links = dataToSave.links?.filter(Boolean) || []
+  dataToSave.marketids = dataToSave.marketids?.filter((id) =>
     marketOptions.value.some((opt) => opt.value === id),
-  )
-  editData.locationids = editData.locationids.filter((id) =>
+  ) || []
+  dataToSave.locationids = dataToSave.locationids?.filter((id) =>
     locationOptions.value.some((opt) => opt.value === id),
-  )
-  editData.type = editData.type.filter(Boolean)
+  ) || []
+  dataToSave.type = dataToSave.type?.filter(Boolean) || []
 
   try {
-    const response = await userStore.updateRecruiter(editData)
+    const response = await userStore.updateRecruiter(dataToSave)
     console.log('Update Recruiter Response:', response)
 
     if (response?.message === 'success') {
-      $q.notify({ type: 'positive', message: 'Company updated.' })
+      $q.notify({ type: 'positive', message: customMessage })
+      
+      // Update the store and reset original data
+      Object.assign(userStore.company, dataToSave)
+      originalData.value = JSON.parse(JSON.stringify(dataToSave))
+      editData.value = JSON.parse(JSON.stringify(dataToSave))
+      
+      // Reset change tracking
+      hasChanges.value = false
+      changedFields.value = []
     } else {
       const errorMsg = response?.error?.message || 'Company update failed.'
       $q.notify({ type: 'negative', message: errorMsg })
@@ -280,20 +370,12 @@ async function save() {
 </script>
 
 <style scoped>
-.company-profile-card {
-  background: white !important;
-  border: 1px solid #e5e5e5 !important;
-  border-radius: 0.375rem !important;
-  padding: 1.5rem !important;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08) !important;
-  height: auto;
-}
-
 .card-header {
   display: flex;
   justify-content: space-between;
   align-items: center;
   margin-bottom: 1rem;
+  padding: 1.5rem 1.5rem 0 1.5rem;
 }
 
 .card-title {
@@ -307,171 +389,132 @@ async function save() {
   gap: 0.5rem;
 }
 
-.edit-btn {
-  background: #f5f5f5 !important;
-  color: #000000 !important;
-  border-radius: 0.375rem !important;
-}
-
-.edit-btn:hover {
-  background: #e5e5e5 !important;
-}
-
-.save-btn {
-  background: #10b981 !important;
-  color: white !important;
-  border-radius: 0.375rem !important;
-}
-
-.save-btn:hover {
-  background: #059669 !important;
-}
-
-.cancel-btn {
-  background: #ef4444 !important;
-  color: white !important;
-  border-radius: 0.375rem !important;
-}
-
-.cancel-btn:hover {
-  background: #dc2626 !important;
-}
-
 .custom-separator {
   background-color: #e5e5e5 !important;
-  margin: 1rem 0 !important;
+  margin: 1rem 1.5rem !important;
 }
 
-.form-content {
+.change-indicator {
   display: flex;
-  flex-direction: column;
-  gap: 1rem;
-}
-
-.styled-input {
-  background: white;
-}
-
-.styled-input :deep(.q-field__control) {
-  background: white !important;
-  border: 1px solid #d1d5db !important;
-  border-radius: 0.375rem !important;
-  color: #000000 !important;
-}
-
-.styled-input :deep(.q-field__control):before {
-  border: none !important;
-}
-
-.styled-input :deep(.q-field__control):after {
-  border: 2px solid #000000 !important;
-  border-radius: 0.375rem !important;
-}
-
-.styled-input :deep(.q-field__label) {
-  color: #374151 !important;
-  font-weight: 500 !important;
-}
-
-.styled-input :deep(.q-field__native) {
-  color: #000000 !important;
-}
-
-.styled-input :deep(.q-field--disabled) {
-  opacity: 0.7 !important;
-}
-
-.styled-input :deep(.q-field--disabled .q-field__control) {
-  background: #f9fafb !important;
-  color: #6b7280 !important;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
   align-items: center;
-  margin-top: 1.5rem;
-  margin-bottom: 0.5rem;
-}
-
-.section-title {
-  font-size: 1rem;
-  font-weight: 500;
-  color: #000000;
-}
-
-.add-btn {
-  background: white !important;
-  border: 1px solid #d1d5db !important;
-  color: #000000 !important;
-  border-radius: 0.375rem !important;
-}
-
-.add-btn:hover {
-  background: #f9fafb !important;
-  border-color: #000000 !important;
-}
-
-.dynamic-item {
-  display: flex;
   gap: 0.5rem;
-  align-items: center;
-  margin-bottom: 0.5rem;
+  padding: 0.5rem 1.5rem;
+  background-color: #fff3cd;
+  border-left: 4px solid #ffc107;
+  margin: 0 1.5rem 1rem 1.5rem;
+  border-radius: 0.25rem;
+  font-size: 0.875rem;
+  color: #856404  ;
 }
 
-.dynamic-input {
+.bottom-section {
+  display: flex;
+  gap: 1rem;
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.left-side {
   flex: 1;
 }
 
-.remove-btn {
-  background: white !important;
-  border: 1px solid #ef4444 !important;
-  color: #ef4444 !important;
-  border-radius: 0.375rem !important;
+.right-side {
+  flex: 1;
+  height:100%;
 }
 
-.remove-btn:hover {
-  background: #ef4444 !important;
-  color: white !important;
+.widget {
+  margin-bottom: 1rem;
+}
+
+.widget:last-child {
+  margin-bottom: 0;
+}
+
+.full-width-section {
+  padding: 0 1.5rem 1.5rem 1.5rem;
+}
+
+.confirmation-dialog {
+  min-width: 400px;
+  max-width: 500px;
+}
+
+.pulse-animation {
+  animation: pulse 2s infinite;
+}
+
+@keyframes pulse {
+  0% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.7);
+  }
+  70% {
+    box-shadow: 0 0 0 10px rgba(16, 185, 129, 0);
+  }
+  100% {
+    box-shadow: 0 0 0 0 rgba(16, 185, 129, 0);
+  }
 }
 
 /* Responsive Design */
 @media (max-width: 768px) {
-  .company-profile-card {
-    padding: 1rem !important;
-    max-height: 80vh;
-  }
-
   .card-header {
     flex-direction: column;
     gap: 0.75rem;
     align-items: flex-start;
+    padding: 1rem 1rem 0 1rem;
   }
 
   .action-buttons {
     align-self: flex-end;
   }
 
-  .dynamic-item {
-    flex-direction: column;
-    align-items: stretch;
-    gap: 0.5rem;
+  .custom-separator {
+    margin: 1rem !important;
   }
 
-  .remove-btn {
-    align-self: flex-end;
-    width: 40px;
+  .change-indicator {
+    margin: 0 1rem 1rem 1rem;
+  }
+
+  .bottom-section {
+    flex-direction: column;
+    padding: 0 1rem 1rem 1rem;
+  }
+  
+  .right-side {
+    margin-left: 0 !important;
+    margin-top: 1rem;
+  }
+
+  .full-width-section {
+    padding: 0 1rem 1rem 1rem;
+  }
+
+  .confirmation-dialog {
+    min-width: 300px;
+    max-width: 90vw;
   }
 }
 
 @media (max-width: 480px) {
-  .company-profile-card {
-    padding: 0.75rem !important;
-    border-radius: 0.25rem !important;
+  .card-header {
+    padding: 0.75rem 0.75rem 0 0.75rem;
+  }
+  
+  .custom-separator {
+    margin: 0.75rem !important;
+  }
+  
+  .change-indicator {
+    margin: 0 0.75rem 0.75rem 0.75rem;
+  }
+  
+  .bottom-section {
+    padding: 0 0.75rem 0.75rem 0.75rem;
   }
 
-  .section-header {
-    margin-top: 1rem;
+  .full-width-section {
+    padding: 0 0.75rem 0.75rem 0.75rem;
   }
 }
 </style>

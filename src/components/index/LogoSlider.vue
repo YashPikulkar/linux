@@ -101,7 +101,7 @@ onUnmounted(() => {
 <style scoped>
 .logo-slider-section {
   width: 100%;
-  background: #000000;
+  background: #1C1C1C; /* Charcoal background instead of pure black */
   border-radius: 1rem;
   padding: 3rem 0;
   position: relative;
@@ -141,8 +141,9 @@ onUnmounted(() => {
 }
 
 .company-logo-item:hover {
-  background: rgba(255, 255, 255, 0.1);
+  background: rgba(184, 115, 51, 0.08); /* Copper tint on hover */
   transform: translateY(-4px);
+    background: #b87333;
 }
 
 .logo-container {
@@ -159,8 +160,9 @@ onUnmounted(() => {
 }
 
 .company-logo-item:hover .logo-container {
+
   transform: scale(1.1);
-  box-shadow: 0 8px 25px rgba(255, 255, 255, 0.2);
+  box-shadow: 0 8px 25px rgba(184, 115, 51, 0.3); /* Copper glow */
 }
 
 .company-logo-img {
@@ -177,19 +179,21 @@ onUnmounted(() => {
   justify-content: center;
   font-size: 1.5rem;
   font-weight: 700;
-  color: #000000;
+  color: #1C1C1C; /* Charcoal for fallback text */
 }
 
 .company-name {
   font-size: 0.875rem;
   font-weight: 600;
-  color: #ffffff;
+  color: #ffffff; /* Default white text */
   text-align: center;
   transition: color 0.3s ease;
 }
 
 .company-logo-item:hover .company-name {
-  color: #f3f4f6;
+ /* background: #b87333;  copper */
+  /*transform: translateY(-5px);*/
+  /*box-shadow: 0 8px 20px rgba(184, 115, 51, 0.3);*/
 }
 
 /* Responsive Design */
@@ -258,7 +262,7 @@ onUnmounted(() => {
 
 /* Focus states for accessibility */
 .company-logo-item:focus {
-  outline: 2px solid #ffffff;
+  outline: 2px solid #B87333; /* Copper outline */
   outline-offset: 2px;
   border-radius: 0.75rem;
 }
@@ -272,4 +276,5 @@ onUnmounted(() => {
 .company-logo-item {
   transform: translateZ(0);
 }
+
 </style>

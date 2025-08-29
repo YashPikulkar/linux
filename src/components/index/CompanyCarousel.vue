@@ -59,28 +59,69 @@
     </div>
   </div>
 </template>
-
 <script setup>
 import { ref, onMounted, onUnmounted, computed } from 'vue'
 import gsap from 'gsap'
 import CompanyCard from './CompanyCard.vue'
-import { useStore } from 'src/stores/company-store'
 
 const carousel = ref(null)
 const track = ref(null)
 const isPaused = ref(false)
 const currentSpeed = ref(0.7)
 
-const store = useStore()
-
 let animation = null
 let isHovering = false
 
 const emit = defineEmits(['company-selected'])
 
-// Create enough repeated companies for smooth infinite scroll
+// ✅ Hardcoded companies
+const companies = [
+  {
+    cid: 8,
+    name: 'Cosmic Byte',
+    description:
+      'Leading gaming and tech accessories brand delivering high-quality products for gamers and tech enthusiasts worldwide.',
+  },
+  {
+    cid: 9,
+    name: 'TechNova Solutions',
+    description:
+      'Comprehensive IT solutions provider specializing in digital transformation and enterprise software development.',
+  },
+  {
+    cid: 10,
+    name: 'MediCure Health',
+    description:
+      'Healthcare technology company revolutionizing patient care through innovative medical solutions and digital health platforms.',
+  },
+  {
+    cid: 11,
+    name: 'FinEdge Capital',
+    description:
+      'Financial services and investment firm providing strategic capital solutions for growing businesses and startups.',
+  },
+  {
+    cid: 12,
+    name: 'GreenLeaf Organics',
+    description:
+      'Sustainable agriculture company producing organic food products while promoting environmental conservation and healthy living.',
+  },
+  {
+    cid: 13,
+    name: 'Skyline Robotics',
+    description:
+      'Advanced robotics and automation solutions provider transforming industries through intelligent robotic systems and AI.',
+  },
+  {
+    cid: 14,
+    name: 'InfoTech Private Limited',
+    description:
+      'Full-service IT consulting firm offering custom software development, cloud solutions, and digital infrastructure services.',
+  },
+]
+
+// ✅ Use them for infinite loop effect
 const repeatedCompanies = computed(() => {
-  const companies = store.companies || []
   if (companies.length === 0) return []
 
   const repeatCount = Math.max(12, Math.ceil(24 / companies.length))
@@ -144,7 +185,6 @@ const handleViewJobs = (company) => {
 }
 
 onMounted(() => {
-  // Wait for next tick to ensure DOM is ready
   requestAnimationFrame(() => {
     createAnimation()
   })
@@ -219,31 +259,68 @@ onUnmounted(() => {
   box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
 }
 
-.control-btn {
+/* Base Control Buttons */
+.control-btn,.speed-btn {
   display: flex;
   align-items: center;
   gap: 0.5rem;
   padding: 0.75rem 1rem;
-  background: #ffffff;
-  border: 2px solid #e5e7eb;
+  background: #1C1C1C; /* Charcoal */
+  border: 2px solid #1c1c1c;
   border-radius: 0.5rem;
-  color: #374151;
+  color: #ffffff; /* White text */
   font-weight: 500;
   cursor: pointer;
   transition: all 0.3s ease;
 }
 
-.control-btn:hover {
-  border-color: #000000;
-  color: #000000;
+/* Hover - Copper */
+.control-btn:hover,.speed-btn:hover {
+  background: #b87333;  /* Copper */
+  border-color: #b87333;
+  color: #ffffff; /* Keep white text */
   transform: translateY(-1px);
 }
 
-.control-btn.active {
-  background: #000000;
-  border-color: #000000;
+/* Active - Copper */
+.control-btn.active,.speed-btn.active {
+  background: #8a5525; /* Solid copper */
+  border-color: #b87333;
   color: #ffffff;
 }
+
+/* Accessibility focus */
+.control-btn:focus ,.speed-btn:focus {
+  outline: 2px solid #8a5525;
+  outline-offset: 2px;
+}
+
+/* Speed Buttons 
+.speed-btn {
+  min-width: 50px;
+  justify-content: center;
+  font-size: 0.875rem;
+  padding: 0.5rem 0.75rem;
+  background: #1C1C1C; /* Charcoal 
+  border: 2px solid #1C1C1C;
+  border-radius: 0.5rem;
+  color: #ffffff; /* White text 
+  transition: all 0.25s ease;
+}
+
+/*.speed-btn:hover {
+  background: #b87333; /* Copper 
+  border-color: #b87333;
+  color: #ffffff; /* White text 
+}
+
+.speed-btn.active {
+  background: #b87333; /* Solid copper 
+  border-color: #b87333;
+  color: #ffffff;
+}*/
+
+
 
 .control-icon {
   width: 16px;
@@ -259,12 +336,12 @@ onUnmounted(() => {
   gap: 0.5rem;
 }
 
-.speed-btn {
+/*.speed-btn {
   min-width: 50px;
   justify-content: center;
   font-size: 0.875rem;
   padding: 0.5rem 0.75rem;
-}
+}*/
 
 /* Responsive Design */
 @media (max-width: 1200px) {
@@ -367,11 +444,11 @@ onUnmounted(() => {
   }
 }
 
-/* Focus states for accessibility */
+/* Focus states for accessibility 
 .control-btn:focus {
   outline: 2px solid #000000;
   outline-offset: 2px;
-}
+}*/
 
 /* Animation performance optimizations */
 .carousel-track {

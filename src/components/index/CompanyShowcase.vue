@@ -2,7 +2,7 @@
   <section class="showcase-section">
     <!-- Header Section -->
     <div class="header-content">
-      <div class="header-badge">
+      <!--<div class="header-badge">
         <svg class="badge-icon" viewBox="0 0 20 20" fill="currentColor">
           <path
             fill-rule="evenodd"
@@ -11,7 +11,7 @@
           />
         </svg>
         Top Companies
-      </div>
+      </div>-->
 
       <h2 class="section-title">
         Your Next Employer
@@ -124,7 +124,7 @@ onMounted(() => {
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  background: #000000;
+  background: #1c1c1c;
   color: #ffffff;
   padding: 0.5rem 1rem;
   border-radius: 2rem;
@@ -146,14 +146,14 @@ onMounted(() => {
 .section-title {
   font-size: clamp(2rem, 5vw, 3.5rem);
   font-weight: 800;
-  color: #111827;
+  color: #1c1c1c;
   margin: 0 0 1.5rem 0;
   line-height: 1.2;
 }
 
 .title-highlight {
   position: relative;
-  color: #000000;
+  color: #1c1c1c;
 }
 
 .title-highlight::after {
@@ -163,13 +163,13 @@ onMounted(() => {
   left: 0;
   right: 0;
   height: 3px;
-  background: #000000;
+  background: #1c1c1c;
   border-radius: 2px;
 }
 
 .section-description {
   font-size: 1.125rem;
-  color: #6b7280;
+  color: #7a7a7a;
   line-height: 1.6;
   max-width: 600px;
   margin: 0 auto;
@@ -201,18 +201,18 @@ onMounted(() => {
 .logo-title {
   font-size: 1.875rem;
   font-weight: 700;
-  color: #111827;
+  color: #1c1c1c;
   margin: 0 0 0.75rem 0;
 }
 
 .logo-subtitle {
   font-size: 1rem;
-  color: #6b7280;
+  color: #7a7a7a;
   margin: 0;
 }
 
 .stats-section {
-  background: #000000;
+  background: #1c1c1c;
   border-radius: 1rem;
   padding: 3rem 2rem;
   position: relative;
@@ -230,6 +230,9 @@ onMounted(() => {
 .stat-item {
   text-align: center;
   padding: 1rem;
+  border-radius: 0.75rem;
+  transition: all 0.3s ease;
+  cursor: pointer;
 }
 
 .stat-number {
@@ -238,13 +241,28 @@ onMounted(() => {
   color: #ffffff;
   margin-bottom: 0.5rem;
   line-height: 1;
+  transition: color 0.3s ease;
 }
 
 .stat-label {
   font-size: 1rem;
-  color: #d1d5db;
+  color: #ffffff;
   font-weight: 500;
+  transition: color 0.3s ease;
 }
+
+/* Hover copper accent */
+.stat-item:hover {
+  background: #b87333; /* copper */
+  transform: translateY(-5px);
+  box-shadow: 0 8px 20px rgba(184, 115, 51, 0.3);
+}
+
+.stat-item:hover .stat-number,
+.stat-item:hover .stat-label {
+  color: #fff;
+}
+
 
 /* Responsive Design */
 @media (max-width: 1024px) {

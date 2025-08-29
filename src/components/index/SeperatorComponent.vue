@@ -78,6 +78,7 @@ onUnmounted(() => {
   overflow: hidden;
 }
 
+/* Wrapper */
 .separator-line-wrapper {
   position: relative;
   width: 100%;
@@ -85,13 +86,20 @@ onUnmounted(() => {
   max-width: 600px;
 }
 
+/* Main separator line */
 .separator-line {
   position: absolute;
   top: 0;
   left: 0;
   width: 100%;
   height: 2px;
-  background: linear-gradient(90deg, transparent 0%, #000000 20%, #000000 80%, transparent 100%);
+  background: linear-gradient(
+    90deg,
+    transparent 0%,
+    #B87333 20%,  /* Copper core */
+    #B87333 80%, 
+    transparent 100%
+  );
   opacity: 0;
   transform: scaleX(0);
   transform-origin: center;
@@ -103,6 +111,7 @@ onUnmounted(() => {
   transform: scaleX(1);
 }
 
+/* Glow under the line */
 .separator-glow {
   position: absolute;
   top: -2px;
@@ -112,8 +121,8 @@ onUnmounted(() => {
   background: linear-gradient(
     90deg,
     transparent 0%,
-    rgba(0, 0, 0, 0.1) 20%,
-    rgba(0, 0, 0, 0.1) 80%,
+    rgba(184, 115, 51, 0.15) 20%, /* Copper glow */
+    rgba(184, 115, 51, 0.15) 80%,
     transparent 100%
   );
   opacity: 0;
@@ -128,13 +137,13 @@ onUnmounted(() => {
   transform: scaleX(1);
 }
 
+/* Center ornament */
 .separator-ornament {
   position: absolute;
   top: 50%;
   left: 50%;
-  transform: translate(-50%, -50%);
-  opacity: 0;
   transform: translate(-50%, -50%) scale(0) rotate(-180deg);
+  opacity: 0;
   transition: all 1s cubic-bezier(0.4, 0, 0.2, 1) 0.6s;
 }
 
@@ -147,31 +156,32 @@ onUnmounted(() => {
   width: 48px;
   height: 48px;
   background: #ffffff;
-  border: 2px solid #000000;
+  border: 2px solid #B87333; /* Copper border */
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 4px 12px rgba(184, 115, 51, 0.2); /* Copper shadow */
   transition: all 0.3s ease;
 }
 
 .ornament-circle:hover {
   transform: scale(1.1) rotate(90deg);
-  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 8px 25px rgba(184, 115, 51, 0.3); /* Stronger copper glow */
 }
 
 .ornament-icon {
   width: 20px;
   height: 20px;
-  color: #000000;
+  color: #B87333; /* Copper icon */
   transition: color 0.3s ease;
 }
 
 .ornament-circle:hover .ornament-icon {
-  color: #333333;
+  color: #8a5525; /* Darker copper on hover */
 }
 
+/* Decorative dots */
 .decorative-dots {
   position: absolute;
   top: 50%;
@@ -191,206 +201,36 @@ onUnmounted(() => {
   width: 4px;
   height: 4px;
   border-radius: 50%;
-  background: #000000;
+  background: #B87333; /* Copper dots */
   animation: dotPulse 2s infinite;
 }
 
-.dot-1 {
-  animation-delay: 0s;
-}
-
-.dot-2 {
-  animation-delay: 0.3s;
-}
-
-.dot-3 {
-  animation-delay: 0.6s;
-}
+.dot-1 { animation-delay: 0s; }
+.dot-2 { animation-delay: 0.3s; }
+.dot-3 { animation-delay: 0.6s; }
 
 @keyframes dotPulse {
-  0%,
-  100% {
-    opacity: 0.3;
-    transform: scale(1);
-  }
-  50% {
-    opacity: 1;
-    transform: scale(1.5);
-  }
+  0%, 100% { opacity: 0.3; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.5); }
 }
 
-/* Alternative Separator Styles */
+/* Minimal variant */
 .separator-container.minimal {
   height: 80px;
 }
-
 .separator-container.minimal .separator-line {
-  background: #000000;
+  background: #B87333; /* Copper line */
   height: 1px;
 }
-
-.separator-container.minimal .separator-ornament {
-  display: none;
-}
-
+.separator-container.minimal .separator-ornament,
 .separator-container.minimal .decorative-dots {
   display: none;
 }
 
-/* Responsive Design */
-@media (max-width: 768px) {
-  .separator-container {
-    height: 100px;
-    padding: 1.5rem 1rem;
-  }
-
-  .separator-line-wrapper {
-    max-width: 400px;
-  }
-
-  .ornament-circle {
-    width: 40px;
-    height: 40px;
-  }
-
-  .ornament-icon {
-    width: 16px;
-    height: 16px;
-  }
-
-  .dot {
-    width: 3px;
-    height: 3px;
-  }
-}
-
-@media (max-width: 640px) {
-  .separator-container {
-    height: 80px;
-    padding: 1rem 0.75rem;
-  }
-
-  .separator-line-wrapper {
-    max-width: 300px;
-  }
-
-  .ornament-circle {
-    width: 36px;
-    height: 36px;
-    border-width: 1px;
-  }
-
-  .ornament-icon {
-    width: 14px;
-    height: 14px;
-  }
-
-  .decorative-dots {
-    gap: 6px;
-  }
-}
-
-@media (max-width: 480px) {
-  .separator-container {
-    height: 60px;
-    padding: 0.75rem 0.5rem;
-  }
-
-  .separator-line-wrapper {
-    max-width: 250px;
-  }
-
-  .separator-line,
-  .separator-glow {
-    height: 1px;
-  }
-
-  .separator-glow {
-    height: 3px;
-    top: -1px;
-  }
-
-  .ornament-circle {
-    width: 32px;
-    height: 32px;
-  }
-
-  .ornament-icon {
-    width: 12px;
-    height: 12px;
-  }
-
-  .decorative-dots {
-    gap: 4px;
-  }
-
-  .dot {
-    width: 2px;
-    height: 2px;
-  }
-}
-
-/* Dark theme variant */
-.separator-container.dark {
-  background: rgba(0, 0, 0, 0.02);
-  border-radius: 1rem;
-}
-
-.separator-container.dark .separator-line {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.8) 20%,
-    rgba(255, 255, 255, 0.8) 80%,
-    transparent 100%
-  );
-}
-
-.separator-container.dark .separator-glow {
-  background: linear-gradient(
-    90deg,
-    transparent 0%,
-    rgba(255, 255, 255, 0.2) 20%,
-    rgba(255, 255, 255, 0.2) 80%,
-    transparent 100%
-  );
-}
-
-.separator-container.dark .ornament-circle {
-  background: #000000;
-  border-color: #ffffff;
-}
-
-.separator-container.dark .ornament-icon {
-  color: #ffffff;
-}
-
-.separator-container.dark .dot {
-  background: #ffffff;
-}
-
-/* Focus state for accessibility */
+/* Accessibility focus */
 .ornament-circle:focus {
-  outline: 2px solid #000000;
+  outline: 2px solid #B87333;
   outline-offset: 2px;
 }
 
-/* Reduced motion preference */
-@media (prefers-reduced-motion: reduce) {
-  .separator-line,
-  .separator-glow,
-  .separator-ornament,
-  .decorative-dots {
-    transition: opacity 0.3s ease;
-    transform: none !important;
-  }
-
-  .ornament-circle:hover {
-    transform: none;
-  }
-
-  .dot {
-    animation: none;
-  }
-}
 </style>

@@ -153,36 +153,46 @@ onMounted(() => {
 </script>
 
 <style scoped>
+:root {
+  --q-primary: #b87333; /* Copper */
+  --q-primary-rgb: 184, 115, 51;
+}
+
+/* Section */
 .applicants-section {
   width: 100%;
 }
 
 .q-item {
   border-radius: 8px;
+  color: white;
 }
 
 .q-item:hover {
-  background-color: rgba(0, 0, 0, 0.02);
+  background-color: var(--q-primary);
+  color: white;
 }
 
+/* Job Card */
 .job-card {
   border-radius: 20px;
-  border: 1px solid #e8e8e8;
-  background: white;
-  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.08);
+  border: 1px solid #ddd;
+  background: #fff; /* Card base is white */
+  box-shadow: 0 2px 20px rgba(0, 0, 0, 0.2);
   transition: all 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94);
   overflow: hidden;
+  color: #333; /* Text default dark */
 }
 
 .job-card:hover {
-  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
   transform: translateY(-4px);
-  border-color: #d0d0d0;
+  border-color: var(--q-primary);
 }
 
 /* Header Section */
 .card-header {
-  background: linear-gradient(135deg, #000000 0%, #2d2d2d 100%);
+  background: linear-gradient(135deg, #000000 0%, var(--q-primary) 100%);
   padding: 16px;
   color: white;
 }
@@ -199,11 +209,12 @@ onMounted(() => {
 }
 
 .job-title {
-  font-size: 1.2rem;
-  font-weight: 700;
+  font-size: 1.4rem;
+  font-weight: 800;
   color: white;
-  margin: 0 0 8px 0;
-  line-height: 1.1;
+  margin: 0 0 10px 0;
+  line-height: 1.3;
+  letter-spacing: 0.3px;
 }
 
 .job-badges {
@@ -213,17 +224,22 @@ onMounted(() => {
 }
 
 .job-badge {
-  background: rgba(255, 255, 255, 0.2);
+  background: rgba(var(--q-primary-rgb), 0.15);
   color: white;
   font-size: 0.8rem;
-  font-weight: 500;
+  font-weight: 600;
   padding: 4px 12px;
   border-radius: 12px;
+  border: 1px solid var(--q-primary);
   backdrop-filter: blur(10px);
+  text-transform: uppercase;
+  letter-spacing: 0.4px;
+  transition: all 0.3s ease;
 }
 
-.job-badge.work-mode {
-  background: rgba(255, 255, 255, 0.15);
+.job-badge:hover {
+  background: var(--q-primary);
+  color: white;
 }
 
 .header-actions {
@@ -231,24 +247,30 @@ onMounted(() => {
   gap: 8px;
 }
 
+/* Action buttons in header */
 .icon-btn {
-  background: rgba(255, 255, 255, 0.1);
-  color: white;
+  background: #f0f0f0;
+  color: var(--q-primary);
   width: 40px;
   height: 40px;
-  backdrop-filter: blur(10px);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   transition: all 0.3s ease;
 }
 
 .icon-btn:hover {
-  background: rgba(255, 255, 255, 0.2);
+  background: var(--q-primary);
+  color: white;
   transform: scale(1.1);
 }
 
-/* Main Content Grid */
+/* Main Content Grid (White background) */
 .card-content {
   padding: 16px;
-  background: white;
+  background: #ffffff;
+  color: #333;
 }
 
 .info-grid {
@@ -262,55 +284,72 @@ onMounted(() => {
   align-items: center;
   gap: 12px;
   padding: 12px;
-  background: #fafafa;
+  background: #f9f9f9;
   border-radius: 12px;
-  border: 1px solid #f0f0f0;
+  border: 1px solid #ddd;
   transition: all 0.3s ease;
+  color: #333;
 }
 
 .info-card:hover {
-  background: #f5f5f5;
+  background: var(--q-primary);
+  border-color: var(--q-primary);
   transform: translateY(-2px);
-  border-color: #e0e0e0;
+  color: white;
 }
 
+/* Info card icons */
 .info-icon {
   width: 36px;
   height: 36px;
-  background: black;
-  color: white;
+  background: #f0f0f0;
+  color: var(--q-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 1rem;
+  font-size: 1.1rem;
   flex-shrink: 0;
+  transition: all 0.3s ease;
 }
+
+.info-card:hover .info-icon {
+  background: white;
+  color: var(--q-primary);
+  box-shadow: 0 0 6px rgba(0,0,0,0.15);
+}
+
 
 .info-content {
   flex: 1;
 }
 
 .info-label {
-  font-size: 0.7rem;
-  color: #666;
-  font-weight: 500;
+  font-size: 0.75rem;
+  color: #7a7a7a;;
+  font-weight: 600;
   margin-bottom: 2px;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
+}
+
+.info-card:hover .info-label {
+  color: white;
 }
 
 .info-value {
-  font-size: 0.85rem;
-  color: #2c2c2c;
+  font-size: 1rem;
+  color: #1c1c1c;
   font-weight: 700;
+  line-height: 1.4;
 }
 
-/* Footer Section */
+/* Footer Section (White background) */
 .card-footer {
   padding: 12px 16px;
-  background: #f9f9f9;
-  border-top: 1px solid #f0f0f0;
+  background: #ffffff;
+  border-top: 1px solid #ddd;
+  color: #333;
 }
 
 .footer-content {
@@ -320,14 +359,20 @@ onMounted(() => {
 }
 
 .footer-icon {
-  color: #666;
+  color: #7a7a7a;
   font-size: 1rem;
+  transition: all 0.3s ease;
+}
+
+.footer-icon:hover {
+  color: var(--q-primary);
 }
 
 .posted-text {
   color: #666;
-  font-size: 0.9rem;
-  font-weight: 500;
+  font-size: 0.95rem;
+  font-weight: 600;
+  letter-spacing: 0.3px;
 }
 
 .status-indicator {
@@ -340,32 +385,26 @@ onMounted(() => {
   width: 8px;
   height: 8px;
   border-radius: 50%;
-  background: #666;
+  background: #999;
 }
 
 .status-dot.active {
-  background: #4caf50;
+  background: #28a745;
   animation: pulse 2s infinite;
 }
 
 @keyframes pulse {
-  0% {
-    opacity: 1;
-  }
-  50% {
-    opacity: 0.5;
-  }
-  100% {
-    opacity: 1;
-  }
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
 }
 
 .status-text {
-  color: #4caf50;
-  font-size: 0.8rem;
-  font-weight: 600;
+  color: #28a745;
+  font-size: 0.85rem;
+  font-weight: 700;
   text-transform: uppercase;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.7px;
 }
 
 /* Responsive Design */
@@ -384,7 +423,7 @@ onMounted(() => {
   }
 
   .job-title {
-    font-size: 1.3rem;
+    font-size: 1.5rem;
   }
 
   .card-content {
@@ -421,4 +460,6 @@ onMounted(() => {
     align-self: flex-end;
   }
 }
+
+
 </style>
