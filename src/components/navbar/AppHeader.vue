@@ -1,0 +1,561 @@
+<template>
+  <q-header class="bg-white text-dark navbar-custom">
+    <q-toolbar class="q-gutter-md">
+      <!-- 🔹 Brand Title -->
+      <q-toolbar-title class="brand-title cursor-pointer" @click="$router.push('/')">
+        TalentConnect<span class="brand-dot">:</span>
+      </q-toolbar-title>
+
+      <!-- 🔹 Centered Navigation (hidden on mobile and tablet) -->
+      <q-space />
+      <div class="row items-center q-gutter-lg nav-center gt-sm">
+        <q-btn
+          flat
+          no-caps
+          dense
+          icon="home"
+          label="Home"
+          class="nav-btn"
+          :class="{ active: isActiveRoute('/applicant', true) }"
+          @click="goToHome"
+        />
+        <q-btn
+          flat
+          no-caps
+          dense
+          icon="dashboard"
+          label="Application Status"
+          class="nav-btn"
+          :class="{ active: isActiveRoute('/applicant/application-status') }"
+          @click="goToApplicationStatus"
+        />
+        <q-btn
+          flat
+          no-caps
+          dense
+          icon="description"
+          label="Resumes"
+          class="nav-btn"
+          :class="{ active: isActiveRoute('/applicant/resumes') }"
+          @click="goToResumes"
+        />
+        <q-btn
+          flat
+          no-caps
+          dense
+          icon="person"
+          label="Edit Profile"
+          class="nav-btn"
+          :class="{ active: isActiveRoute('/applicant/edit-applicant') }"
+          @click="goToEditProfile"
+        />
+      </div>
+      <q-space />
+
+      <!-- 🔹 Mobile: Show hamburger menu (sm and below) -->
+      <div class="lt-md mobile-menu-container">
+        <q-btn
+          flat
+          dense
+          round
+          icon="menu"
+          class="mobile-menu-btn"
+          @click="showMobileMenu = true"
+        />
+      </div>
+
+      <!-- 🔹 Desktop: Show avatar with simplified dropdown (md and up) -->
+      <div class="row items-center q-gutter-sm gt-sm">
+        <q-avatar
+          size="48px"
+          square
+          color="grey-3"
+          text-color="black"
+          class="text-weight-bold"
+          style="border-radius: 10px"
+        >
+          {{ getInitials(userStore.name) }}
+        </q-avatar>
+
+        <q-menu
+          class="profile-dropdown"
+          anchor="bottom right"
+          self="top right"
+          :offset="[0, 8]"
+          content-class="custom-dropdown-content"
+        >
+          <div class="profile-header">
+            <q-avatar
+              size="48px"
+              square
+              color="grey-3"
+              text-color="black"
+              class="text-weight-bold"
+              style="border-radius: 10px"
+            >
+              {{ getInitials(userStore.name) }}
+            </q-avatar>
+
+            <div class="profile-info">
+              <div class="profile-name-full">
+                {{ userStore.name || 'User Name' }}
+              </div>
+            </div>
+          </div>
+
+          <q-separator class="custom-separator" />
+
+          <q-list class="menu-list" dense>
+            <!-- 🔹 Only Logout Option for Desktop -->
+            <q-item clickable v-ripple class="menu-item" @click="handleLogout">
+              <q-item-section avatar class="menu-icon-section">
+                <q-icon name="logout" class="menu-icon" />
+              </q-item-section>
+              <q-item-section class="menu-text-section"> Log out </q-item-section>
+            </q-item>
+          </q-list>
+        </q-menu>
+      </div>
+    </q-toolbar>
+
+    <!-- 🔹 Mobile Fullscreen Menu -->
+    <q-dialog
+      v-model="showMobileMenu"
+      maximized
+      transition-show="slide-down"
+      transition-hide="slide-up"
+    >
+      <div class="mobile-menu-container-full">
+        <!-- Mobile Menu Header -->
+        <div class="mobile-menu-header">
+          <div class="mobile-user-info">
+            <q-avatar
+              size="40px"
+              square
+              color="grey-3"
+              text-color="black"
+              class="text-weight-bold"
+              style="border-radius: 8px"
+            >
+              {{ getInitials(userStore.name) }}
+            </q-avatar>
+            <div class="mobile-user-name">
+              {{ userStore.name || 'User Name' }}
+            </div>
+          </div>
+          <q-btn
+            flat
+            dense
+            round
+            icon="close"
+            class="mobile-close-btn"
+            @click="showMobileMenu = false"
+          />
+        </div>
+
+        <!-- Mobile Menu Content -->
+        <div class="mobile-menu-content">
+          <!-- Navigation Links -->
+          <div class="mobile-nav-section">
+            <q-btn
+              flat
+              no-caps
+              class="mobile-nav-item"
+              :class="{ active: isActiveRoute('/applicant', true) }"
+              @click="handleMobileNavClick(goToHome)"
+            >
+              <q-icon name="home" class="mobile-nav-icon" />
+              <span class="mobile-nav-text">Home</span>
+            </q-btn>
+
+            <q-btn
+              flat
+              no-caps
+              class="mobile-nav-item"
+              :class="{ active: isActiveRoute('/applicant/application-status') }"
+              @click="handleMobileNavClick(goToApplicationStatus)"
+            >
+              <q-icon name="dashboard" class="mobile-nav-icon" />
+              <span class="mobile-nav-text">Application Status</span>
+            </q-btn>
+
+            <q-btn
+              flat
+              no-caps
+              class="mobile-nav-item"
+              :class="{ active: isActiveRoute('/applicant/resumes') }"
+              @click="handleMobileNavClick(goToResumes)"
+            >
+              <q-icon name="description" class="mobile-nav-icon" />
+              <span class="mobile-nav-text">Resumes</span>
+            </q-btn>
+
+            <q-btn
+              flat
+              no-caps
+              class="mobile-nav-item"
+              :class="{ active: isActiveRoute('/applicant/edit-applicant') }"
+              @click="handleMobileNavClick(goToEditProfile)"
+            >
+              <q-icon name="person" class="mobile-nav-icon" />
+              <span class="mobile-nav-text">Edit Profile</span>
+            </q-btn>
+          </div>
+
+          <!-- Logout Button -->
+          <div class="mobile-logout-section">
+            <q-btn no-caps class="mobile-logout-btn" @click="handleMobileNavClick(handleLogout)">
+              <q-icon name="logout" class="mobile-nav-icon" />
+              <span class="mobile-nav-text">Log Out</span>
+            </q-btn>
+          </div>
+        </div>
+      </div>
+    </q-dialog>
+  </q-header>
+</template>
+
+<script setup>
+import { ref } from 'vue'
+import { useUserStore } from 'src/stores/user-store'
+import { useRouter, useRoute } from 'vue-router'
+
+const userStore = useUserStore()
+const router = useRouter()
+const route = useRoute()
+
+// Mobile menu state
+const showMobileMenu = ref(false)
+
+// Mobile menu navigation handler
+const handleMobileNavClick = (navigationFunction) => {
+  showMobileMenu.value = false
+  navigationFunction()
+}
+
+// ✅ Active route checker with exact option
+const isActiveRoute = (path, exact = false) => {
+  if (exact) return route.path === path
+  return route.path.startsWith(path)
+}
+
+// ✅ Applicant navigation functions
+const goToHome = () => router.push('/applicant')
+const goToApplicationStatus = () => router.push('/applicant/application-status')
+const goToResumes = () => router.push('/applicant/resumes')
+const goToEditProfile = () => router.push('/applicant/edit-applicant')
+
+// Initials
+const getInitials = (name) => {
+  if (!name) return 'U'
+  const parts = name.trim().split(' ')
+  return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase()
+}
+
+// Logout
+const handleLogout = () => {
+  userStore.setEverythingToNull()
+  router.push('/')
+}
+</script>
+<style scoped>
+/* 🔹 Navbar */
+.navbar-custom {
+  height: 70px;
+  border-bottom: none;
+  display: flex;
+  align-items: center; /* ✅ vertical centering */
+  padding: 0 16px; /* ✅ match main layout spacing */
+  box-shadow: none;
+}
+
+/* Align brand title (stays fixed at original position) */
+.navbar-custom {
+  display: flex;
+  align-items: center;
+  margin-top: 0; /* ✅ keep title fixed */
+  line-height: 1;
+}
+
+/* ✅ Push nav buttons, avatar & mobile menu down slightly */
+.navbar-custom .nav-center,
+.navbar-custom .q-avatar,
+.navbar-custom .mobile-menu-container {
+  margin-top: 2px; /* adjust value to taste */
+}
+.brand-title {
+  font-size: 24px;
+  font-weight: 600;
+  color: #1f2937;
+  margin-top: 16px; /* keep natural positioning */
+  margin-left: 12px;
+}
+
+.brand-dot {
+  color: var(--q-hover);
+  font-weight: bold;
+}
+
+.nav-btn {
+  font-size: 16px;
+  font-weight: 500;
+  color: #374151;
+  transition: all 0.2s ease-in-out;
+  padding: 10px 18px;
+}
+
+.nav-btn .q-icon {
+  font-size: 22px;
+}
+
+.nav-btn:hover,
+.nav-btn:focus,
+.nav-btn.active {
+  background-color: rgba(64, 224, 208, 0.1);
+  border: 2px solid var(--q-hover);
+  color: var(--q-hover) !important;
+  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  border-radius: 8px;
+}
+.navbar-custom .row.items-center.q-gutter-sm.gt-sm .q-avatar {
+  margin-top: 6px; /* adjust between 6–12px to taste */
+}
+.nav-center {
+  justify-content: center;
+}
+
+.q-btn__content {
+  gap: 6px;
+}
+
+/* Mobile Menu Button */
+.mobile-menu-container {
+  display: flex;
+  align-items: center;
+}
+
+.mobile-menu-btn {
+  font-size: 24px;
+  color: #374151;
+  background-color: transparent;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s ease;
+}
+
+.mobile-menu-btn:hover {
+  background-color: rgba(64, 224, 208, 0.1);
+  color: var(--q-hover);
+}
+
+/* Mobile Menu Styles */
+.mobile-menu-container-full {
+  background: #ffffff;
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.mobile-menu-header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 20px 24px;
+  border-bottom: 1px solid #e5e7eb;
+}
+
+.mobile-user-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.mobile-user-name {
+  font-size: 18px;
+  font-weight: 600;
+  color: #1f2937;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  text-transform: capitalize;
+}
+
+.mobile-close-btn {
+  font-size: 24px;
+  color: #6b7280;
+  background: transparent;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.mobile-close-btn:hover {
+  background-color: rgba(64, 224, 208, 0.1);
+  color: var(--q-hover);
+}
+
+.mobile-menu-content {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  padding: 32px 24px;
+}
+
+.mobile-nav-section {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+
+.mobile-nav-item {
+  width: 100%;
+  justify-content: flex-start;
+  font-size: 18px;
+  font-weight: 500;
+  color: #374151;
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mobile-nav-item:hover,
+.mobile-nav-item.active {
+  background-color: rgba(64, 224, 208, 0.1);
+  border: 2px solid var(--q-hover);
+  color: var(--q-hover) !important;
+  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+}
+
+.mobile-nav-icon {
+  font-size: 24px;
+  margin-right: 16px;
+  color: #6b7280;
+}
+
+.mobile-nav-text {
+  flex: 1;
+  text-align: left;
+}
+
+.mobile-logout-section {
+  margin-top: auto;
+  padding-top: 24px;
+  border-top: 1px solid #e5e7eb;
+}
+
+.mobile-logout-btn {
+  width: 100%;
+  justify-content: flex-start;
+  font-size: 18px;
+  font-weight: 500;
+  color: var(--q-hover);
+  background: transparent;
+  border: none;
+  border-radius: 12px;
+  padding: 16px 20px;
+  text-align: left;
+  transition: all 0.2s ease;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+.mobile-logout-btn:hover {
+  background-color: rgba(64, 224, 208, 0.1);
+}
+
+.mobile-logout-btn .mobile-nav-icon {
+  color: var(--q-hover);
+}
+
+/* 🔹 Simplified Desktop Profile Dropdown */
+.profile-dropdown {
+  min-width: 300px;
+  max-width: 400px;
+  width: max-content;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  background: #fff;
+  font-family:
+    'Inter',
+    -apple-system,
+    BlinkMacSystemFont,
+    'Segoe UI',
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    sans-serif;
+}
+
+.profile-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px;
+  background: #fff;
+}
+
+.profile-avatar {
+  border: 1px solid #e5e7eb;
+}
+
+.profile-info {
+  flex: 1;
+}
+
+.profile-name-full {
+  font-size: 18px;
+  font-weight: 600;
+  color: #111827;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  line-height: 1.4;
+  white-space: nowrap;
+}
+
+.menu-list {
+  padding: 10px 0;
+  background: #fff;
+}
+
+.menu-item {
+  padding: 15px 22px;
+  font-size: 15px;
+  font-weight: 400;
+  color: #374151;
+  font-family: '-apple-system', BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  transition: background-color 0.2s ease;
+  background: #fff;
+  border-radius: 0;
+  margin: 0;
+}
+
+.menu-item:hover {
+  background-color: rgba(64, 224, 208, 0.1) !important;
+}
+
+.menu-icon-section {
+  min-width: 36px;
+  margin-right: 8px;
+}
+
+.menu-icon {
+  font-size: 20px;
+  color: #6b7280;
+}
+
+.menu-text-section {
+  font-size: 15px;
+  color: #374151;
+  font-weight: 500;
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+}
+
+/* Responsive breakpoints */
+@media (max-width: 1023px) {
+  .navbar-custom .q-toolbar {
+    padding: 0 16px;
+  }
+}
+</style>
+ß
