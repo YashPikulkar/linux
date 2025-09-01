@@ -1,0 +1,242 @@
+<template>
+  <q-dialog v-model="showDialog" persistent transition-show="fade" transition-hide="fade">
+    <q-card class="filter-wrapper column bg-white">
+      <!-- Selected Filters (Sticky Header) -->
+      <div class="selected-filters-sticky q-pa-md">
+        <div class="text-h6 q-mb-sm section-heading">
+          <q-icon name="check_circle" class="section-icon" />
+          Selected Filters
+        </div>
+        <SelectedTags />
+      </div>
+
+      <!-- Scrollable Content -->
+      <div class="filter-content scroll q-pa-md">
+        <!-- Basic Filters -->
+        <div class="q-mb-lg spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="tune" class="section-icon" />
+            Basic Filters
+          </div>
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <JobRoleFilter />
+            </div>
+            <div class="col-12 col-md-6">
+              <LocationRegionFilter />
+            </div>
+          </div>
+        </div>
+
+        <q-separator spaced class="spacing-bottom" />
+
+        <!-- Salary + Equity -->
+        <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="attach_money" class="section-icon" />
+            Compensation
+          </div>
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <SalaryFilter />
+            </div>
+            <div class="col-12 col-md-6">
+              <EquityFilter />
+            </div>
+          </div>
+        </div>
+        <q-separator spaced class="spacing-bottom" />
+
+        <!-- Areas of Interest -->
+        <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="psychology" class="section-icon" />
+            Areas of Interest
+          </div>
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <SkillsFilter />
+            </div>
+            <div class="col-12 col-md-6">
+              <MarketsFilter />
+            </div>
+          </div>
+        </div>
+        <q-separator spaced class="spacing-bottom" />
+
+        <!-- Job Details -->
+        <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="work" class="section-icon" />
+            Job Details
+          </div>
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <JobTypeFilter />
+            </div>
+            <div class="col-12 col-md-6">
+              <ExperienceFilter />
+              <div class="q-mt-md">
+                <JobModeFilter />
+              </div>
+            </div>
+          </div>
+        </div>
+        <q-separator spaced class="spacing-bottom" />
+
+        <!-- Company Size + Company Type -->
+        <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="business" class="section-icon" />
+            Company
+          </div>
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <CompanySizeFilter />
+            </div>
+            <div class="col-12 col-md-6">
+              <CompanyTypeFilter />
+            </div>
+          </div>
+        </div>
+        <q-separator spaced class="spacing-bottom" />
+
+        <!-- Education + Top Companies -->
+        <div class="spacing-bottom">
+          <div class="text-h6 q-mb-sm section-heading">
+            <q-icon name="school" class="section-icon" />
+            Education & Top Companies
+          </div>
+          <div class="row q-col-gutter-md">
+            <div class="col-12 col-md-6">
+              <EducationFilter />
+            </div>
+            <div class="col-12 col-md-6">
+              <TopCompaniesFilter />
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Sticky Footer -->
+      <q-card-actions align="right" class="q-pa-sm sticky-footer">
+        <q-btn label="View results" class="view-results-btn" @click="showDialog = false" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
+</template>
+
+<script>
+import SelectedTags from './SelectedTags.vue'
+import JobRoleFilter from './Filters/JobRoleFilter.vue'
+import LocationRegionFilter from './Filters/LocationRegionFilter.vue'
+import SalaryFilter from './Filters/SalaryFilter.vue'
+import EquityFilter from './Filters/EquityFilter.vue'
+import JobTypeFilter from './Filters/JobTypeFilter.vue'
+import ExperienceFilter from './Filters/ExperienceFilter.vue'
+import JobModeFilter from './Filters/JobModeFilter.vue'
+import EducationFilter from './Filters/EducationFilter.vue'
+import TopCompaniesFilter from './Filters/TopCompaniesFilter.vue'
+import SkillsFilter from './Filters/SkillsFilter.vue'
+import MarketsFilter from './Filters/MarketsFilter.vue'
+import CompanySizeFilter from './Filters/CompanySizeFilter.vue'
+import CompanyTypeFilter from './Filters/CompanyTypeFilter.vue'
+import { useFilterStore } from 'src/stores/filter-store'
+
+export default {
+  name: 'JobFilterCard',
+  components: {
+    SelectedTags,
+    JobRoleFilter,
+    LocationRegionFilter,
+    SalaryFilter,
+    EquityFilter,
+    SkillsFilter,
+    MarketsFilter,
+    JobTypeFilter,
+    ExperienceFilter,
+    JobModeFilter,
+    CompanySizeFilter,
+    CompanyTypeFilter,
+    EducationFilter,
+    TopCompaniesFilter,
+  },
+  props: {
+    modelValue: Boolean,
+  },
+  emits: ['update:modelValue'],
+  computed: {
+    showDialog: {
+      get() {
+        return this.modelValue
+      },
+      set(val) {
+        this.$emit('update:modelValue', val)
+      },
+    },
+  },
+  data() {
+    return {
+      filterStore: useFilterStore(),
+    }
+  },
+}
+</script>
+
+<style scoped>
+.spacing-bottom {
+  margin-bottom: 24px;
+}
+
+.view-results-btn {
+  background-color: #000;
+  color: #fff;
+  font-weight: 500;
+  border-radius: 7px;
+  text-transform: none;
+  padding: 8px 20px;
+  font-size: 14px;
+}
+
+.filter-wrapper {
+  width: 100%;
+  max-width: 1000px;
+  height: 97vh;
+  max-height: 100vh;
+  overflow: hidden;
+  border-radius: 7px;
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-content {
+  flex: 1;
+  overflow-y: auto;
+  width: 95%;
+  margin: 0 auto;
+}
+
+.selected-filters-sticky {
+  background: #fff;
+  border-bottom: 1px solid #eee;
+  z-index: 10;
+}
+
+.sticky-footer {
+  background: #fff;
+  border-top: 1px solid #eee;
+  z-index: 10;
+}
+
+.section-heading {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 600;
+}
+
+.section-icon {
+  color: #b87333;
+  font-size: 20px;
+}
+</style>
