@@ -184,10 +184,10 @@ onMounted(() => {
 
 
 <style scoped>
-:root {
-  --q-primary: #b87333; /* Copper */
+/* :root {
+  --q-primary: #b87333; /* Copper 
   --q-primary-rgb: 184, 115, 51;
-}
+} */
 
 /* Section */
 .applicants-section {
@@ -199,10 +199,10 @@ onMounted(() => {
   color: white;
 }
 
-.q-item:hover {
+/* .q-item:hover {
   background-color: var(--q-primary);
   color: white;
-}
+} */
 
 /* Job Card */
 .job-card {
@@ -218,7 +218,6 @@ onMounted(() => {
 .job-card:hover {
   box-shadow: 0 8px 40px rgba(0, 0, 0, 0.3);
   transform: translateY(-4px);
-  border-color: var(--q-primary);
 }
 /* No Jobs Styling */
 .no-jobs-container {
@@ -248,7 +247,7 @@ onMounted(() => {
 }
 /* Header Section */
 .card-header {
-  background: linear-gradient(135deg, #000000 0%, var(--q-primary) 100%);
+  background: linear-gradient(135deg, #000000 0%, #b87333 100%);
   padding: 16px;
   color: white;
 }
@@ -286,17 +285,17 @@ onMounted(() => {
   font-weight: 600;
   padding: 4px 12px;
   border-radius: 12px;
-  border: 1px solid var(--q-primary);
+  /* border: 1px solid var(--q-primary); */
   backdrop-filter: blur(10px);
   text-transform: uppercase;
   letter-spacing: 0.4px;
   transition: all 0.3s ease;
 }
 
-.job-badge:hover {
+/* .job-badge:hover {
   background: var(--q-primary);
   color: white;
-}
+} */
 
 .header-actions {
   display: flex;
@@ -306,7 +305,7 @@ onMounted(() => {
 /* Action buttons in header */
 .icon-btn {
   background: #f0f0f0;
-  color: var(--q-primary);
+  color: #b87333;
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -316,11 +315,11 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.icon-btn:hover {
+/* .icon-btn:hover {
   background: var(--q-primary);
   color: white;
   transform: scale(1.1);
-}
+} */
 
 /* Main Content Grid (White background) */
 .card-content {
@@ -347,19 +346,19 @@ onMounted(() => {
   color: #333;
 }
 
-.info-card:hover {
+/* .info-card:hover {
   background: var(--q-primary);
   border-color: var(--q-primary);
   transform: translateY(-2px);
   color: white;
-}
+} */
 
 /* Info card icons */
 .info-icon {
   width: 36px;
   height: 36px;
   background: #f0f0f0;
-  color: var(--q-primary);
+  color: #b87333;
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -369,11 +368,11 @@ onMounted(() => {
   transition: all 0.3s ease;
 }
 
-.info-card:hover .info-icon {
+/* .info-card:hover .info-icon {
   background: white;
   color: var(--q-primary);
   box-shadow: 0 0 6px rgba(0,0,0,0.15);
-}
+} */
 
 
 .info-content {
@@ -389,9 +388,9 @@ onMounted(() => {
   letter-spacing: 0.6px;
 }
 
-.info-card:hover .info-label {
+/* .info-card:hover .info-label {
   color: white;
-}
+} */
 
 .info-value {
   font-size: 1rem;
@@ -421,8 +420,8 @@ onMounted(() => {
 }
 
 .footer-icon:hover {
-  color: var(--q-primary);
-}
+  color: #b87333;
+} 
 
 .posted-text {
   color: #666;

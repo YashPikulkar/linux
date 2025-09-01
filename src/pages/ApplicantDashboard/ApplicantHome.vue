@@ -23,7 +23,7 @@
 <script setup>
 import { onMounted, onUnmounted, ref } from 'vue'
 import { useRouter } from 'vue-router'
-import { useQuasar, QSpinner } from 'quasar'
+import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
 import JobList from 'src/components/Jobs/JobList.vue'
 import JobDetails from 'src/components/Jobs/JobDetails.vue'
@@ -150,14 +150,14 @@ onMounted(async () => {
   }
 
   // First refresh immediately (before showing children)
-    $q.notify({
-  spinner: QSpinner,
-  spinnerColor: 'white',
-  color: 'info',
-  message: 'Loading analytics data...',
-  position: 'top-right',
-  timeout: 1000
-})
+//     $q.notify({
+//   spinner: QSpinner,
+//   spinnerColor: 'white',
+//   color: 'info',
+//   message: 'Loading analytics data...',
+//   position: 'top-right',
+//   timeout: 1000
+// })
 
   await refreshAllData()
 

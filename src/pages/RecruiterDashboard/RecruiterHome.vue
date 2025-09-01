@@ -6,7 +6,7 @@
 
 <script setup>
 import { ref, onMounted, onUnmounted, nextTick } from 'vue'
-import { useQuasar, QSpinner } from 'quasar'
+import { useQuasar } from 'quasar'
 import RecruiterStats from 'src/components/RecruiterDashboard/RecruiterStats.vue'
 import RecruiterSkillStats from 'src/components/RecruiterDashboard/RecruiterSkillStats.vue'
 import { useRouter } from 'vue-router'
@@ -123,14 +123,14 @@ onMounted(async () => {
   }
 
   // First refresh immediately (before showing children)
-    $q.notify({
-  spinner: QSpinner,
-  spinnerColor: 'white',
-  color: 'info',
-  message: 'Loading analytics data...',
-  position: 'top-right',
-  timeout: 1000
-})
+//     $q.notify({
+//   spinner: QSpinner,
+//   spinnerColor: 'white',
+//   color: 'info',
+//   message: 'Loading analytics data...',
+//   position: 'top-right',
+//   timeout: 1000
+// })
 
   await refreshAllData()
 

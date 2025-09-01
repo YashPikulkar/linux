@@ -268,7 +268,7 @@
           <q-btn
             v-else
             label="Preview & Submit"
-            color="primary"
+            color="black"
             @click="showConfirmDialogHandler"
             icon-right="send"
             size="md"
@@ -342,7 +342,7 @@
           />
           <q-btn
             label="Yes, Submit Job"
-            color="primary"
+            color="black"
             @click="confirmSubmit"
             :loading="isSubmitting"
             :disable="missingFields.length > 0"
@@ -893,9 +893,9 @@ function resetForm() {
 
 /* Active/Done Step Styling */
 .custom-stepper :deep(.q-stepper__tab--active .q-step__icon) {
-  background: #1976d2 !important;
+  background: #b87333 !important;
   color: white !important;
-  border: 3px solid #1976d2 !important;
+  border: 3px solid #b87333 !important;
 }
 
 .custom-stepper :deep(.q-stepper__tab--done .q-step__icon) {
@@ -1077,7 +1077,7 @@ function resetForm() {
 }
 
 .q-btn.bg-primary:hover {
-  background-color: #b87333 !important;
+  background-color: #333 !important;
 }
 
 .q-btn--flat {

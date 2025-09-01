@@ -311,10 +311,10 @@ const handleLogout = () => {
 .nav-btn:hover,
 .nav-btn:focus,
 .nav-btn.active {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   border: 2px solid var(--q-hover);
   color: var(--q-hover) !important;
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
   border-radius: 8px;
 }
 .navbar-custom .row.items-center.q-gutter-sm.gt-sm .q-avatar {
@@ -344,7 +344,7 @@ const handleLogout = () => {
 }
 
 .mobile-menu-btn:hover {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   color: var(--q-hover);
 }
 
@@ -387,7 +387,7 @@ const handleLogout = () => {
 }
 
 .mobile-close-btn:hover {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   color: var(--q-hover);
 }
 
@@ -422,10 +422,10 @@ const handleLogout = () => {
 
 .mobile-nav-item:hover,
 .mobile-nav-item.active {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   border: 2px solid var(--q-hover);
   color: var(--q-hover) !important;
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
 }
 
 .mobile-nav-icon {
@@ -531,7 +531,7 @@ const handleLogout = () => {
 }
 
 .menu-item:hover {
-  background-color: rgba(64, 224, 208, 0.1) !important;
+  background-color: rgba(184,11,51,0.1) !important;
 }
 
 .menu-icon-section {

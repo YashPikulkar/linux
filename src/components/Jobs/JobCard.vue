@@ -58,8 +58,8 @@
     </div>
 
     <!-- Job Details Inner Card -->
-    <div class="q-mt-xs q-mx-none">
-      <q-card class="inner-job-card q-py-xs q-px-md q-mx-none" flat bordered @click.stop>
+    <div class="q-mt-sm q-mx-none">
+      <q-card class="inner-job-card  q-mx-none q-pa-md" flat bordered @click.stop>
         <!-- Desktop Layout -->
         <div class="row q-col-gutter-sm items-center justify-between desktop-layout">
           <!-- Job info (left) -->

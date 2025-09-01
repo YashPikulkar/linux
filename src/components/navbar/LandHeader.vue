@@ -289,7 +289,7 @@ const handleLogout = () => {
 .profile-dropdown {
   width: 360px;
   border-radius: 99px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(184,11,51,0.1);
   background: #fff;
   font-family:
     'Inter',
@@ -363,7 +363,7 @@ const handleLogout = () => {
 }
 
 .menu-item:hover {
-  background-color: rgba(64, 224, 208, 0.1) !important;
+  background-color: rgba(184,11,51,0.1) !important;
   color: var(--q-hover);
 }
 
@@ -387,7 +387,7 @@ const handleLogout = () => {
 }
 
 .post-job-btn:hover {
-  background: rgba(64, 224, 208, 0.1);
+  background: rgba(184,11,51,0.1);
 }
 
 /* =========================
@@ -449,10 +449,10 @@ const handleLogout = () => {
 .nav-btn:hover,
 .nav-btn:focus,
 .nav-btn.active {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   border: 2px solid var(--q-hover);
   color: var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
 }
 
 /* =========================
@@ -473,10 +473,10 @@ const handleLogout = () => {
 .custom-login-btn:hover,
 .custom-login-btn:focus,
 .custom-login-btn:active {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   border-color: var(--q-hover);
   color: var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
 }
 
 .custom-signup-btn {
@@ -497,7 +497,7 @@ const handleLogout = () => {
   background-color: var(--q-hover);
   color: #ffffff;
   border: 2px solid var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.2);
+  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
 }
 
 /* =========================
@@ -513,7 +513,7 @@ const handleLogout = () => {
 }
 
 .mobile-menu-btn:hover {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   color: var(--q-hover);
 }
 
@@ -548,7 +548,7 @@ const handleLogout = () => {
 }
 
 .mobile-close-btn:hover {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.1);
   color: var(--q-hover);
 }
 
@@ -583,10 +583,10 @@ const handleLogout = () => {
 
 .mobile-nav-item:hover,
 .mobile-nav-item.active {
-  background-color: rgba(64, 224, 208, 0.1);
+  background-color: rgba(184,11,51,0.2);
   color: var(--q-hover);
   border: 2px solid var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  box-shadow: 0 0 0 4px rgba(184,11,51,0.2);
 }
 
 /* =========================
@@ -631,7 +631,7 @@ const handleLogout = () => {
 }
 
 .mobile-signup-btn-jobseeker:hover {
-  background-color: #374151;
+  background-color: #b87333;
 }
 
 .mobile-signup-btn-company {
@@ -648,7 +648,7 @@ const handleLogout = () => {
 }
 
 .mobile-signup-btn-company:hover {
-  background-color: #1abc9c; /* darker turquoise for hover */
+  background-color: #b87333; /* darker turquoise for hover */
 }
 
 /* =========================

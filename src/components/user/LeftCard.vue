@@ -8,7 +8,7 @@
         <!-- Header with gradient -->
         <div class="card-header q-pa-sm text-white relative-position">
           <!-- Close X Button -->
-          <q-btn
+          <!-- <q-btn
             icon="close"
             round
             flat
@@ -18,7 +18,7 @@
             @click="toggleCard"
           >
             <q-tooltip :delay="500">Close Profile</q-tooltip>
-          </q-btn>
+          </q-btn> -->
 
           <div class="profile-header">
             <div class="profile-avatar-container">
@@ -80,7 +80,7 @@ import { useQuasar } from 'quasar'
 import { useUserStore } from 'src/stores/user-store'
 
 // Define emits
-const emit = defineEmits(['toggle-visibility'])
+//const emit = defineEmits(['toggle-visibility'])
 
 const $q = useQuasar()
 
@@ -95,10 +95,10 @@ const user = reactive({
 })
 
 // Toggle card visibility and emit event to parent
-const toggleCard = () => {
-  isCardVisible.value = !isCardVisible.value
-  emit('toggle-visibility', isCardVisible.value)
-}
+// const toggleCard = () => {
+//   isCardVisible.value = !isCardVisible.value
+//   emit('toggle-visibility', isCardVisible.value)
+// }
 
 // Get first name and initials
 const firstName = computed(() => {

@@ -141,9 +141,9 @@ export default {
   text-align: center;
 }
 
-.hero-title span {
-  color: #b87333; /* Copper accent for emphasis */
-}
+/* .hero-title span {
+  color: #b87333; /* Copper accent for emphasis 
+} */
 
 /* CTA buttons */
 .cta-buttons {
@@ -164,25 +164,25 @@ export default {
   cursor: pointer;
 }
 
-.cta-hover:hover {
+/* .cta-hover:hover {
   background-color: #b87333 !important;
   border-color: #b87333 !important;
   color: white !important;
   transform: translateY(-2px);
   box-shadow: 0 4px 12px rgba(184, 115, 51, 0.3);
-}
+} */
 
-.cta-hover:active {
-  background-color: #8a5525 !important; /* Darker copper */
+/* .cta-hover:active {
+  background-color: #8a5525 !important; /* Darker copper 
   border-color: #8a5525 !important;
   transform: translateY(0);
   box-shadow: 0 2px 6px rgba(138, 85, 37, 0.3);
-}
+} */
 
-.cta-hover:focus {
+/* .cta-hover:focus {
   outline: 2px solid #b87333;
   outline-offset: 3px;
-}
+} */
 
 /* Stats */
 .stat-number {
@@ -208,11 +208,11 @@ export default {
   transition: all 0.3s ease;
 }
 
-.stat-card:hover {
+/* .stat-card:hover {
   border-color: #b87333;
   box-shadow: 0 12px 20px rgba(184, 115, 51, 0.15);
   transform: translateY(-4px);
-}
+} */
 
 /* Responsive design */
 @media (max-width: 768px) {
