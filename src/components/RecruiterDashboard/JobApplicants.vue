@@ -6,7 +6,8 @@
       <div>
         <div class="ad-title">✨ Application Ranking System</div>
         <div class="ad-desc">
-          Our intelligent ranking system uses advanced algorithms to score and rank applicants, helping you find the best fit faster!
+          Our intelligent ranking system uses advanced algorithms to score and rank applicants,
+          helping you find the best fit faster!
         </div>
       </div>
     </div>
@@ -19,7 +20,7 @@
             flat
             dense
             round
-            size="lg"
+            size="sm"
             icon="arrow_back"
             color="primary"
             @click="goBack"
@@ -35,7 +36,7 @@
             <q-btn
               icon="download"
               label="Export"
-              color="primary"
+              color="secondary"
               outline
               @click="exportApplicants"
               class="modern-btn"
@@ -150,15 +151,14 @@
                     class="ml-score"
                     :class="{
                       'score-excellent': applicant.label && applicant.label >= 0.8,
-                      'score-good': applicant.label && applicant.label >= 0.6 && applicant.label < 0.8,
-                      'score-fair': applicant.label && applicant.label < 0.6
+                      'score-good':
+                        applicant.label && applicant.label >= 0.6 && applicant.label < 0.8,
+                      'score-fair': applicant.label && applicant.label < 0.6,
                     }"
                   >
                     {{ applicant.label ? Math.round(applicant.label * 100) : 0 }}%
                   </div>
-                  <div class="match-text">
-                    Match Score
-                  </div>
+                  <div class="match-text">Match Score</div>
                 </div>
 
                 <q-chip
@@ -322,41 +322,37 @@
                 <q-card class="info-card">
                   <q-card-section class="card-header">Links & Documents</q-card-section>
                   <q-card-section class="info-content">
-                    <div class="info-row" v-if="selectedApplicant.linkedIn">
-                      <span class="info-label">LinkedIn:</span>
-                      <span class="info-value">
+                    <div class="row items-center q-gutter-md">
+                      <div v-if="selectedApplicant.linkedIn" class="col-auto">
+                        <span class="info-label">LinkedIn:</span>
                         <a
                           :href="selectedApplicant.linkedIn"
                           target="_blank"
-                          class="link-primary"
+                          class="link-primary q-ml-xs"
                         >
                           View Profile
                         </a>
-                      </span>
-                    </div>
-                    <div class="info-row" v-if="selectedApplicant.portfolioWebsite">
-                      <span class="info-label">Portfolio:</span>
-                      <span class="info-value">
+                      </div>
+                      <div v-if="selectedApplicant.portfolioWebsite" class="col-auto">
+                        <span class="info-label">Portfolio:</span>
                         <a
                           :href="selectedApplicant.portfolioWebsite"
                           target="_blank"
-                          class="link-primary"
+                          class="link-primary q-ml-xs"
                         >
                           View Portfolio
                         </a>
-                      </span>
-                    </div>
-                    <div class="info-row" v-if="selectedApplicant.resume_url">
-                      <span class="info-label">Resume:</span>
-                      <span class="info-value">
+                      </div>
+                      <div v-if="selectedApplicant.resume_url" class="col-auto">
+                        <span class="info-label">Resume:</span>
                         <a
                           :href="selectedApplicant.resume_url"
                           target="_blank"
-                          class="link-primary"
+                          class="link-primary q-ml-xs"
                         >
                           View Resume
                         </a>
-                      </span>
+                      </div>
                     </div>
                   </q-card-section>
                 </q-card>
@@ -368,15 +364,14 @@
               <q-card class="info-card">
                 <q-card-section class="card-header">Documents & Resume</q-card-section>
                 <q-card-section class="info-content">
-                  <div v-if="selectedApplicant.resume_url" class="row q-gutter-md">
+                  <div v-if="selectedApplicant.resume_url" class="q-mb-md">
                     <q-btn
                       color="primary"
                       icon="visibility"
                       label="View Resume"
                       @click="viewResume(selectedApplicant.resume_url)"
-                      class=" modern-btn"
+                      class="q-mr-sm modern-btn"
                     />
-
                     <q-btn
                       color="secondary"
                       icon="download"
@@ -553,14 +548,14 @@
                     </span>
                   </div>
 
-                  <div class="row q-gutter-md">
+                  <div class="q-mt-lg">
                     <q-btn
                       v-if="selectedApplicant.linkedIn"
                       color="primary"
                       icon="link"
                       label="Visit LinkedIn"
                       @click="window.open(selectedApplicant.linkedIn, '_blank')"
-                      class="modern-btn"
+                      class="q-mr-sm modern-btn"
                     />
                     <q-btn
                       v-if="selectedApplicant.portfolioWebsite"
@@ -581,11 +576,7 @@
     </div>
 
     <!-- Status Change Confirmation Dialog -->
-    <q-dialog
-      v-model="showConfirmDialog"
-      persistent
-      @hide="resetDialog"
-    >
+    <q-dialog v-model="showConfirmDialog" persistent @hide="resetDialog">
       <q-card style="min-width: 400px">
         <q-card-section class="row items-center q-pb-none">
           <div class="text-h6">Confirm Status Change</div>
@@ -597,7 +588,8 @@
           <div class="text-body1 q-mb-md">
             Are you sure you want to change the status of
             <strong>{{ selectedApplicant?.name || 'this applicant' }}</strong>
-            to <strong class="text-capitalize">{{ pendingStatus }}</strong>?
+            to <strong class="text-capitalize">{{ pendingStatus }}</strong
+            >?
           </div>
 
           <q-checkbox
@@ -614,13 +606,7 @@
         </q-card-section>
 
         <q-card-actions align="right" class="q-pa-md">
-          <q-btn
-            flat
-            label="Cancel"
-            color="grey-7"
-            v-close-popup
-            @click="resetDialog"
-          />
+          <q-btn flat label="Cancel" color="grey-7" v-close-popup @click="resetDialog" />
           <q-btn
             label="Confirm"
             color="primary"
@@ -802,12 +788,26 @@ async function updateStatus(status, sendEmail = true) {
 
   updatingStatus.value = true
   try {
-    // Call the backend API with uid, status, and email notification flag
+    // Call the backend API with uid, jobid, and status
     await appStore.updateStatus({
       uid: selectedApplicant.value.uid,
+      jobid: jobId.value,
       status: status,
-      sendEmail: sendEmail
     })
+
+    // Send email if requested and status is accepted or rejected
+    let emailMessage = ' No email notification sent.'
+    if (sendEmail && (status === 'accepted' || status === 'rejected')) {
+      try {
+        await appStore.sendEmail({
+          uid: selectedApplicant.value.uid,
+          status: status,
+        })
+        emailMessage = ' Email notification sent.'
+      } catch (emailErr) {
+        emailMessage = ` Email sending failed: ${emailErr.message}`
+      }
+    }
 
     // Update local state
     selectedApplicant.value.status = status
@@ -818,7 +818,6 @@ async function updateStatus(status, sendEmail = true) {
       applicants.value[index].status = status
     }
 
-    const emailMessage = sendEmail ? ' Email notification sent.' : ' No email notification sent.'
     $q.notify({
       type: 'positive',
       message: `Status updated to ${status}.${emailMessage}`,
@@ -947,30 +946,30 @@ onMounted(() => {
   background: linear-gradient(135deg, #f8fafc 0%, #e0e7ef 100%);
 }
 
-/* Advertisement Banner */
+/* --- Advertisement Banner --- */
 .ad-banner {
   display: flex;
   align-items: center;
   gap: 18px;
   background: linear-gradient(90deg, #e0e7ff 0%, #f0fdfa 100%);
-  margin: 0;                  /* no extra spacing above/below */
+  border-radius: 10px;
+  margin: 0 32px 0 32px;
   padding: 18px 28px;
   box-shadow: 0 2px 12px rgba(56, 189, 248, 0.08);
   border: 1px solid #dbeafe;
   min-height: 60px;
-  width: 100%;
-  border-radius: 0;            /* make it straight, no curve */
+  margin-top: 18px;
 }
 .ad-title {
   font-size: 18px;
   font-weight: 700;
-  color: #b87333;
+  color: #2563eb;
   margin-bottom: 2px;
   letter-spacing: 0.5px;
 }
 .ad-desc {
   font-size: 14px;
-  color: #7a7a7a;
+  color: #334155;
   font-weight: 500;
 }
 
@@ -989,10 +988,13 @@ onMounted(() => {
 .stat-number.stat-rejected {
   color: #64748b; /* Use neutral gray instead of red */
 }
-.score-fair { color: #f59e0b !important; } /* Use orange for fair scores instead of red */
+.score-fair {
+  color: #f59e0b !important;
+} /* Use orange for fair scores instead of red */
 
 /* --- Small Back Button --- */
-.modern-btn[icon="arrow_back"], .modern-btn.q-mr-sm {
+.modern-btn[icon='arrow_back'],
+.modern-btn.q-mr-sm {
   min-width: 32px;
   min-height: 32px;
   padding: 0;
@@ -1023,13 +1025,21 @@ onMounted(() => {
   margin-bottom: 2px;
   letter-spacing: 0.5px;
 }
-.stat-number.text-primary { color: #b87333; }
-.stat-number.text-orange { color: #f59e0b; }
-.stat-number.stat-accepted { color: #059669; }
-.stat-number.stat-rejected { color: red; }
+.stat-number.text-primary {
+  color: #2563eb;
+}
+.stat-number.text-orange {
+  color: #f59e0b;
+}
+.stat-number.stat-accepted {
+  color: #059669;
+}
+.stat-number.stat-rejected {
+  color: #64748b;
+}
 .stat-label {
   font-size: 12px;
-  color: #7a7a7a;
+  color: #64748b;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -1059,7 +1069,7 @@ onMounted(() => {
   min-width: 320px;
   display: flex;
   flex-direction: column;
-  box-shadow: 2px 0 8px rgba(0,0,0,0.02);
+  box-shadow: 2px 0 8px rgba(0, 0, 0, 0.02);
 }
 .filter-section {
   padding: 18px 18px 10px 18px;
@@ -1073,7 +1083,7 @@ onMounted(() => {
   padding: 6px 18px;
   background: #f1f5f9;
   font-size: 11px;
-  color: #7a7a7a;
+  color: #64748b;
   border-bottom: 1px solid #e5e7eb;
 }
 .applicants-list {
@@ -1100,16 +1110,20 @@ onMounted(() => {
   border-radius: 12px;
   padding: 14px 18px 10px 18px;
   cursor: pointer;
-  transition: box-shadow 0.18s, border-color 0.18s, transform 0.12s;
+  transition:
+    box-shadow 0.18s,
+    border-color 0.18s,
+    transform 0.12s;
   box-shadow: 0 2px 8px rgba(56, 189, 248, 0.04);
   min-height: 90px;
   display: flex;
   flex-direction: column;
   justify-content: space-between;
 }
-.applicant-card:hover, .applicant-card.selected {
-  border-color: var(--q-primary);
-  box-shadow: 0 4px 16px rgba(37,99,235,0.10);
+.applicant-card:hover,
+.applicant-card.selected {
+  border-color: #2563eb;
+  box-shadow: 0 4px 16px rgba(37, 99, 235, 0.1);
   background: linear-gradient(90deg, #e0e7ff 80%, #f0fdfa 100%);
   transform: translateY(-2px) scale(1.01);
 }
@@ -1128,14 +1142,14 @@ onMounted(() => {
 }
 .applicant-name {
   font-weight: 700;
-  color: #1c1c1c;
+  color: #1e293b;
   font-size: 15px;
   margin-bottom: 2px;
   letter-spacing: 0.1px;
 }
 .applicant-meta {
   font-size: 12px;
-  color: #7a7a7a;
+  color: #64748b;
 }
 .status-chip {
   flex-shrink: 0;
@@ -1150,17 +1164,17 @@ onMounted(() => {
   gap: 18px;
   margin-top: 2px;
   font-size: 12px;
-  color: #7a7a7a;
+  color: #64748b;
 }
 .detail-row {
   display: flex;
   align-items: center;
   gap: 5px;
   font-size: 12px;
-  color: #7a7a7a;
+  color: #64748b;
 }
 .resume-link {
-  color: #3b82f6;
+  color: #2563eb;
   text-decoration: none;
   font-weight: 600;
 }
@@ -1191,9 +1205,15 @@ onMounted(() => {
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
-.score-excellent { color: #059669 !important; } /* 80%+ Green */
-.score-good { color: #f59e0b !important; }      /* 60-79% Orange */
-.score-fair { color: #f59e0b !important; }      /* <60% Orange */
+.score-excellent {
+  color: #059669 !important;
+} /* 80%+ Green */
+.score-good {
+  color: #f59e0b !important;
+} /* 60-79% Orange */
+.score-fair {
+  color: #f59e0b !important;
+} /* <60% Orange */
 
 /* --- Details Panel --- */
 .applicant-details {
@@ -1256,12 +1276,12 @@ onMounted(() => {
 .profile-name {
   font-size: 22px;
   font-weight: 700;
-  color: #1c1c1c;
+  color: #1e293b;
   margin-bottom: 4px;
 }
 .profile-email,
 .profile-phone {
-  color: #7a7a7a;
+  color: #64748b;
   font-size: 14px;
   margin-bottom: 2px;
 }
@@ -1289,13 +1309,13 @@ onMounted(() => {
   border-bottom: 1px solid #e8e8e8;
 }
 .modern-tabs .q-tab {
-  color: #7a7a7a;
+  color: #64748b;
   font-weight: 600;
   text-transform: none;
   font-size: 15px;
 }
 .modern-tabs .q-tab--active {
-  color: #b87333;
+  color: #2563eb;
 }
 .tab-panels {
   flex: 1;
@@ -1320,7 +1340,7 @@ onMounted(() => {
   background: #f3f6fa;
   padding: 14px 20px;
   font-weight: 700;
-  color: #1c1c1c;
+  color: #1e293b;
   border-bottom: 1px solid #e5e7eb;
   font-size: 16px;
 }
@@ -1334,37 +1354,42 @@ onMounted(() => {
 }
 .info-label {
   width: 140px;
-  color: #7a7a7a;
+  color: #64748b;
   font-weight: 700;
   font-size: 13px;
 }
 .info-value {
   flex: 1;
-  color: #1c1c1c;
+  color: #1e293b;
   font-size: 14px;
 }
 
 /* --- Education & Experience --- */
-.education-item, .experience-item {
+.education-item,
+.experience-item {
   padding: 10px 0;
   border-bottom: 1px dashed #e0e7ef;
 }
-.education-header, .experience-header {
+.education-header,
+.experience-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 12px;
   margin-bottom: 4px;
 }
-.education-degree, .experience-position {
+.education-degree,
+.experience-position {
   font-weight: 700;
-  color: #1c1c1c;
+  color: #1e293b;
 }
-.education-institution, .experience-company {
-  color: #7a7a7a;
+.education-institution,
+.experience-company {
+  color: #64748b;
   font-size: 13px;
 }
-.education-details, .experience-details {
+.education-details,
+.experience-details {
   color: #334155;
   font-size: 13px;
   display: flex;
@@ -1372,17 +1397,19 @@ onMounted(() => {
   flex-wrap: wrap;
   margin-bottom: 6px;
 }
-.education-years, .experience-duration {
-  color: #7a7a7a;
+.education-years,
+.experience-duration {
+  color: #64748b;
   font-size: 13px;
 }
 .education-grade {
   font-size: 13px;
-  color: #1c1c1c;
+  color: #1e293b;
   margin-top: 4px;
 }
-.education-description, .experience-description {
-  color: #7a7a7a;
+.education-description,
+.experience-description {
+  color: #64748b;
   font-size: 13px;
   margin-top: 6px;
 }
@@ -1391,7 +1418,7 @@ onMounted(() => {
 }
 .skills-label {
   font-size: 13px;
-  color: #1c1c1c;
+  color: #1e293b;
   font-weight: 700;
   margin-bottom: 4px;
 }
@@ -1402,7 +1429,7 @@ onMounted(() => {
 }
 .skill-chip {
   background: #e0e7ff;
-  color: #b87333;
+  color: #2563eb;
   border-radius: 999px;
   padding: 4px 10px;
   font-size: 12px;
@@ -1418,7 +1445,7 @@ onMounted(() => {
   white-space: pre-wrap;
 }
 .link-primary {
-  color: var(--q-primary );
+  color: #2563eb;
   font-weight: 700;
   text-decoration: none;
 }
@@ -1477,7 +1504,9 @@ onMounted(() => {
     padding: 16px;
     min-height: auto;
   }
-  .ad-banner, .header-section, .stats-section {
+  .ad-banner,
+  .header-section,
+  .stats-section {
     margin-left: 0;
     margin-right: 0;
     padding-left: 12px;

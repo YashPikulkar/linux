@@ -61,81 +61,124 @@
 
               <!-- Profile status section -->
               <div ref="applicationStatus" class="profile-status-section">
-                <div class="applicants-management">
-                  <div class="status-title">Application Status</div>
+                <div class="status-title">Application Status</div>
 
-                  <!-- Advertisement Banner (Below Application Status) -->
-                  <div ref="adBanner" class="ad-banner">
-                    <q-icon name="analytics" color="primary" size="32px" class="ad-icon" />
+                <!-- Improved Advertisement Banner -->
+                <div ref="adBanner" class="ad-banner-container">
+                  <div class="ad-banner">
+                    <div class="ad-icon-wrapper">
+                      <q-icon name="psychology" class="ad-icon" />
+                    </div>
                     <div class="ad-content">
-                      <div class="ad-title">AI Profile Match Analysis</div>
-                      <div class="ad-desc">
-                        Discover your compatibility score and ranking potential for this role. Our AI analyzes your profile against job requirements to show how well you match and your chances of getting selected.
+                      <div class="ad-title">
+                        <q-icon name="auto_awesome" size="18px" class="ad-title-icon" />
+                        AI Profile Match Analysis
+                      </div>
+                      <div class="ad-description">
+                        Get instant insights on your compatibility with this role. Our AI evaluates
+                        your profile against job requirements to show your match score and selection
+                        probability.
                       </div>
                     </div>
+                    <div class="ad-cta">
+                      <q-icon name="trending_up" size="20px" class="cta-icon" />
+                    </div>
                   </div>
+                </div>
 
-                  <!-- ML Prediction Section -->
-                  <div v-if="predictionLoading" class="prediction-loading q-mb-md">
-                    <q-spinner-dots size="20px" color="primary" />
-                    <span class="q-ml-sm text-grey-6">Analyzing your profile...</span>
+                <!-- ML Prediction Section - Improved -->
+                <div v-if="predictionLoading" class="prediction-loading">
+                  <div class="loading-content">
+                    <q-spinner-dots size="24px" color="primary" />
+                    <div class="loading-text">
+                      <div class="loading-title">Analyzing Your Profile</div>
+                      <div class="loading-subtitle">This may take a few seconds...</div>
+                    </div>
                   </div>
+                </div>
 
-                  <div v-else-if="predictionResult" class="prediction-result q-mb-md">
-                    <div
-                      class="prediction-card"
-                      :class="{
-                        'prediction-high': predictionResult.status === 'high',
-                        'prediction-medium': predictionResult.status === 'medium',
-                        'prediction-low': predictionResult.status === 'low',
-                      }"
-                    >
-                      <div class="prediction-content">
+                <div v-else-if="predictionResult" class="prediction-result">
+                  <div
+                    class="analysis-card"
+                    :class="{
+                      'analysis-high': predictionResult.status === 'high',
+                      'analysis-medium': predictionResult.status === 'medium',
+                      'analysis-low': predictionResult.status === 'low',
+                    }"
+                  >
+                    <div class="analysis-header">
+                      <div class="analysis-icon-wrapper">
                         <q-icon
                           :name="getPredictionIcon(predictionResult.status)"
-                          size="20px"
-                          :class="`prediction-icon-${predictionResult.status}`"
+                          class="analysis-icon"
+                          :class="`analysis-icon-${predictionResult.status}`"
                         />
-                        <div class="prediction-text">
-                          <div class="prediction-title">Match Analysis</div>
-                          <div class="prediction-message">{{ predictionResult.message }}</div>
+                      </div>
+                      <div class="analysis-title-section">
+                        <div class="analysis-title">Profile Match Analysis</div>
+                        <div class="analysis-status" :class="`status-${predictionResult.status}`">
+                          {{ getStatusText(predictionResult.status) }}
+                        </div>
+                      </div>
+                      <div class="analysis-score" :class="`score-${predictionResult.status}`">
+                        {{ getScoreDisplay(predictionResult.status) }}
+                      </div>
+                    </div>
+
+                    <div class="analysis-content">
+                      <div class="analysis-message">{{ predictionResult.message }}</div>
+
+                      <!-- Progress bar for visual appeal -->
+                      <div class="match-progress">
+                        <div class="progress-label">Match Strength</div>
+                        <div class="progress-bar">
+                          <div
+                            class="progress-fill"
+                            :class="`progress-${predictionResult.status}`"
+                            :style="{ width: getProgressWidth(predictionResult.status) }"
+                          ></div>
                         </div>
                       </div>
                     </div>
                   </div>
+                </div>
 
-                  <div v-if="missingCriticalInfo.length" class="status-warning">
-                    <div class="warning-content">
-                      <q-icon name="warning" size="20px" class="warning-icon" />
-                      <div class="warning-text">
-                        <div class="warning-title">Profile Incomplete</div>
-                        <div class="warning-subtitle">
-                          Complete your profile to apply for this position
-                        </div>
-                      </div>
+                <div v-if="missingCriticalInfo.length" class="status-warning">
+                  <div class="warning-content">
+                    <div class="warning-icon-wrapper">
+                      <q-icon name="warning" class="warning-icon" />
                     </div>
-                    <div class="missing-items q-mt-md">
-                      <div class="missing-label">Missing information:</div>
-                      <div class="missing-chips">
-                        <div
-                          v-for="item in missingCriticalInfo"
-                          :key="item"
-                          class="custom-chip custom-chip-warning"
-                        >
-                          {{ item }}
-                        </div>
+                    <div class="warning-text">
+                      <div class="warning-title">Profile Incomplete</div>
+                      <div class="warning-subtitle">
+                        Complete your profile to apply for this position
                       </div>
                     </div>
                   </div>
+                  <div class="missing-items q-mt-md">
+                    <div class="missing-label">Missing information:</div>
+                    <div class="missing-chips">
+                      <div
+                        v-for="item in missingCriticalInfo"
+                        :key="item"
+                        class="custom-chip custom-chip-warning"
+                      >
+                        <q-icon name="error_outline" size="14px" class="chip-icon" />
+                        {{ item }}
+                      </div>
+                    </div>
+                  </div>
+                </div>
 
-                  <div v-else-if="!predictionLoading && !predictionResult" class="status-success">
-                    <div class="success-content">
-                      <q-icon name="check_circle" size="20px" class="success-icon" />
-                      <div class="success-text">
-                        <div class="success-title">Ready to Apply</div>
-                        <div class="success-subtitle">
-                          Your profile is complete and ready for submission
-                        </div>
+                <div v-else-if="!predictionLoading && !predictionResult" class="status-success">
+                  <div class="success-content">
+                    <div class="success-icon-wrapper">
+                      <q-icon name="check_circle" class="success-icon" />
+                    </div>
+                    <div class="success-text">
+                      <div class="success-title">Ready to Apply</div>
+                      <div class="success-subtitle">
+                        Your profile is complete and ready for submission
                       </div>
                     </div>
                   </div>
@@ -253,11 +296,9 @@ export default {
     },
   },
   watch: {
-    // Watch for when dialog opens and job is loaded
     'jobsStore.applicationDialogVisible'(newVal) {
       if (newVal && this.jobsStore.selectedJob && this.userStore.uid) {
         this.fetchPrediction()
-        // Auto-scroll to ad banner after dialog opens
         this.$nextTick(() => {
           this.scrollToAdBanner()
         })
@@ -269,8 +310,47 @@ export default {
       if (this.$refs.applicationStatus) {
         this.$refs.applicationStatus.scrollIntoView({
           behavior: 'smooth',
-          block: 'start'
+          block: 'start',
         })
+      }
+    },
+
+    getStatusText(status) {
+      switch (status) {
+        case 'high':
+          return 'Excellent Match'
+        case 'medium':
+          return 'Good Match'
+        case 'low':
+          return 'Needs Improvement'
+        default:
+          return 'Unknown'
+      }
+    },
+
+    getScoreDisplay(status) {
+      switch (status) {
+        case 'high':
+          return '85-95%'
+        case 'medium':
+          return '60-75%'
+        case 'low':
+          return '30-50%'
+        default:
+          return 'N/A'
+      }
+    },
+
+    getProgressWidth(status) {
+      switch (status) {
+        case 'high':
+          return '90%'
+        case 'medium':
+          return '65%'
+        case 'low':
+          return '40%'
+        default:
+          return '0%'
       }
     },
 
@@ -304,7 +384,6 @@ export default {
       } catch (error) {
         console.error('Error fetching prediction:', error)
         this.predictionError = error.message
-        // Show fallback message
         this.predictionResult = {
           status: 'medium',
           message:
@@ -319,7 +398,7 @@ export default {
     getPredictionIcon(status) {
       switch (status) {
         case 'high':
-          return 'check_circle'
+          return 'verified'
         case 'medium':
           return 'info'
         case 'low':
@@ -330,7 +409,6 @@ export default {
     },
 
     closeDialog() {
-      // Reset prediction data when closing
       this.predictionResult = null
       this.predictionLoading = false
       this.predictionError = null
@@ -350,13 +428,11 @@ export default {
       }
 
       try {
-        // First, submit the application
         const result = await this.userStore.applyForJob(jobid)
 
         if (result.success) {
           console.log('Application successful')
 
-          // After successful application, call the regressor ML API
           try {
             const regressorResponse = await fetch(
               `${base}/regressor-ML?uid=${this.userStore.uid}&jobid=${jobid}`,
@@ -365,11 +441,6 @@ export default {
                 headers: {
                   'Content-Type': 'application/json',
                 },
-                // Add body if needed based on your API requirements
-                // body: JSON.stringify({
-                //   uid: this.userStore.uid,
-                //   jobid: jobid
-                // })
               },
             )
 
@@ -379,13 +450,8 @@ export default {
 
             const regressorData = await regressorResponse.json()
             console.log('Regressor ML API response:', regressorData)
-
-            // Handle the regressor response if needed
-            // You can store this data or show it to the user
           } catch (regressorError) {
             console.error('Error calling regressor ML API:', regressorError)
-            // Don't block the application flow if regressor API fails
-            // You might want to show a warning to the user or handle this silently
           }
 
           this.closeDialog()
@@ -440,40 +506,7 @@ export default {
   z-index: 10;
 }
 
-/* Advertisement Banner */
-.ad-banner {
-  display: flex;
-  align-items: center;
-  gap: 18px;
-  background: linear-gradient(90deg, #e0e7ff 0%, #f0fdfa 100%);
-  margin: 0;                  /* no extra spacing above/below */
-  padding: 18px 28px;
-  box-shadow: 0 2px 12px rgba(56, 189, 248, 0.08);
-  border: 1px solid #dbeafe;
-  min-height: 60px;
-  width: 100%;
-  border-radius: 0;            /* make it straight, no curve */
-}
-
-.ad-content {
-  flex: 1;
-}
-
-.ad-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #b87333;
-  margin-bottom: 2px;
-  letter-spacing: 0.5px;
-}
-
-.ad-desc {
-  font-size: 14px;
-  color: #7a7a7a;
-  font-weight: 500;
-  line-height: 1.4;
-}
-
+/* Company Header */
 .company-header {
   margin-bottom: 20px;
 }
@@ -499,16 +532,20 @@ export default {
   font-weight: 500;
 }
 
+/* Info Grid */
 .info-col {
   width: calc(50% - 8px);
 }
 
+/* Skills Chips */
 .custom-chip {
   font-size: 14px;
   font-weight: 500;
   border-radius: 8px;
   padding: 6px 14px;
-  display: inline-block;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
 }
 
 .custom-chip-blue {
@@ -523,6 +560,11 @@ export default {
   color: #d97706;
 }
 
+.chip-icon {
+  margin-right: 2px;
+}
+
+/* Profile Status Section */
 .profile-status-section {
   margin-bottom: 20px;
 }
@@ -534,151 +576,357 @@ export default {
   margin-bottom: 12px;
 }
 
-/* Prediction styles */
-.prediction-loading {
+/* Advertisement Banner */
+.ad-banner-container {
+  margin: 20px 0;
+}
+
+.ad-banner {
   display: flex;
   align-items: center;
+  gap: 20px;
+  background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+  padding: 24px;
+  border-radius: 16px;
+  box-shadow: 0 8px 32px rgba(102, 126, 234, 0.3);
+  position: relative;
+  overflow: hidden;
+  min-height: 80px;
+}
+
+.ad-banner::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, rgba(255, 255, 255, 0.1) 0%, transparent 50%);
+  pointer-events: none;
+}
+
+.ad-icon-wrapper {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 12px;
   padding: 12px;
-  background-color: #f8fafc;
-  border: 1px solid #e2e8f0;
-  border-radius: 12px;
-  font-size: 14px;
-}
-
-.prediction-result {
-  margin-bottom: 16px;
-}
-
-.prediction-card {
-  border-radius: 12px;
-  padding: 14px;
-  border: 1px solid;
-}
-
-.prediction-high {
-  background-color: #dcfce7;
-  border-color: #16a34a;
-}
-
-.prediction-medium {
-  background-color: #fef3c7;
-  border-color: #f59e0b;
-}
-
-.prediction-low {
-  background-color: #fee2e2;
-  border-color: #ef4444;
-}
-
-.prediction-content {
   display: flex;
-  align-items: flex-start;
-  gap: 10px;
+  align-items: center;
+  justify-content: center;
+  backdrop-filter: blur(10px);
 }
 
-.prediction-icon-high {
-  color: #16a34a;
+.ad-icon {
+  font-size: 32px;
+  color: white;
 }
 
-.prediction-icon-medium {
-  color: #d97706;
+.ad-content {
+  flex: 1;
+  color: white;
 }
 
-.prediction-icon-low {
-  color: #dc2626;
+.ad-title {
+  font-size: 20px;
+  font-weight: 700;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
 }
 
-.prediction-title {
-  font-size: 15px;
+.ad-title-icon {
+  color: #ffd700;
+}
+
+.ad-description {
+  font-size: 14px;
+  line-height: 1.5;
+  opacity: 0.95;
+  font-weight: 400;
+}
+
+.ad-cta {
+  background: rgba(255, 255, 255, 0.2);
+  border-radius: 50%;
+  padding: 12px;
+  backdrop-filter: blur(10px);
+}
+
+.cta-icon {
+  color: white;
+}
+
+/* Prediction Loading */
+.prediction-loading {
+  margin: 20px 0;
+  background: linear-gradient(90deg, #f8fafc 0%, #f1f5f9 100%);
+  border: 2px solid #e2e8f0;
+  border-radius: 16px;
+  padding: 24px;
+}
+
+.loading-content {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+}
+
+.loading-text {
+  flex: 1;
+}
+
+.loading-title {
+  font-size: 16px;
   font-weight: 600;
+  color: #334155;
   margin-bottom: 4px;
 }
 
-.prediction-high .prediction-title {
-  color: #15803d;
+.loading-subtitle {
+  font-size: 14px;
+  color: #64748b;
 }
 
-.prediction-medium .prediction-title {
-  color: #92400e;
+/* Analysis Card */
+.prediction-result {
+  margin: 20px 0;
 }
 
-.prediction-low .prediction-title {
-  color: #991b1b;
+.analysis-card {
+  border-radius: 16px;
+  padding: 0;
+  border: 2px solid;
+  overflow: hidden;
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
 }
 
-.prediction-message {
-  font-size: 13px;
-  line-height: 1.4;
-  color: #374151;
+.analysis-high {
+  border-color: #10b981;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
 }
 
-.status-warning {
-  background-color: #fef3c7;
-  border: 1px solid #f59e0b;
+.analysis-medium {
+  border-color: #f59e0b;
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+}
+
+.analysis-low {
+  border-color: #ef4444;
+  background: linear-gradient(135deg, #fef2f2 0%, #fecaca 100%);
+}
+
+.analysis-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 20px 24px 16px;
+  border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.analysis-icon-wrapper {
+  background: white;
   border-radius: 12px;
-  padding: 14px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.analysis-icon {
+  font-size: 24px;
+}
+
+.analysis-icon-high {
+  color: #10b981;
+}
+
+.analysis-icon-medium {
+  color: #f59e0b;
+}
+
+.analysis-icon-low {
+  color: #ef4444;
+}
+
+.analysis-title-section {
+  flex: 1;
+}
+
+.analysis-title {
+  font-size: 18px;
+  font-weight: 700;
+  color: #1f2937;
+  margin-bottom: 4px;
+}
+
+.analysis-status {
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-high {
+  color: #059669;
+}
+
+.status-medium {
+  color: #d97706;
+}
+
+.status-low {
+  color: #dc2626;
+}
+
+.analysis-score {
+  font-size: 24px;
+  font-weight: 700;
+  padding: 8px 16px;
+  border-radius: 12px;
+  background: white;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.score-high {
+  color: #059669;
+}
+
+.score-medium {
+  color: #d97706;
+}
+
+.score-low {
+  color: #dc2626;
+}
+
+.analysis-content {
+  padding: 16px 24px 24px;
+}
+
+.analysis-message {
+  font-size: 14px;
+  line-height: 1.6;
+  color: #374151;
+  margin-bottom: 16px;
+}
+
+/* Progress Bar */
+.match-progress {
+  margin-top: 16px;
+}
+
+.progress-label {
+  font-size: 12px;
+  font-weight: 600;
+  color: #6b7280;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.progress-bar {
+  height: 8px;
+  background: rgba(0, 0, 0, 0.1);
+  border-radius: 4px;
+  overflow: hidden;
+}
+
+.progress-fill {
+  height: 100%;
+  border-radius: 4px;
+  transition: width 0.8s ease-in-out;
+}
+
+.progress-high {
+  background: linear-gradient(90deg, #10b981, #059669);
+}
+
+.progress-medium {
+  background: linear-gradient(90deg, #f59e0b, #d97706);
+}
+
+.progress-low {
+  background: linear-gradient(90deg, #ef4444, #dc2626);
+}
+
+/* Status Cards */
+.status-warning {
+  background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+  border: 2px solid #f59e0b;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
 }
 
 .status-success {
-  background-color: #dcfce7;
-  border: 1px solid #16a34a;
-  border-radius: 12px;
-  padding: 14px;
+  background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+  border: 2px solid #10b981;
+  border-radius: 16px;
+  padding: 20px;
+  margin: 20px 0;
 }
 
 .warning-content,
 .success-content {
   display: flex;
   align-items: flex-start;
-  gap: 10px;
+  gap: 16px;
+}
+
+.warning-icon-wrapper,
+.success-icon-wrapper {
+  background: white;
+  border-radius: 12px;
+  padding: 12px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
 }
 
 .warning-icon {
   color: #d97706;
-  margin-top: 2px;
+  font-size: 20px;
 }
 
 .success-icon {
-  color: #16a34a;
-  margin-top: 2px;
+  color: #10b981;
+  font-size: 20px;
 }
 
 .warning-title,
 .success-title {
-  font-size: 15px;
-  font-weight: 600;
-  margin-bottom: 3px;
+  font-size: 16px;
+  font-weight: 700;
+  margin-bottom: 4px;
 }
 
 .warning-title {
   color: #92400e;
 }
+
 .success-title {
-  color: #15803d;
+  color: #065f46;
 }
 
 .warning-subtitle,
 .success-subtitle {
-  font-size: 13px;
+  font-size: 14px;
+  color: #374151;
 }
 
+/* Missing Items */
 .missing-items {
-  margin-top: 12px;
+  margin-top: 16px;
 }
 
 .missing-label {
-  font-size: 13px;
+  font-size: 14px;
   font-weight: 600;
   color: #92400e;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
 }
 
 .missing-chips {
   display: flex;
   flex-wrap: wrap;
-  gap: 6px;
+  gap: 8px;
 }
 
+/* Action Section */
 .action-section {
   text-align: center;
   margin-top: 10px;
@@ -716,90 +964,127 @@ export default {
   background-color: #000000;
   color: white;
 }
+
 .submit-button:hover {
   background-color: #333333;
 }
 
+/* Loading Container */
 .loading-container {
   text-align: center;
   padding: 50px 20px;
 }
 
-.loading-text {
-  font-size: 15px;
-  color: #6b7280;
-  font-weight: 500;
-}
+/* RESPONSIVE DESIGN */
 
-/* Responsive Design */
+/* Tablet and smaller */
 @media (max-width: 768px) {
   .dialog-card {
     width: 95vw;
     height: auto;
     max-height: 90vh;
   }
-  
+
   .job-title-large {
     font-size: 24px;
   }
-  
+
   .action-buttons {
     flex-direction: column;
     align-items: center;
   }
-  
+
   .cancel-button,
   .primary-button,
   .submit-button {
     width: 200px;
   }
 
-  /* Ad banner responsive */
   .ad-banner {
-    margin: 12px 0;
-    padding: 16px 20px;
-    gap: 14px;
-    min-height: 50px;
+    padding: 20px;
+    gap: 16px;
+    min-height: 70px;
   }
-  
+
   .ad-title {
-    font-size: 16px;
-    margin-bottom: 1px;
+    font-size: 18px;
   }
-  
-  .ad-desc {
+
+  .ad-description {
     font-size: 13px;
   }
 
   .ad-icon {
-    font-size: 28px !important;
-  }
-}
-
-@media (max-width: 480px) {
-  .ad-banner {
-    margin: 12px 0;
-    padding: 14px 16px;
-    gap: 12px;
-    flex-direction: column;
-    text-align: center;
-  }
-  
-  .ad-title {
-    font-size: 15px;
-  }
-  
-  .ad-desc {
-    font-size: 12px;
-  }
-
-  .ad-icon {
-    font-size: 24px !important;
+    font-size: 28px;
   }
 
   .info-col {
     width: 100%;
     margin-bottom: 12px;
+  }
+
+  .analysis-header {
+    flex-direction: column;
+    gap: 12px;
+    text-align: center;
+    padding: 16px 20px;
+  }
+
+  .analysis-score {
+    font-size: 20px;
+  }
+
+  .analysis-content {
+    padding: 12px 16px 20px;
+  }
+
+  .analysis-message {
+    font-size: 13px;
+  }
+
+  .missing-chips {
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .custom-chip {
+    justify-content: center;
+  }
+}
+
+/* Mobile */
+@media (max-width: 480px) {
+  .ad-banner {
+    flex-direction: column;
+    text-align: center;
+    padding: 16px;
+    gap: 12px;
+  }
+
+  .ad-title {
+    font-size: 16px;
+  }
+
+  .ad-description {
+    font-size: 12px;
+  }
+
+  .ad-icon {
+    font-size: 24px;
+  }
+
+  .analysis-header {
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+
+  .analysis-content {
+    padding: 12px 16px 20px;
+  }
+
+  .analysis-message {
+    font-size: 13px;
   }
 }
 </style>
