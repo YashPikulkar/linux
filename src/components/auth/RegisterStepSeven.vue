@@ -116,7 +116,7 @@ const onSubmit = () => {
             <q-btn
               type="submit"
               :loading="loading"
-              color="dark"
+              color="primary"
               size="lg"
               class="full-width step-btn"
             >
@@ -156,7 +156,7 @@ const onSubmit = () => {
 
 .step-badge {
   display: inline-block;
-  background: #212121;
+  background: var(--q-primary);
   color: white;
   padding: 6px 16px;
   border-radius: 20px;

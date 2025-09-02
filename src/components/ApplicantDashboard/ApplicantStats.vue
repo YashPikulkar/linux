@@ -1,8 +1,8 @@
 <template>
-  <div class="stats-section q-px-lg">
-    <div class="row q-gutter-md">
-      <div class="col" v-for="(stat, index) in statsDisplay" :key="index">
-        <q-card class="stat-card-enhanced">
+  <div class="stats-section q-pa-lg">
+    <div class="row q-gutter-md items-stretch">
+      <div  class="col" v-for="(stat, index) in statsDisplay" :key="index">
+        <q-card class="stat-card-enhanced" style="height: 100%">
           <q-card-section class="text-center">
             <div class="stat-icon-wrapper q-mb-sm">
               <q-icon :name="stat.icon" size="32px" :color="stat.color" />
@@ -265,7 +265,7 @@ defineExpose({
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  /* background: linear-gradient(90deg, #667eea, #764ba2); */
 }
 
 .stat-card-enhanced:hover {

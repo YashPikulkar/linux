@@ -49,6 +49,7 @@
       :class="{ disabled: !resumeFile, loading: uploading }"
       :disabled="!resumeFile || uploading"
       @click="uploadResume"
+      color="primary"
       type="button"
     >
       <svg
@@ -414,7 +415,7 @@ const updateSkills = async () => {
   justify-content: center;
   gap: 8px;
   padding: 12px 24px;
-  background: #111827;
+  background: #0077b6;
   color: #ffffff;
   border: none;
   border-radius: 0.375rem;
@@ -425,7 +426,7 @@ const updateSkills = async () => {
 }
 
 .upload-btn:hover:not(.disabled):not(.loading) {
-  background: #000000;
+  background: #2b82c7;   /* ✅ Lighter blue on hover */
 }
 
 .upload-btn.disabled {

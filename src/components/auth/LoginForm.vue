@@ -158,7 +158,7 @@ const onSubmit = async () => {
             <q-btn
               type="submit"
               :loading="loading"
-              color="dark"
+              color="primary"
               size="lg"
               class="full-width login-btn"
               :disable="loading"
@@ -177,17 +177,18 @@ const onSubmit = async () => {
             flat
             no-caps
             color="dark"
-            class="q-pa-none text-weight-medium"
+           class="q-pa-none text-weight-medium underline-link"
+            style="text-decoration: underline"
             @click="router.replace({ name: 'register', query: $route.query })"
           >
-            register here
+            Register here
           </q-btn>
         </div>
       </q-card-section>
     </q-card>
 
     <div class="register-navigation">
-      <q-btn flat no-caps color="dark" class="nav-btn" @click="router.replace('/')">
+      <q-btn flat no-caps color="black" class="nav-btn" @click="router.replace('/')">
         <q-icon name="arrow_back" class="q-mr-sm" />
         Back
       </q-btn>
@@ -196,6 +197,15 @@ const onSubmit = async () => {
 </template>
 
 <style scoped>
+.underline-link {
+  text-decoration: underline;
+  color: #212121; /* dark */
+}
+
+.underline-link:hover {
+  color: var(--q-primary) !important;
+}
+
 .register-navigation {
   position: absolute;
   top: 24px;
@@ -214,6 +224,7 @@ const onSubmit = async () => {
 
 .nav-btn:hover {
   background: white;
+  color:var(--q-primary) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }

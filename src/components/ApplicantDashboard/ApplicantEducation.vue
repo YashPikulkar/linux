@@ -182,7 +182,7 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat label="Cancel" color="#7a7a7a" @click="showSaveDialog = false" />
-          <q-btn flat unelevated label="Save" color="primary" @click="confirmSave" :loading="isSaving" />
+          <q-btn unelevated label="Save" color="primary" @click="confirmSave" :loading="isSaving" />
         </q-card-actions>
       </q-card>
     </q-dialog>
@@ -199,7 +199,12 @@
         </q-card-section>
         <q-card-actions align="right">
           <q-btn flat  label="Keep Editing" color="#7a7a7a" @click="showCancelDialog = false" />
-          <q-btn flat unelevated label="Discard" color="primary" @click="confirmCancel" />
+          <q-btn 
+            unelevated 
+            label="Discard Changes" 
+            color="primary" 
+            @click="confirmCancel"
+          />
         </q-card-actions>
       </q-card>
     </q-dialog>

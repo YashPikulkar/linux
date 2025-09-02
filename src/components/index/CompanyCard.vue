@@ -101,10 +101,11 @@ const handleViewCompany = () => {
 
 .company-card:hover {
   transform: translateY(-4px);
-  border: 1px solid #b87333; /* Copper accent border */
+  /* border: 1px solid var(--q-primary); Copper accent border */
   box-shadow:
-    0 20px 25px -5px rgba(184, 115, 51, 0.25), /* Copper-tinted shadow */
-    0 10px 10px -5px rgba(184, 115, 51, 0.15);
+    0 20px 25px -5px rgba(0, 119, 182, 0.25)
+, /* Copper-tinted shadow */
+    0 10px 10px -5px rgba(0, 119, 182, 0.15); /* Softer shadow */
 }
 
 .logo-container {
@@ -132,10 +133,11 @@ const handleViewCompany = () => {
 
 .company-card:hover .company-initials {
   transform: scale(1.05);
-  background: #b87333; /* Copper accent background */
+  background: #0077b6; /* Copper accent background */
   color: #ffffff;      /* White text for contrast */
-  border-color: #b87333; /* Match border with copper */
-  box-shadow: 0 4px 12px rgba(184, 115, 51, 0.4); /* Copper glow */
+  /* border-color: #b87333; Match border with copper */
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.4)
+; /* Copper glow */
 }
 
 .card-content {
@@ -177,7 +179,7 @@ const handleViewCompany = () => {
 .cid-label {
   font-size: 0.75rem;
   font-weight: 600;
-  color: #7a7a7a;
+  color: #0077b6;
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
@@ -197,9 +199,9 @@ const handleViewCompany = () => {
 
 .view-company-btn {
   width: 100%;
-  background: #1c1c1c; /* Default charcoal black */
+  background: #0077b6; /* Default charcoal black */
   color: #ffffff;      /* White text */
-  border: 2px solid #1c1c1c;
+  border: 2px solid #0077b6;
   border-radius: 0.5rem;
   padding: 0.75rem 1rem;
   font-weight: 600;
@@ -214,27 +216,30 @@ const handleViewCompany = () => {
 
 /* Direct hover on the button */
 .view-company-btn:hover {
-  background: #b87333; /* Copper accent */
+  background: #0077b6; /* Copper accent */
   color: #ffffff;
-  border-color: #b87333;
+  border-color: #0077b6;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(184, 115, 51, 0.4); /* Copper glow */
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.4)
+; /* Copper glow */
 }
 
 /* NEW: Trigger button copper state when the card is hovered */
 .company-card:hover .view-company-btn {
-  background: #b87333;
-  border-color: #b87333;
+  background: #0077b6;
+  /* border-color: #b87333; */
   color: #ffffff;
   transform: translateY(-1px);
-  box-shadow: 0 4px 12px rgba(184, 115, 51, 0.4);
+  box-shadow: 0 4px 12px rgba(0, 119, 182, 0.4)
+;
 }
 
 .view-company-btn:active {
-  background: #8a5525; /* Darker copper for pressed state */
-  border-color: #8a5525;
+  background: #0077b6; /* Darker copper for pressed state */
+  border-color: #0077b6;
   transform: translateY(0); /* Reset to feel "pressed in" */
-  box-shadow: 0 2px 6px rgba(138, 85, 37, 0.3); /* Softer shadow */
+  box-shadow: 0 2px 6px rgba(0, 119, 182, 0.3)
+; /* Softer shadow */
 }
 
 .arrow-icon {
@@ -312,7 +317,8 @@ const handleViewCompany = () => {
 
 .company-card:focus-within {
   border-color: #1c1c1c;
-  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 0 0 3px rgba(0, 119, 182, 0.1)
+;
 }
 
 </style>

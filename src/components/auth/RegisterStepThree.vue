@@ -106,7 +106,7 @@ const selectRole = (selectedRole) => {
           <q-btn
             :loading="loading"
             :disable="!isFormValid || loading"
-            color="dark"
+            color="primary"
             size="lg"
             class="full-width step-btn"
             @click="onSubmit"
@@ -146,7 +146,7 @@ const selectRole = (selectedRole) => {
 
 .step-badge {
   display: inline-block;
-  background: #212121;
+  background: var(--q-primary);
   color: white;
   padding: 6px 16px;
   border-radius: 20px;
@@ -189,8 +189,8 @@ const selectRole = (selectedRole) => {
 }
 
 .role-card.selected {
-  border-color: #212121;
-  background: #212121;
+  border-color: var(--q-primary);
+  background: var(--q-primary);
   color: white;
   transform: translateY(-2px);
   box-shadow: 0 6px 20px rgba(33, 33, 33, 0.3);

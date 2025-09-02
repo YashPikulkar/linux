@@ -268,7 +268,7 @@
           <q-btn
             v-else
             label="Preview & Submit"
-            color="black"
+            color="primary"
             @click="showConfirmDialogHandler"
             icon-right="send"
             size="md"
@@ -342,7 +342,7 @@
           />
           <q-btn
             label="Yes, Submit Job"
-            color="black"
+            color="primary"
             @click="confirmSubmit"
             :loading="isSubmitting"
             :disable="missingFields.length > 0"
@@ -753,8 +753,8 @@ async function submitJob() {
       smallDescription: form.value.smallDescription,
       job_type: form.value.job_type,
       mode_of_work: form.value.mode_of_work,
-      experience_min: form.value.experience_min,
-      experience_max: form.value.experience_max,
+      experience_min: form.value.experience_min||0,
+      experience_max: form.value.experience_max||0,
       salary_min: form.value.salary_min,
       salary_max: form.value.salary_max,
       equity_min: form.value.equity_min || 0,
@@ -893,9 +893,9 @@ function resetForm() {
 
 /* Active/Done Step Styling */
 .custom-stepper :deep(.q-stepper__tab--active .q-step__icon) {
-  background: #b87333 !important;
+  background: #0077b6 !important;
   color: white !important;
-  border: 3px solid #b87333 !important;
+  border: 3px solid #0077b6 !important;
 }
 
 .custom-stepper :deep(.q-stepper__tab--done .q-step__icon) {
@@ -1072,12 +1072,12 @@ function resetForm() {
 }
 
 .q-btn.bg-primary {
-  background-color: #1c1c1c !important;
+  /* background-color: #1c1c1c ; */
   color: white !important;
 }
 
 .q-btn.bg-primary:hover {
-  background-color: #333 !important;
+  background-color: #2b82c7 !important;
 }
 
 .q-btn--flat {

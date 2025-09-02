@@ -275,23 +275,24 @@ onUnmounted(() => {
 
 /* Hover state with copper accent */
 .control-btn:hover {
-  border-color: #B87333; /* copper border */
-  color: #B87333;        /* copper text */
+  border-color: #0077b6; /* copper border */
+  color: #0077b6;        /* copper text */
   transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(184, 115, 51, 0.3); /* subtle copper glow */
+  box-shadow: 0 2px 6px rgba(0, 119, 182, 0.3)
+; /* subtle copper glow */
 }
 
 /* Active state with solid copper */
 .control-btn.active {
-  background: #B87333;
-  border-color: #B87333;
+  background: #0077b6;
+  border-color: #0077b6;
   color: #ffffff;
 }
 
 /* Optional: copper tint for icons on hover */
 .control-btn:hover .control-icon {
-  fill: #B87333;
-  stroke: #B87333;
+  fill: #0077b6;
+  stroke: #0077b6;
 }
 
 .control-icon {
@@ -418,7 +419,7 @@ onUnmounted(() => {
 
 /* Focus states for accessibility */
 .control-btn:focus {
-  outline: 2px solid #B87333; /* copper outline */
+  outline: 2px solid #0077b6; /* copper outline */
   outline-offset: 2px;
 }
 

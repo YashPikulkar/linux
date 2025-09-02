@@ -6,8 +6,18 @@
 
     <!-- Recommended Jobs Header -->
     <div class="row items-center justify-between q-mb-md">
-      <h2 class="text-h4 text-primary">Recommended Jobs</h2>
-      <q-btn label="View All" flat dense no-caps class="text-primary" @click="goToJobs" />
+      <h2 class="text-h3 text-primary text-weight-bolder text-italic tracking-wide">
+        Recommended Jobs
+      </h2>
+
+      <q-btn
+        label="View All"
+        flat
+        dense
+        no-caps
+        class="text-primary text-weight-bold relative after:block after:h-[2px] after:w-0 after:bg-primary after:transition-all after:duration-300 hover:after:w-full"
+        @click="goToJobs"
+      />
     </div>
 
     <!-- ✅ JobList fetches its own recommended jobs -->

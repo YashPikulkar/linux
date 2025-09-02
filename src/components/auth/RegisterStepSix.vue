@@ -162,7 +162,7 @@ function onSubmit() {
           <!-- Next step button -->
           <div class="step-actions q-mt-xl">
             <q-btn
-              color="dark"
+              color="primary"
               size="lg"
               class="full-width step-btn"
               @click="onSubmit"
@@ -203,7 +203,7 @@ function onSubmit() {
 
 .step-badge {
   display: inline-block;
-  background: #212121;
+  background: var(--q-primary);
   color: white;
   padding: 6px 16px;
   border-radius: 20px;

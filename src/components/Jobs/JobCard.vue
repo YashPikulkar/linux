@@ -108,6 +108,7 @@
                   label="Login to Apply"
                   class="btn-filled-black equal-button full-width"
                   type="button"
+                  color="primary"
                   @click.stop="redirectToLogin"
                 />
               </div>
@@ -128,6 +129,7 @@
                         label="Apply"
                         class="btn-outline-black equal-button"
                         type="button"
+                        color="primary"
                         @click.stop="handleApply"
                         :disable="userStore.role === 'recruiter'"
                       >
@@ -142,6 +144,7 @@
                         label="Learn more"
                         class="btn-filled-black equal-button"
                         type="button"
+                        color="primary"
                         @click.stop="handleLearnMore"
                       />
                     </div>
@@ -161,6 +164,7 @@
               label="Login to Apply"
               class="btn-filled-black mobile-button full-width"
               type="button"
+              color="primary"
               @click.stop="redirectToLogin"
             />
           </div>
@@ -179,6 +183,7 @@
                   label="Apply"
                   class="btn-outline-black mobile-button full-width"
                   type="button"
+                  color="primary"
                   @click.stop="handleApply"
                   :disable="userStore.role === 'recruiter'"
                 >
@@ -194,6 +199,7 @@
                   label="Learn more"
                   class="btn-filled-black mobile-button full-width"
                   type="button"
+                  color="primary"
                   @click.stop="handleLearnMore"
                 />
               </div>
@@ -411,7 +417,7 @@ export default {
 }
 
 .btn-outline-black {
-  border: 1px solid #000;
+  border: 1px solid #0077b6;
   background-color: #fff;
   color: #000;
 }
@@ -420,7 +426,7 @@ export default {
 }
 
 .btn-filled-black {
-  background-color: #000;
+  /* background-color: #000; */
   color: #fff;
 }
 .btn-filled-black:hover {
@@ -438,9 +444,9 @@ export default {
   cursor: default;
 }
 .custom-chip-pink {
-  border: 1px solid #b87333;
+  border: 1px solid grey;
   background-color: #fff8f4; /* softer background to match copper tone */
-  color: #b87333;
+  color: grey;
 }
 .custom-chip-blue {
   border: 1px solid #007aff;

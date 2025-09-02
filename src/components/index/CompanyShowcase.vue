@@ -253,9 +253,10 @@ onMounted(() => {
 
 /* Hover copper accent */
 .stat-item:hover {
-  background: #b87333; /* copper */
+  /* background: #0077b6; copper */
   transform: translateY(-5px);
-  box-shadow: 0 8px 20px rgba(184, 115, 51, 0.3);
+  box-shadow: 0 8px 20px rgba(0, 119, 182, 0.3);
+;
 }
 
 .stat-item:hover .stat-number,

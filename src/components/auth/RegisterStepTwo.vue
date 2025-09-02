@@ -127,7 +127,7 @@ onMounted(() => {
             <q-btn
               type="submit"
               :loading="loading"
-              color="dark"
+              color="primary"
               size="lg"
               class="full-width step-btn"
               :disable="loading || !otp || otp.length !== 6"
@@ -151,7 +151,7 @@ onMounted(() => {
             @click="resendOTP"
           >
             <span v-if="canResend">Resend OTP</span>
-            <span v-else>Resend in {{ countdown }}s</span>
+            <span v-else>Resend in {{ countdown }}</span>
           </q-btn>
         </div>
       </q-card-section>
@@ -185,7 +185,7 @@ onMounted(() => {
 
 .step-badge {
   display: inline-block;
-  background: #212121;
+  background: var(--q-primary);
   color: white;
   padding: 6px 16px;
   border-radius: 20px;

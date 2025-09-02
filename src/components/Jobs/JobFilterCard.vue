@@ -1,6 +1,15 @@
 <template>
   <q-dialog v-model="showDialog" persistent transition-show="fade" transition-hide="fade">
-    <q-card class="filter-wrapper column bg-white">
+    <q-card class="filter-wrapper column bg-white relative-position">
+  <q-btn 
+    icon="close" 
+    flat 
+    round 
+    dense 
+    color="grey-6" 
+    class="absolute-top-right q-ma-sm z-top" 
+    @click="closeDialog" 
+  />
       <!-- Selected Filters (Sticky Header) -->
       <div class="selected-filters-sticky q-pa-md">
         <div class="text-h6 q-mb-sm section-heading">
@@ -120,7 +129,7 @@
 
       <!-- Sticky Footer -->
       <q-card-actions align="right" class="q-pa-sm sticky-footer">
-        <q-btn label="View results" class="view-results-btn" @click="showDialog = false" />
+        <q-btn label="View results" class="view-results-btn" color="primary" @click="showDialog = false" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -165,6 +174,11 @@ export default {
     modelValue: Boolean,
   },
   emits: ['update:modelValue'],
+  methods: {
+  closeDialog() {
+    this.showDialog = false
+  }
+},
   computed: {
     showDialog: {
       get() {
@@ -236,7 +250,7 @@ export default {
 }
 
 .section-icon {
-  color: #b87333;
+  color: var(--q-primary);
   font-size: 20px;
 }
 </style>

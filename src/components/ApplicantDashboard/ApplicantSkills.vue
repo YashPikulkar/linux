@@ -45,6 +45,7 @@
         :key="skill.id ?? skill.name"
         :style="chipStyle"
         class="skill-chip q-mr-sm q-mb-sm"
+        color="primary"
         :removable="isEditable"
         @remove="removeSkill(index)"
       >
@@ -104,7 +105,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Cancel" color="#7a7a7a" @click="showSaveDialog = false" />
-        <q-btn flat unelevated label="Save" color="primary" @click="confirmSave" :loading="isSaving" />
+        <q-btn unelevated label="Save" color="primary" @click="confirmSave" :loading="isSaving" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -120,7 +121,7 @@
       </q-card-section>
       <q-card-actions align="right">
         <q-btn flat label="Keep Editing" color="#7a7a7a" @click="showCancelDialog = false" />
-        <q-btn flat unelevated label="Discard" color="primary" @click="confirmCancel" />
+        <q-btn unelevated label="Discard" color="primary" @click="confirmCancel" />
       </q-card-actions>
     </q-card>
   </q-dialog>
@@ -272,30 +273,35 @@ onMounted(() => {
 
 <style scoped>
 .skills-card {
-   width: 100%;
+  width: 100%;
   background-color: white;
-  border-radius: 16px;
+  border-radius: 1rem;
   box-shadow:
     0 4px 8px rgba(255, 255, 255, 0.4),
     0 8px 16px rgba(0, 0, 0, 0.05),
     inset 0 1px 3px rgba(255, 255, 255, 0.6);
-  gap: 24px;
+  gap: 1.5rem;
   box-sizing: border-box;
   transition: box-shadow 0.3s ease;
+  padding: 1rem;
 }
 
+/* Header scales down on small screens */
 .form-header {
   display: flex;
   justify-content: space-between;
+  flex-wrap: wrap;
   font-weight: bold;
-  font-size: 18px;
+  font-size: 1.125rem; /* ~18px */
   color: black;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
+/* Flex wrap ensures chips move to new lines */
 .skills-list {
   display: flex;
   flex-wrap: wrap;
+  gap: 0.5rem;
 }
 
 .skill-chip:hover {
@@ -304,29 +310,32 @@ onMounted(() => {
 }
 
 .add-skill-row {
-  margin-top: 12px;
-  max-width: 300px;
+  margin-top: 0.75rem;
+  width: 100%;
+  max-width: 100%;
 }
 
 .dropdown-skill-list {
-  max-height: 200px;
+  max-height: 40vh; /* relative to viewport */
   overflow-y: auto;
-  background: #1f2937;
-  color: white;
-  border-radius: 8px;
+  background: white;
+  color: #1f2937;
+  border-radius: 0.5rem;
   border: 1px solid #2e2e2e;
-  margin-top: 4px;
+  margin-top: 0.25rem;
 }
 
 .dropdown-skill-list .q-item:hover {
-  background-color: #374151;
+  background-color: #f3f4f6;
 }
 
 .confirmation-dialog {
-  min-width: 300px;
+  width: 100%;
   max-width: 90vw;
+  min-width: auto;
 }
 
+/* Change indicator adapts naturally */
 .change-indicator {
   display: flex;
   align-items: center;
@@ -337,9 +346,10 @@ onMounted(() => {
   border-radius: 0.25rem;
   font-size: 0.875rem;
   color: #856404;
-  margin-bottom: 16px;
+  margin-bottom: 1rem;
 }
 
+/* Pulse stays the same */
 .pulse-animation {
   animation: pulse 2s infinite;
 }
@@ -355,6 +365,28 @@ onMounted(() => {
     box-shadow: 0 0 0 0 rgba(76, 175, 80, 0);
   }
 }
+
+/* --- MEDIA QUERIES --- */
+
+/* Small screens: shrink font, stack layout */
+@media (max-width: 600px) {
+  .form-header {
+    font-size: 1rem;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 0.5rem;
+  }
+
+  .skills-card {
+    border-radius: 0.75rem;
+    padding: 0.75rem;
+  }
+
+  .skills-list {
+    gap: 0.25rem;
+  }
+}
+
 </style>
 
 

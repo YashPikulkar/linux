@@ -233,6 +233,24 @@
         </div>
       </div>
     </q-dialog>
+     <!-- 🔹 Logout Confirmation Dialog -->
+    <q-dialog v-model="showLogoutDialog" persistent>
+  <q-card class="q-pa-md" style="max-width: 400px; width: 90vw;">
+    <q-card-section class="row items-center q-gutter-sm">
+      <q-avatar icon="logout" color="primary" text-color="white" />
+      <div class="text-h6">Confirm Logout</div>
+    </q-card-section>
+
+    <q-card-section class="q-pt-none text-body1">
+      Are you sure you want to log out? You will be signed out of your account.
+    </q-card-section>
+
+    <q-card-actions align="right" class="q-pt-sm">
+      <q-btn flat label="Cancel" color="grey-7" @click="showLogoutDialog = false" />
+      <q-btn unelevated label="Logout" color="primary" @click="confirmLogout" />
+    </q-card-actions>
+  </q-card>
+</q-dialog>
   </q-header>
 </template>
 
@@ -244,6 +262,8 @@ import { useUserStore } from 'src/stores/user-store'
 const router = useRouter()
 const route = useRoute()
 const userStore = useUserStore()
+const showLogoutDialog = ref(false)
+const isSaving= ref(false)
 
 const showMobileMenu = ref(false)
 
@@ -277,9 +297,24 @@ const getInitials = (name) => {
 }
 
 const isActiveRoute = (path) => route.path.startsWith(path)
+
+// Fixed logout functionality
 const handleLogout = () => {
-  userStore.setEverythingToNull()
-  router.push('/')
+  showLogoutDialog.value = true
+}
+
+// Confirm logout and perform the actual logout
+const confirmLogout = async () => {
+  isSaving.value = true
+  try {
+    // Add a small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500))
+    userStore.setEverythingToNull()
+    router.push('/')
+  } finally {
+    isSaving.value = false
+    showLogoutDialog.value = false
+  }
 }
 </script>
 <style scoped>
@@ -289,7 +324,7 @@ const handleLogout = () => {
 .profile-dropdown {
   width: 360px;
   border-radius: 99px;
-  box-shadow: 0 8px 24px rgba(184,11,51,0.1);
+  box-shadow: 0 8px 24px rgba(0, 119, 182, 0.1);
   background: #fff;
   font-family:
     'Inter',
@@ -363,8 +398,8 @@ const handleLogout = () => {
 }
 
 .menu-item:hover {
-  background-color: rgba(184,11,51,0.1) !important;
-  color: var(--q-hover);
+  background-color: rgba(0, 119, 182, 0.1)!important;
+  color: var(--q-primary);
 }
 
 /* =========================
@@ -380,14 +415,14 @@ const handleLogout = () => {
   background: #f9fafb;
   font-weight: 600;
   font-size: 14px;
-  color: var(--q-hover);
+  color: var(--q-primary);
   border-radius: 8px;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding: 14px;
 }
 
 .post-job-btn:hover {
-  background: rgba(184,11,51,0.1);
+  background: rgba(0, 119, 182, 0.1);
 }
 
 /* =========================
@@ -418,7 +453,7 @@ const handleLogout = () => {
 }
 
 .brand-dot {
-  color: var(--q-hover);
+  color: var(--q-primary);
   font-weight: bold;
 }
 
@@ -449,10 +484,10 @@ const handleLogout = () => {
 .nav-btn:hover,
 .nav-btn:focus,
 .nav-btn.active {
-  background-color: rgba(184,11,51,0.1);
-  border: 2px solid var(--q-hover);
-  color: var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
+  background-color: rgba(0, 119, 182, 0.1);
+  border: 2px solid var(--q-primary);
+  color: var(--q-primary);
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.15);
 }
 
 /* =========================
@@ -473,17 +508,17 @@ const handleLogout = () => {
 .custom-login-btn:hover,
 .custom-login-btn:focus,
 .custom-login-btn:active {
-  background-color: rgba(184,11,51,0.1);
-  border-color: var(--q-hover);
-  color: var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
+  background-color: rgba(0, 119, 182, 0.1);
+  border-color: var(--q-primary);
+  color: var(--q-primary);
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.15);
 }
 
 .custom-signup-btn {
   font-size: 16px;
   font-weight: 500;
   color: #ffffff;
-  background-color: #111827;
+  background-color: #0077b6;
   border: 2px solid transparent;
   border-radius: 12px;
   padding: 8px 24px;
@@ -494,10 +529,10 @@ const handleLogout = () => {
 .custom-signup-btn:hover,
 .custom-signup-btn:focus,
 .custom-signup-btn:active {
-  background-color: var(--q-hover);
+  background-color: var(--q-primary);
   color: #ffffff;
-  border: 2px solid var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
+  border: 2px solid var(--q-primary);
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.15);
 }
 
 /* =========================
@@ -513,8 +548,8 @@ const handleLogout = () => {
 }
 
 .mobile-menu-btn:hover {
-  background-color: rgba(184,11,51,0.1);
-  color: var(--q-hover);
+  background-color: rgba(0, 119, 182, 0.1);
+  color: var(--q-primary);
 }
 
 .mobile-menu-container {
@@ -548,8 +583,8 @@ const handleLogout = () => {
 }
 
 .mobile-close-btn:hover {
-  background-color: rgba(184,11,51,0.1);
-  color: var(--q-hover);
+  background-color: rgba(0, 119, 182, 0.1);
+  color: var(--q-primary);
 }
 
 .mobile-menu-content {
@@ -583,10 +618,10 @@ const handleLogout = () => {
 
 .mobile-nav-item:hover,
 .mobile-nav-item.active {
-  background-color: rgba(184,11,51,0.2);
-  color: var(--q-hover);
-  border: 2px solid var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(184,11,51,0.2);
+  background-color: rgba(0, 119, 182, 0.1);
+  color: var(--q-primary);
+  border: 2px solid var(--q-primary);
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.1);
 }
 
 /* =========================
@@ -614,7 +649,8 @@ const handleLogout = () => {
 
 .mobile-login-btn:hover {
   background-color: #f9fafb;
-  border-color: #9ca3af;
+  border-color: var(--q-primary);
+  color: var(--q-primary);
 }
 
 .mobile-signup-btn-jobseeker {
@@ -622,7 +658,7 @@ const handleLogout = () => {
   font-size: 18px;
   font-weight: 600;
   color: #ffffff;
-  background-color: #111827;
+  background-color: var(--q-primary);
   border: 2px solid transparent;
   border-radius: 12px;
   padding: 16px 24px;
@@ -631,7 +667,7 @@ const handleLogout = () => {
 }
 
 .mobile-signup-btn-jobseeker:hover {
-  background-color: #b87333;
+  background-color: #0077b6;
 }
 
 .mobile-signup-btn-company {
@@ -639,7 +675,7 @@ const handleLogout = () => {
   font-size: 18px;
   font-weight: 600;
   color: #ffffff;
-  background-color: var(--q-hover);
+  background-color: var(--q-primary);
   border: 2px solid transparent;
   border-radius: 12px;
   padding: 16px 24px;
@@ -648,7 +684,7 @@ const handleLogout = () => {
 }
 
 .mobile-signup-btn-company:hover {
-  background-color: #b87333; /* darker turquoise for hover */
+  background-color: #0077b6;
 }
 
 /* =========================

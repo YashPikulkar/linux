@@ -1,6 +1,7 @@
 <template>
-  <q-card class="inner-job-card q-py-xs q-px-md q-mx-none" flat bordered @click.stop>
-    <div class="row q-col-gutter-sm items-center justify-between">
+    <div class="q-mt-sm q-mx-none">
+  <q-card class="inner-job-card q-mx-none q-pa-md" flat bordered @click.stop>
+    <div class="row q-col-gutter-md items-center justify-between ">
       <!-- Job info (left) -->
       <div class="col-8 col-md-8">
         <div class="row items-center q-gutter-sm">
@@ -46,6 +47,7 @@
               label="Login to Apply"
               class="btn-filled-black equal-button"
               type="button"
+              color="primary"
               @click.stop="redirectToLogin"
             />
           </div>
@@ -55,12 +57,12 @@
               <div class="row items-center q-gutter-sm no-wrap">
                 <!-- Date info beside buttons -->
                 <div class="column items-end">
-                  <div
+                  <!-- <div
                     v-if="isRecentlyPosted"
                     class="text-caption text-positive text-weight-medium text-uppercase"
                   >
                     Recruiter Recently Active
-                  </div>
+                  </div> -->
                   <div class="text-caption text-grey-6">Posted {{ formattedPosted }}</div>
                 </div>
 
@@ -72,6 +74,7 @@
                     label="Apply"
                     class="btn-outline-black equal-button"
                     type="button"
+                    color="primary"
                     :disable="userStore.role === 'recruiter'"
                     @click.stop="handleApply"
                   >
@@ -86,6 +89,7 @@
                     label="Learn more"
                     class="btn-filled-black equal-button"
                     type="button"
+                    color="primary"
                     @click.stop="handleLearnMore"
                   />
                 </div>
@@ -96,6 +100,7 @@
       </div>
     </div>
   </q-card>
+  </div>
 </template>
 
 <script>
@@ -236,7 +241,7 @@ export default {
 }
 
 .btn-outline-black {
-  border: 1px solid #000;
+  border: 1px solid #0077b6;
   background-color: #fff;
   color: #000;
 }
@@ -246,7 +251,7 @@ export default {
 }
 
 .btn-filled-black {
-  background-color: #000;
+  /* background-color: #000; */
   color: #fff;
 }
 

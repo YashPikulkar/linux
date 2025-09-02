@@ -352,8 +352,7 @@ export default {
 }
 
 .highlighted {
-  border: 2px dotted var(--q-hover);
-  border-radius: 14px;
+  border: 2px dotted var(--q-primary);
   padding: 8px 18px;
   transition: all 0.2s ease;
 }
@@ -391,10 +390,12 @@ export default {
 }
 
 .tag.hovered {
-  background-color: rgba(64, 224, 208, 0.1); /* light turquoise using hover variable */
-  border: 2px solid var(--q-hover); /* turquoise border */
-  color: var(--q-hover); /* turquoise text */
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.2); /* subtle turquoise glow */
+  background-color: rgba(0, 119, 182, 0.1);
+; /* light turquoise using hover variable */
+  border: 2px solid var(--q-primary); /* turquoise border */
+  color: var(--q-primary); /* turquoise text */
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.1)
+; /* subtle turquoise glow */
 }
 
 .static-tag-section {
@@ -429,10 +430,12 @@ export default {
 }
 
 .static-tag:hover {
-  background-color: rgba(64, 224, 208, 0.1);
-  border-color: var(--q-hover);
-  color: var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  background-color: rgba(0, 119, 182, 0.1);
+;
+  border-color: var(--q-primary);
+  color: var(--q-primary);
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.15);
+;
 }
 
 .hero-title {

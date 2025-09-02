@@ -247,7 +247,7 @@ onMounted(() => {
 }
 /* Header Section */
 .card-header {
-  background: linear-gradient(135deg, #000000 0%, #b87333 100%);
+  background: linear-gradient(135deg, #000000 0%, var(--q-primary) 100%);
   padding: 16px;
   color: white;
 }
@@ -305,7 +305,7 @@ onMounted(() => {
 /* Action buttons in header */
 .icon-btn {
   background: #f0f0f0;
-  color: #b87333;
+  color: var(--q-primary);
   width: 40px;
   height: 40px;
   border-radius: 50%;
@@ -358,7 +358,7 @@ onMounted(() => {
   width: 36px;
   height: 36px;
   background: #f0f0f0;
-  color: #b87333;
+  color: var(--q-primary);
   border-radius: 50%;
   display: flex;
   align-items: center;
@@ -420,7 +420,7 @@ onMounted(() => {
 }
 
 .footer-icon:hover {
-  color: #b87333;
+  color: var(--q-primary);
 } 
 
 .posted-text {

@@ -1108,7 +1108,7 @@ onMounted(() => {
   justify-content: space-between;
 }
 .applicant-card:hover, .applicant-card.selected {
-  border-color: #b87333;
+  border-color: var(--q-primary);
   box-shadow: 0 4px 16px rgba(37,99,235,0.10);
   background: linear-gradient(90deg, #e0e7ff 80%, #f0fdfa 100%);
   transform: translateY(-2px) scale(1.01);
@@ -1418,7 +1418,7 @@ onMounted(() => {
   white-space: pre-wrap;
 }
 .link-primary {
-  color: #b87333;
+  color: var(--q-primary );
   font-weight: 700;
   text-decoration: none;
 }

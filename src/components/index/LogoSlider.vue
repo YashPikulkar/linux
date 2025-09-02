@@ -143,7 +143,7 @@ onUnmounted(() => {
 .company-logo-item:hover {
   background: rgba(184, 115, 51, 0.08); /* Copper tint on hover */
   transform: translateY(-4px);
-    background: #b87333;
+    background: #0077b6;
 }
 
 .logo-container {
@@ -162,7 +162,7 @@ onUnmounted(() => {
 .company-logo-item:hover .logo-container {
 
   transform: scale(1.1);
-  box-shadow: 0 8px 25px rgba(184, 115, 51, 0.3); /* Copper glow */
+  box-shadow: 0 8px 25px rgba(0, 119, 182, 0.3); /* Copper glow */
 }
 
 .company-logo-img {
@@ -262,7 +262,7 @@ onUnmounted(() => {
 
 /* Focus states for accessibility */
 .company-logo-item:focus {
-  outline: 2px solid #B87333; /* Copper outline */
+  outline: 2px solid #0077b6; /* Copper outline */
   outline-offset: 2px;
   border-radius: 0.75rem;
 }

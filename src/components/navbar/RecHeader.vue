@@ -107,7 +107,7 @@
 
           <q-list class="menu-list" dense>
             <!-- 🔹 Only Logout Option for Desktop -->
-            <q-item clickable v-ripple class="menu-item" @click="handleLogout">
+            <q-item clickable v-ripple class="menu-item" @click="showLogoutConfirmation">
               <q-item-section avatar class="menu-icon-section">
                 <q-icon name="logout" class="menu-icon" />
               </q-item-section>
@@ -204,7 +204,7 @@
 
           <!-- Logout Button -->
           <div class="mobile-logout-section">
-            <q-btn no-caps class="mobile-logout-btn" @click="handleMobileNavClick(handleLogout)">
+            <q-btn no-caps class="mobile-logout-btn" @click="handleMobileNavClick(showLogoutConfirmation)">
               <q-icon name="logout" class="mobile-nav-icon" />
               <span class="mobile-nav-text">Log Out</span>
             </q-btn>
@@ -212,6 +212,25 @@
         </div>
       </div>
     </q-dialog>
+    
+    <!-- 🔹 Logout Confirmation Dialog -->
+    <q-dialog v-model="showLogoutDialog" persistent>
+  <q-card class="q-pa-md" style="max-width: 400px; width: 90vw;">
+    <q-card-section class="row items-center q-gutter-sm">
+      <q-avatar icon="logout" color="primary" text-color="white" />
+      <div class="text-h6">Confirm Logout</div>
+    </q-card-section>
+
+    <q-card-section class="q-pt-none text-body1">
+      Are you sure you want to log out? You will be signed out of your account.
+    </q-card-section>
+
+    <q-card-actions align="right" class="q-pt-sm">
+      <q-btn flat label="Cancel" color="grey-7" @click="showLogoutDialog = false" />
+      <q-btn unelevated label="Logout" color="primary" @click="confirmLogout" />
+    </q-card-actions>
+  </q-card>
+</q-dialog>
   </q-header>
 </template>
 
@@ -226,6 +245,8 @@ const route = useRoute()
 
 // Mobile menu state
 const showMobileMenu = ref(false)
+const showLogoutDialog = ref(false)
+const isSaving = ref(false)
 
 // Mobile menu navigation handler
 const handleMobileNavClick = (navigationFunction) => {
@@ -252,10 +273,23 @@ const getInitials = (name) => {
   return (parts[0][0] + (parts[1]?.[0] || '')).toUpperCase()
 }
 
-// Logout
-const handleLogout = () => {
-  userStore.setEverythingToNull()
-  router.push('/')
+// Show logout confirmation dialog
+const showLogoutConfirmation = () => {
+  showLogoutDialog.value = true
+}
+
+// Confirm logout and perform the actual logout
+const confirmLogout = async () => {
+  isSaving.value = true
+  try {
+    // Add a small delay for better UX
+    await new Promise(resolve => setTimeout(resolve, 500))
+    userStore.setEverythingToNull()
+    router.push('/')
+  } finally {
+    isSaving.value = false
+    showLogoutDialog.value = false
+  }
 }
 </script>
 
@@ -296,7 +330,7 @@ const handleLogout = () => {
 }
 
 .brand-dot {
-  color: var(--q-hover);
+  color: var(--q-primary);
   font-weight: bold;
 }
 
@@ -315,10 +349,10 @@ const handleLogout = () => {
 .nav-btn:hover,
 .nav-btn:focus,
 .nav-btn.active {
-  background-color: rgba(184,11,51,0.1);
-  border: 2px solid var(--q-hover);
-  color: var(--q-hover) !important;
-  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
+  background-color: rgba(0, 119, 182, 0.1);
+  border: 2px solid #0077b6;
+  color: #0077b6 !important;
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.1);
   border-radius: 8px;
 }
 
@@ -346,8 +380,8 @@ const handleLogout = () => {
 }
 
 .mobile-menu-btn:hover {
-  background-color: rgba(184,11,51,0.1);
-  color: var(--q-hover);
+  background-color: rgba(0, 119, 182, 0.1);
+  color: #0077b6;
 }
 
 /* Mobile Menu Styles */
@@ -389,8 +423,8 @@ const handleLogout = () => {
 }
 
 .mobile-close-btn:hover {
-  background-color: rgba(184,11,51,0.1);
-  color: var(--q-hover);
+  background-color: rgba(0, 119, 182, 0.1);
+  color: #0077b6;
 }
 
 .mobile-menu-content {
@@ -424,10 +458,10 @@ const handleLogout = () => {
 
 .mobile-nav-item:hover,
 .mobile-nav-item.active {
-  background-color: rgba(184,11,51,0.1);
-  border: 2px solid var(--q-hover);
-  color: var(--q-hover) !important;
-  box-shadow: 0 0 0 4px rgba(184,11,51,0.15);
+  background-color: rgba(0, 119, 182, 0.1);
+  border: 2px solid #0077b6;
+  color: #0077b6 !important;
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.15);
 }
 
 .mobile-nav-icon {
@@ -452,7 +486,7 @@ const handleLogout = () => {
   justify-content: flex-start;
   font-size: 18px;
   font-weight: 500;
-  color: var(--q-hover);
+  color: var(--q-primary);
   background: transparent;
   border: none;
   border-radius: 12px;
@@ -463,12 +497,13 @@ const handleLogout = () => {
 }
 
 .mobile-logout-btn:hover {
-  background-color: rgba(184,11,51,0.1);
+  background-color: rgba(0, 119, 182, 0.1);
 }
 
 .mobile-logout-btn .mobile-nav-icon {
-  color: var(--q-hover);
+  color: var(--q-primary);
 }
+
 
 /* 🔹 Simplified Desktop Profile Dropdown */
 .profile-dropdown {
@@ -476,7 +511,7 @@ const handleLogout = () => {
   max-width: 400px;
   width: max-content;
   border-radius: 12px;
-  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 8px 24px rgba(0, 119, 182, 0.12);
   background: #fff;
   font-family:
     'Inter',
@@ -533,7 +568,7 @@ const handleLogout = () => {
 }
 
 .menu-item:hover {
-  background-color: rgba(184,11,51,0.1) !important;
+  background-color: rgba(0, 119, 182, 0.1)!important;
 }
 
 .menu-icon-section {

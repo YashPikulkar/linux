@@ -121,7 +121,8 @@
                       <div
                         v-for="(tag, i) in company.companyTags"
                         :key="i"
-                        class="custom-chip custom-chip-purple"
+                        class="custom-chip custom-chip-purple "
+                        color
                       >
                         {{ tag }}
                       </div>
@@ -246,9 +247,9 @@
 
                   <!-- Company Outer Card -->
                   <q-card class="company-outer-card q-pa-md q-mb-md full-width" flat bordered>
-                    <!-- Top Row: Logo, Name, Status -->
+                    <!-- Top Row: Logo, Name, Status
                     <div class="row items-start q-gutter-sm">
-                      <q-avatar size="64px">
+                       <q-avatar size="64px">
                         <img
                           v-if="company.logo && company.logo !== 'https://via.placeholder.com/64'"
                           :src="company.logo"
@@ -263,15 +264,15 @@
                         >
                           {{ getCompanyInitials(company.name) }}
                         </div>
-                      </q-avatar>
+                      </q-avatar> -->
 
-                      <div class="col">
+                      <!-- <div class="col">
                         <div class="row items-center q-gutter-xs">
                           <div class="text-subtitle1 text-weight-bold">
                             {{ company.name }}
                           </div>
 
-                          <!-- Hiring Status -->
+                          Hiring Status
                           <div
                             v-if="company.hiringStatus"
                             class="custom-chip"
@@ -282,9 +283,9 @@
                             "
                           >
                             {{ company.hiringStatus }}
-                          </div>
+                          </div> -->
 
-                          <!-- Company Type -->
+                          <!-- Company Type
                           <div
                             v-for="(type, i) in company.companyType"
                             :key="'type-' + i"
@@ -292,15 +293,15 @@
                           >
                             {{ type }}
                           </div>
-                        </div>
+                        </div> -->
 
-                        <!-- Company Size -->
+                        <!-- Company Size
                         <div class="text-caption text-grey-6">
                           Company Size: {{ formatCompanySize(company.size) }}
-                        </div>
+                        </div> -->
 
-                        <!-- Company Tags -->
-                        <div class="row q-gutter-sm q-mt-xs">
+                        <!-- Company Tags--> 
+                        <!-- <div class="row q-gutter-sm q-mt-xs">
                           <div
                             v-for="(tag, i) in company.companyTags"
                             :key="'tag-' + i"
@@ -308,9 +309,9 @@
                           >
                             {{ tag }}
                           </div>
-                        </div>
+                        </div> 
                       </div>
-                    </div>
+                    </div>-->
 
                     <!-- CompanyJobsList Component Area -->
                     <div class="q-mt-md">
@@ -319,7 +320,7 @@
                       </div>
                     </div>
 
-                    <div class="arrow-symbol">&gt;</div>
+                    <!-- <div class="arrow-symbol">&gt;</div> -->
                   </q-card>
 
                   <!-- No jobs message -->
@@ -911,9 +912,9 @@ What We Do:
 }
 
 .custom-chip-purple {
-  border: 1px solid #8b5cf6;
-  background-color: #ede9fe;
-  color: #5b21b6;
+    border: 1px solid grey;
+  background-color: #fefcfa;
+  color:grey;
 }
 
 .custom-chip-pink {

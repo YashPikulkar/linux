@@ -275,7 +275,7 @@ const onSubmit = async () => {
                 type="submit"
                 :loading="loading"
                 :disable="!isFormValid || loading"
-                color="dark"
+                color="primary"
                 size="lg"
                 class="full-width step-btn"
                 @click.prevent="onSubmit"
@@ -317,7 +317,7 @@ const onSubmit = async () => {
 
 .step-badge {
   display: inline-block;
-  background: #212121;
+  background: var(--q-primary);
   color: white;
   padding: 6px 16px;
   border-radius: 20px;

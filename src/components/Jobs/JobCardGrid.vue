@@ -30,7 +30,7 @@
           <div
             v-for="(type, i) in normalizedJob.company.type || []"
             :key="'type-' + i"
-            class="custom-chip custom-chip-blue company-type-chip"
+            class="custom-chip custom-chip-blue company-type-chip "
           >
             {{ type }}
           </div>
@@ -49,7 +49,7 @@
           <div
             v-for="(tag, i) in normalizedJob.company.tags || []"
             :key="'tag-' + i"
-            class="custom-chip custom-chip-pink company-tag-chip"
+            class="custom-chip custom-chip-pink company-tag-chip text-caption text-grey-6"
           >
             {{ tag }}
           </div>
@@ -59,7 +59,7 @@
 
     <!-- Job Details Inner Card -->
     <div class="q-mt-sm q-mx-none job-details-container">
-      <q-card class="inner-job-card q-pa-sm q-mx-none" flat bordered @click.stop>
+      <q-card class="inner-job-card q-pa-md q-mx-none" flat bordered @click.stop>
         <!-- Job Title + Chips -->
         <div class="job-title-section q-mb-sm">
           <div class="job-title text-body1 text-weight-bold text-black q-mb-xs">
@@ -114,6 +114,7 @@
               label="Login to Apply"
               class="btn-filled-black grid-login-button full-width"
               type="button"
+              color="primary"
               @click.stop="redirectToLogin"
             />
           </div>
@@ -132,6 +133,7 @@
                   label="Apply"
                   class="btn-outline-black grid-button full-width"
                   type="button"
+                  color="primary"
                   @click.stop="handleApply"
                   :disable="userStore.role === 'recruiter'"
                 >
@@ -147,6 +149,7 @@
                   label="Learn more"
                   class="btn-filled-black grid-button full-width"
                   type="button"
+                  color="primary"
                   @click.stop="handleLearnMore"
                 />
               </div>
@@ -419,7 +422,7 @@ export default {
 }
 
 .btn-outline-black {
-  border: 1px solid #000;
+  border: 1px solid #0077b6;
   background-color: #fff;
   color: #000;
 }
@@ -428,7 +431,7 @@ export default {
 }
 
 .btn-filled-black {
-  background-color: #000;
+  /* background-color: #000; */
   color: #fff;
 }
 .btn-filled-black:hover {
@@ -447,9 +450,9 @@ export default {
   white-space: nowrap;
 }
 .custom-chip-pink {
-  border: 1px solid #b87333;
-  background-color: #fff8f4; /* softer background to match copper tone */
-  color: #b87333;
+  border: 1px solid grey;
+  /* background-color: #fff8f4; /* softer background to match copper tone 
+  color: #b87333; */
 }
 
 .custom-chip-blue {

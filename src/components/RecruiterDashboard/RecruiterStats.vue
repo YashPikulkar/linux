@@ -1,14 +1,14 @@
 <template>
     <!-- Stats Cards Section -->
     <div class="stats-section q-pa-lg">
-      <div class="row q-gutter-md">
+      <div class="row q-gutter-md items-stretch">
         <div class="col" v-for="(stat, index) in jobAnalyticsStats" :key="index">
-          <q-card class="stat-card-enhanced">
+          <q-card class="stat-card-enhanced" style="height: 100%">
             <q-card-section class="text-center">
               <div class="stat-icon-wrapper q-mb-sm">
                 <q-icon :name="stat.icon" size="32px" :color="stat.color" />
                 <!-- Optional: Add a small globe icon for global stats -->
-                <q-icon
+                <!-- <q-icon
                   v-if="stat.isGlobal"
                   name="public"
                   size="12px"
@@ -16,7 +16,7 @@
                   class="absolute-top-right q-ma-xs"
                 >
                   <q-tooltip>Platform-wide metric</q-tooltip>
-                </q-icon>
+                </q-icon> -->
               </div>
 
               <!-- Loading skeleton or actual value -->
@@ -888,7 +888,7 @@ onBeforeUnmount(() => {
   left: 0;
   right: 0;
   height: 4px;
-  background: linear-gradient(90deg, #667eea, #764ba2);
+  /* background: linear-gradient(90deg, #667eea, #764ba2); */
 }
 
 .stat-card-enhanced:hover {

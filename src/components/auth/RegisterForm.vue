@@ -1,5 +1,5 @@
 <script setup>
-import { reactive, computed } from 'vue'
+import { reactive, computed,ref } from 'vue'
 import { useRouter } from 'vue-router'
 import { useUserStore } from 'src/stores/user-store'
 import { useQuasar } from 'quasar'
@@ -13,6 +13,8 @@ import RegisterStepSeven from './RegisterStepSeven.vue'
 
 const $q = useQuasar()
 const router = useRouter()
+const showBackDialog = ref(false)
+
 
 // Computed property for conditional timeline steps
 const timelineSteps = computed(() => {
@@ -336,6 +338,20 @@ const StepSevenUpdate = async (data) => {
 
   StepData.stepSeven = true
 }
+// Show back confirmation dialog
+// const showBackConfirmation = () => {
+//   showBackDialog.value = true
+// }
+
+// Confirm back and perform the actual navigation
+const confirmBack = async () => {
+  try {
+    // Add a small delay for better UX
+    router.push('/')
+  } finally {
+    showBackDialog.value = false
+  }
+}
 </script>
 
 <template>
@@ -471,13 +487,38 @@ const StepSevenUpdate = async (data) => {
       </div>
     </div>
 
-    <!-- Navigation -->
-    <div class="register-navigation">
-      <q-btn flat no-caps color="dark" class="nav-btn" @click="router.push('/')">
-        <q-icon name="arrow_back" class="q-mr-sm" />
-        Back
-      </q-btn>
-    </div>
+  <!-- Navigation -->
+  <div class="register-navigation">
+    <q-btn
+      flat
+      no-caps
+      color="black"
+      class="nav-btn"
+      @click="showBackDialog = true"
+    >
+      <q-icon name="arrow_back" class="q-mr-sm" />
+      Back
+    </q-btn>
+  </div>
+
+  <!-- Warning Dialog -->
+  <q-dialog v-model="showBackDialog" persistent>
+    <q-card class="q-pa-md" style="max-width: 400px; width: 90vw;">
+      <q-card-section class="row items-center q-gutter-sm">
+        <q-avatar icon="arrow_back" color="primary" text-color="white" />
+        <div class="text-h6">Confirm Back</div>
+      </q-card-section>
+
+      <q-card-section class="q-pt-none text-body1">
+        Are you sure you want to go back? Your progress will be lost.
+      </q-card-section>
+
+      <q-card-actions align="right" class="q-pt-sm">
+        <q-btn flat label="Cancel" color="grey-7" @click="showBackDialog = false" />
+        <q-btn unelevated label="Go Back" color="primary" @click="confirmBack" />
+      </q-card-actions>
+    </q-card>
+  </q-dialog>
   </div>
 </template>
 
@@ -511,22 +552,12 @@ const StepSevenUpdate = async (data) => {
 /* Timeline Section */
 .timeline-section {
   width: 400px;
-  background: #212121; /* dark charcoal */
+  background: #212121;
   color: white;
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 30px;
-  margin-top: -140px;
-}
-
-@media (max-width: 1024px) {
-  .timeline-section {
-    width: 100%;
-    order: -1;
-    padding: 24px 40px;
-    margin-top: -20px;
-  }
+  padding: 40px;
 }
 
 .timeline-wrapper {
@@ -580,14 +611,14 @@ const StepSevenUpdate = async (data) => {
 }
 
 .timeline-item.completed .timeline-icon-wrapper {
-  background: #b87333; /* copper */
+  background: #4caf50;
   color: white;
 }
 
 .timeline-item.active .timeline-icon-wrapper {
   background: white;
   color: #212121;
-  box-shadow: 0 0 0 3px rgba(184, 115, 51, 0.5); /* copper glow */
+  box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.3);
 }
 
 .timeline-item.pending .timeline-icon-wrapper {
@@ -612,7 +643,7 @@ const StepSevenUpdate = async (data) => {
 }
 
 .timeline-item.completed .timeline-step-title {
-  color: #b87333; /* copper */
+  color: #4caf50;
 }
 
 .timeline-item.active .timeline-step-title {
@@ -630,7 +661,7 @@ const StepSevenUpdate = async (data) => {
 }
 
 .timeline-item.completed .timeline-step-subtitle {
-  color: #d9a066; /* lighter copper */
+  color: #81c784;
 }
 
 .timeline-item.active .timeline-step-subtitle {
@@ -652,7 +683,7 @@ const StepSevenUpdate = async (data) => {
 }
 
 .timeline-item.completed .timeline-connector {
-  background: #b87333; /* copper */
+  background: #4caf50;
 }
 
 .progress-indicator {
@@ -672,7 +703,7 @@ const StepSevenUpdate = async (data) => {
 
 .progress-fill {
   height: 100%;
-  background: linear-gradient(90deg, #b87333, #d9a066); /* copper gradient */
+  background: linear-gradient(90deg, #4caf50, #66bb6a);
   border-radius: 2px;
   transition: width 0.5s ease;
 }
@@ -703,6 +734,7 @@ const StepSevenUpdate = async (data) => {
 
 .nav-btn:hover {
   background: white;
+  color:var(--q-primary) !important;
   transform: translateY(-1px);
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
 }
@@ -755,7 +787,6 @@ const StepSevenUpdate = async (data) => {
 
   .form-section {
     padding: 20px;
-    margin-top: -170px;
   }
 
   .register-navigation {
@@ -775,5 +806,4 @@ const StepSevenUpdate = async (data) => {
     font-size: 12px;
   }
 }
-
 </style>

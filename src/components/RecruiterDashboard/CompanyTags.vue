@@ -177,9 +177,9 @@ function removeTag(index) {
   color: #000000 !important;
 }
 .custom-chip {
-  border: 1px solid #b87333;
+  border: 1px solid grey;
   background-color: #fefcfa;
-  color: #b87333;
+  color:grey;
 }
 
 .add-btn {

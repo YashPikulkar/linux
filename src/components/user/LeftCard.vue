@@ -39,7 +39,7 @@
             <!-- Email -->
             <div class="contact-item email-item">
               <div class="contact-icon-wrapper">
-                <q-icon name="email" :size="iconSize" color="grey-6" />
+                <q-icon name="email" :size="iconSize" color="primary" />
               </div>
               <div class="contact-details email-details">
                 <div class="contact-value email-value">{{ user.email }}</div>
@@ -49,7 +49,7 @@
             <!-- Phone -->
             <div class="contact-item">
               <div class="contact-icon-wrapper">
-                <q-icon name="phone" :size="iconSize" color="grey-6" />
+                <q-icon name="phone" :size="iconSize" color="primary" />
               </div>
               <div class="contact-details">
                 <div class="contact-value">{{ user.phone }}</div>
@@ -215,7 +215,7 @@ const iconSize = computed(() => {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: #6c757d;
+  background: #0077b6;
   border-radius: 16px;
   box-shadow: 0 8px 32px rgba(0, 0, 0, 0.1);
   border: 3px solid #ffffff;

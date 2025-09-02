@@ -6,7 +6,7 @@
         <!-- Header Badge -->
         <div class="q-mb-lg">
   <q-badge
-    style="background-color: #f3e2d2; color: #b87333; font-size: 0.75rem; letter-spacing: 2px"
+    style="background-color: rgba(0, 119, 182, 0.2); color: #0077b6; font-size: 0.75rem; letter-spacing: 2px"
     class="text-uppercase text-weight-medium q-px-md q-py-sm"
   >
     AI-POWERED MATCHING SYSTEM
@@ -22,7 +22,7 @@
 <!-- CTA Button -->
 <div class="cta-buttons">
   <q-btn
-    color="dark"
+    color="primary"
     size="lg"
     class="q-px-xl q-py-md text-weight-medium cta-hover"
     style="border-radius: 8px"
@@ -49,7 +49,7 @@
         :key="stat.label"
       >
         <div class="stat-card q-pa-lg">
-          <div class="stat-number text-weight-bold q-mb-sm" style="color:#b87333">
+          <div class="stat-number text-weight-bold q-mb-sm" style="color:#0077b6">
             {{ stat.number }}
           </div>
           <div class="stat-label text-dark text-weight-medium">
@@ -160,7 +160,7 @@ export default {
   border-radius: 8px;
   font-weight: 600;
   transition: all 0.2s ease;
-  border: 2px solid #1c1c1c;
+  border: 2px solid #0077b6;
   cursor: pointer;
 }
 

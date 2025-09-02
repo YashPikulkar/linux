@@ -14,6 +14,7 @@
         unelevated
         rounded
         no-caps
+        color="primary"
         size="xl"
         @click="goToLogin"
       />
@@ -75,10 +76,11 @@ h1 {
 }
 .cta-hire-btn:hover,
 .cta-hire-btn:focus {
-  background-color: var(--q-hover); /* ✅ turquoise */
+  background-color: #0077b6; /* ✅ turquoise */
   color: white;
-  border: 2px solid var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.2);
+  border: 2px solid #0077b6;
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.2)
+;
 }
 
 /* 🔹 Job Button */
@@ -96,8 +98,8 @@ h1 {
 .cta-job-btn:hover,
 .cta-job-btn:focus {
   background-color: #e6fbf9; /* ❓ should I make this also use brand hover? */
-  border-color: var(--q-hover); /* turquoise */
-  color: var(--q-hover);
-  box-shadow: 0 0 0 4px rgba(64, 224, 208, 0.15);
+  border-color: #0077b6; /* turquoise */
+  color: #0077b6;
+  box-shadow: 0 0 0 4px rgba(0, 119, 182, 0.15);
 }
 </style>

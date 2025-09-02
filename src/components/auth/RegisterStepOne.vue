@@ -168,7 +168,7 @@ const onSubmit = async () => {
             <q-btn
               type="submit"
               :loading="loading"
-              color="dark"
+              color="primary"
               size="lg"
               class="full-width step-btn"
               :disable="loading"
@@ -187,10 +187,12 @@ const onSubmit = async () => {
             flat
             no-caps
             color="dark"
-            class="q-pa-none text-weight-medium"
+           class="q-pa-none text-weight-medium underline-link"
+            style="text-decoration: underline"
             @click="$router.push('/login')"
           >
-            login in here
+      
+            Login in here
           </q-btn>
         </div>
       </q-card-section>
@@ -199,6 +201,14 @@ const onSubmit = async () => {
 </template>
 
 <style scoped>
+.underline-link {
+  text-decoration: underline;
+  color: #212121; /* dark */
+}
+
+.underline-link:hover {
+  color: var(--q-primary) !important;
+}
 .step-container {
   display: flex;
   align-items: center;
@@ -224,7 +234,7 @@ const onSubmit = async () => {
 
 .step-badge {
   display: inline-block;
-  background: #212121;
+  background: var(--q-primary);
   color: white;
   padding: 6px 16px;
   border-radius: 20px;
